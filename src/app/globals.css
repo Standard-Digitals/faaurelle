@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #fff;
+  --color-background-bright: #fff;
+  --color-foreground: #17130f;
+  --color-gold: #bd8c35;
+
+  --font-roboto-family:
+    var(--font-roboto), "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-raleway-family:
+    var(--font-raleway), "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-montserrat-family:
+    var(--font-montserrat), "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-roboto-family);
+  --font-serif: var(--font-raleway-family);
+
+  --type-meta-size: 1rem;
+  --type-cta-size: 1rem;
+  --space-layout-x: clamp(1.25rem, 4vw, 5rem);
+  --size-site-max: 120rem;
+  --size-content-max: 120rem;
+
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --site-header-height: 5.25rem;
+  --site-header-total-height: calc(var(--site-header-height) + var(--safe-area-top));
+
+  color-scheme: light;
+  background: var(--color-background);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+html {
+  background: #000;
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-width: 20rem;
+  background: #000;
+  color: var(--color-foreground);
+  font-family: var(--font-roboto-family);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.site-stage {
+  position: relative;
+  width: min(100%, var(--size-site-max));
+  min-height: 100svh;
+  margin-inline: auto;
+  background: var(--color-background);
+}
+
+::selection {
+  background: rgb(189 140 53 / 0.28);
+  color: var(--color-foreground);
+}
+
+@media (max-width: 767px) {
+  :root {
+    --site-header-height: 4.5rem;
+  }
+}
