@@ -38,9 +38,9 @@
   margin: 0;
   color: #fff;
   font-family: var(--font-roboto-family);
-  font-size: clamp(1.1rem, 1.45vw, 1.7rem);
+  font-size: clamp(1rem, 1.15vw, 1.35rem);
   font-weight: 500;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.25em;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
@@ -61,7 +61,9 @@
 
 .subscribeButton {
   display: block;
+  min-height: 2.9rem;
   margin: 2rem auto 0;
+  padding: 0.65rem 1.55rem;
   border: 1px solid #d5a555;
   border-radius: 0.15rem;
   background: #d5a555;
