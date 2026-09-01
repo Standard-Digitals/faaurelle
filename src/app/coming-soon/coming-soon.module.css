@@ -37,10 +37,10 @@
 .content h1 {
   margin: 0;
   color: #fff;
-  font-family: var(--font-montserrat-family);
+  font-family: var(--font-roboto-family);
   font-size: clamp(1.1rem, 1.45vw, 1.7rem);
   font-weight: 500;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.28em;
   line-height: 1;
   text-align: center;
   text-transform: uppercase;
@@ -66,10 +66,25 @@
   border-radius: 0.15rem;
   background: #d5a555;
   color: #17130f;
+  letter-spacing: 0.28em;
   transition:
     background-color 180ms ease,
     color 180ms ease,
     transform 180ms ease;
+}
+
+.launchDate {
+  display: block;
+  margin-top: 2.5rem;
+  color: #fff;
+  font-family: var(--font-roboto-family);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .dialogRoot {

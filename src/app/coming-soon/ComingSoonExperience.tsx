@@ -103,6 +103,9 @@ export function ComingSoonExperience() {
           <Button type="button" className={styles.subscribeButton} onClick={openDialog}>
             Subscribe
           </Button>
+          <time className={styles.launchDate} dateTime="2026-09-15">
+            Sep 15, 2026
+          </time>
         </div>
       </div>
 
