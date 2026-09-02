@@ -1,0 +1,20 @@
+{
+  "provider": "Unsplash",
+  "license": "https://unsplash.com/license",
+  "images": [
+    { "file": "glossy-hair-profile.webp", "photographer": "Ali Pazani", "sourcePage": "https://unsplash.com/photos/topless-woman-with-eyes-closed-3w14X-Yxffk" },
+    { "file": "editorial-hair-portrait.webp", "photographer": "averie woodard", "sourcePage": "https://unsplash.com/photos/woman-standing-next-to-pink-wall-while-scratching-her-head-4nulm-JUYFo" },
+    { "file": "natural-hair-texture.webp", "photographer": "Jeffery Erhunse", "sourcePage": "https://unsplash.com/photos/woman-in-white-and-red-shirt-vp9mRauo68c" },
+    { "file": "glossy-dark-hair.webp", "photographer": "Paul Siewert", "sourcePage": "https://unsplash.com/photos/black-and-brown-hair-dnpa8k6TGRE" },
+    { "file": "hair-care-ritual.webp", "photographer": "Jessie Dee Dabrowski", "sourcePage": "https://unsplash.com/photos/person-wearing-black-top-W6cwaL7PMSw" },
+    { "file": "mature-hair-portrait.webp", "photographer": "Alexander Krivitskiy", "sourcePage": "https://unsplash.com/photos/grayscale-photo-of-womans-face-1f7WL1qrrdE" },
+    { "file": "textured-hair-detail.webp", "photographer": "Icons8 Team", "sourcePage": "https://unsplash.com/photos/woman-wearing-white-towel-y2T5hT7pWx4" },
+    { "file": "hair-movement.webp", "photographer": "Vinicius Amano", "sourcePage": "https://unsplash.com/photos/woman-in-black-coat-holding-her-hair-VFZF_pzTVBA" },
+    { "file": "curly-hair-motion.webp", "photographer": "Ayo Ogunseinde", "sourcePage": "https://unsplash.com/photos/woman-wearing-yellow-halter-top-whipping-hair-MLDQVQL_4_0" },
+    { "file": "botanical-dew-macro.webp", "photographer": "Vivek Doshi", "sourcePage": "https://unsplash.com/photos/purple-flower-in-macro-shot-x2GAOC_AEpQ" },
+    { "file": "leaf-water-texture.webp", "photographer": "Kévin JINER", "sourcePage": "https://unsplash.com/photos/a-close-up-of-a-leaf-with-a-drop-of-water-on-it-o-ZQZx0QTXs" },
+    { "file": "blonde-hair-editorial.webp", "photographer": "Lera Kogan", "sourcePage": "https://unsplash.com/photos/woman-in-white-shirt-with-blonde-hair-CIrRI0ujiRo" },
+    { "file": "silver-hair-editorial.webp", "photographer": "Lera Kogan", "sourcePage": "https://unsplash.com/photos/person-with-grey-and-black-hair-KBoUUqE97r8" },
+    { "file": "wet-hair-ritual.webp", "photographer": "Luis Quintero", "sourcePage": "https://unsplash.com/photos/mens-wet-hair-nZ0-vr-MP8U" }
+  ]
+}

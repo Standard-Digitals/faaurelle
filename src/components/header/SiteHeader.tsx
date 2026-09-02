@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import styles from "./SiteHeader.module.css";
 import { brand } from "@/config/brand";
 import {
@@ -63,7 +69,12 @@ function UtilityButton({
   className?: string;
 }) {
   return (
-    <button type="button" className={className} aria-label={label} title={`${label} — coming soon`}>
+    <button
+      type="button"
+      className={className}
+      aria-label={label}
+      title={`${label} — coming soon`}
+    >
       <Icon name={icon} />
     </button>
   );
@@ -168,44 +179,34 @@ export function SiteHeader() {
 
           <nav className={styles.primaryNavigation} aria-label={navigationAccessibility.primary}>
             {primaryNavigationLinks.map((link) => (
-              <a key={link.href} href="">
+              <a key={link.href} href={homeAnchor(link.href)}>
                 {link.label}
               </a>
             ))}
           </nav>
 
-          <a className={styles.logo} href="" aria-label={`${brand.accessibilityLabel}, home`}>
+          <a
+            className={styles.logo}
+            href={homeAnchor("#main-content")}
+            aria-label={`${brand.accessibilityLabel}, home`}
+          >
             <Image src={logoPath} alt={brand.displayName} fill priority sizes="240px" />
           </a>
 
           <div className={styles.rightCluster}>
-            <nav
-              className={styles.secondaryNavigation}
-              aria-label={navigationAccessibility.secondary}
-            >
-              <a href="">{innerCircleLink.label}</a>
-              <button
-                type="button"
-                onClick={handlePlaceholder}
-                title={`${customerCareLabels.contact} — coming soon`}
-              >
+            <nav className={styles.secondaryNavigation} aria-label={navigationAccessibility.secondary}>
+              <a href={homeAnchor(innerCircleLink.href)}>{innerCircleLink.label}</a>
+              <button type="button" onClick={handlePlaceholder} title={`${customerCareLabels.contact} — coming soon`}>
                 {customerCareLabels.contact}
               </button>
-              <button
-                type="button"
-                onClick={handlePlaceholder}
-                title={`${customerCareLabels.faq} — coming soon`}
-              >
+              <button type="button" onClick={handlePlaceholder} title={`${customerCareLabels.faq} — coming soon`}>
                 {customerCareLabels.faq}
               </button>
             </nav>
 
             <div className={styles.utilities} aria-label={navigationAccessibility.utilities}>
-              <UtilityButton
-                icon="account"
-                label={navigationAccessibility.account}
-                className={styles.optionalUtility}
-              />
+              <UtilityButton icon="search" label={navigationAccessibility.search} />
+              <UtilityButton icon="account" label={navigationAccessibility.account} className={styles.optionalUtility} />
               <UtilityButton icon="bag" label={navigationAccessibility.shoppingBag} />
             </div>
           </div>
@@ -246,7 +247,7 @@ export function SiteHeader() {
 
           <nav className={styles.panelNavigation} aria-label={navigationAccessibility.mobile}>
             {[...primaryNavigationLinks, innerCircleLink].map((link, index) => (
-              <a key={link.href} href="" onClick={closeMenu}>
+              <a key={link.href} href={homeAnchor(link.href)} onClick={closeMenu}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 {link.label}
               </a>
@@ -262,6 +263,7 @@ export function SiteHeader() {
           </nav>
 
           <div className={styles.panelUtilities}>
+            <UtilityButton icon="search" label={navigationAccessibility.search} />
             <UtilityButton icon="account" label={navigationAccessibility.account} />
             <UtilityButton icon="bag" label={navigationAccessibility.shoppingBag} />
           </div>

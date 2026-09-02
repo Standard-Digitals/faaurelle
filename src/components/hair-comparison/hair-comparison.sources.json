@@ -1,0 +1,28 @@
+{
+  "images": [
+    {
+      "file": "hair-before-dull-dry-lifeless.png",
+      "role": "before",
+      "sourceType": "user-provided project reference",
+      "sourceFile": "reference/befre-after/hair-before-dull-dry-lifeless.png",
+      "license": null,
+      "width": 1320,
+      "height": 880
+    },
+    {
+      "file": "hair-after-shine-and-smooth.png",
+      "role": "after",
+      "sourceType": "user-provided project reference",
+      "sourceFile": "reference/befre-after/hair-after-shine-and-smooth.png",
+      "license": null,
+      "width": 1320,
+      "height": 880
+    }
+  ],
+  "rendering": {
+    "aspectRatio": "3 / 2",
+    "crop": false,
+    "tonalOverlay": false
+  },
+  "comparisonType": "Illustrative visual comparison. Individual results may vary."
+}

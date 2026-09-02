@@ -4,7 +4,8 @@ export const heroContent = {
   chapterOne: {
     label: "Hero",
     heading: "Mirror-Like Shine. Weightless Elegance.",
-    body: "Transform dull, frizzy hair into silky, luminous strands with exceptional glass-like radiance powered by Silk Botanique Fusion.",
+    body:
+      "Transform dull, frizzy hair into silky, luminous strands with exceptional glass-like radiance powered by Silk Botanique Fusion.",
   },
   chapterTwo: {
     label: "Botanical Essence Blend",
@@ -22,7 +23,8 @@ export const heroContent = {
   chapterThree: {
     label: product.formalName,
     supporting: "The Future of Luxury Hair Care",
-    description: `A premium ${product.formulationTerm} crafted with advanced science and botanical excellence for hair that shines, feels smoother, and stays protected.`,
+    description:
+      `A premium ${product.formulationTerm} crafted with advanced science and botanical excellence for hair that shines, feels smoother, and stays protected.`,
     cta: {
       label: "Shop Now",
       href: "#discover",
@@ -44,8 +46,10 @@ export const heroContent = {
       emphasis: "Fusion",
     },
     description: {
-      lead: "A proprietary fusion of high-performance conditioning technology and carefully selected botanical oils that transforms every strand with weightless nourishment.",
-      body: "It delivers mirror-like shine, silky softness, long-lasting frizz control, and protection against daily heat and environmental stress.",
+      lead:
+        "A proprietary fusion of high-performance conditioning technology and carefully selected botanical oils that transforms every strand with weightless nourishment.",
+      body:
+        "It delivers mirror-like shine, silky softness, long-lasting frizz control, and protection against daily heat and environmental stress.",
     },
     benefitsHeading: "Key Benefits",
     benefits: [

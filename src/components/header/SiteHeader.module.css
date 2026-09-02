@@ -167,7 +167,8 @@
   flex-direction: column;
   width: min(31rem, 92vw);
   height: 100%;
-  padding: max(1.25rem, calc(var(--safe-area-top) + 0.8rem))
+  padding:
+    max(1.25rem, calc(var(--safe-area-top) + 0.8rem))
     max(1.25rem, calc(var(--safe-area-right) + 0.5rem))
     max(1.5rem, calc(var(--safe-area-bottom) + 1rem))
     max(1.25rem, calc(var(--safe-area-left) + 0.5rem));

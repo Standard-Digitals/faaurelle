@@ -1,0 +1,412 @@
+.visual {
+  --progress: 0;
+  --serum-mask: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.serumAsset,
+.externalMolecule,
+.internalMolecule {
+  position: absolute;
+  display: block;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+
+.serumUnit {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  transform-origin: 52% 50%;
+  will-change: transform;
+}
+
+.visual[data-ambient-active="true"] .serumUnit {
+  animation: serumFinalFloat 5.6s ease-in-out infinite;
+}
+
+@keyframes serumFinalFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  35% {
+    transform: translate3d(0, -13px, 0) rotate(0.65deg);
+  }
+  70% {
+    transform: translate3d(0, 6px, 0) rotate(-0.45deg);
+  }
+}
+
+.serumAsset,
+.internalLayer {
+  top: 58%;
+  left: 2vw;
+  width: clamp(275px, 37.3vw, 608px);
+  transform: translate3d(calc(var(--progress) * 29vw), -50%, 0)
+    rotate(calc(-3deg + var(--progress) * 5deg)) scale(calc(0.92 + var(--progress) * 0.08));
+  transform-origin: center;
+  will-change: transform;
+}
+
+.serumAsset {
+  z-index: 1;
+  filter: drop-shadow(0 20px 28px rgb(80 94 103 / 0.08));
+}
+
+.internalLayer {
+  position: absolute;
+  z-index: 2;
+  aspect-ratio: 1350 / 1165;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: var(--serum-mask);
+  mask-image: var(--serum-mask);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.internalMolecule {
+  --reveal: 0;
+  --base-rotate: 0deg;
+  --base-scale: 1;
+  --drift-x: 6px;
+  --drift-y: -8px;
+  --drift-rotate: 1deg;
+  --float-duration: 6s;
+  width: 31.5%;
+  opacity: var(--reveal);
+  filter: grayscale(0.82) saturate(0.46) contrast(1.28) brightness(0.84)
+    drop-shadow(0 2px 3px rgb(66 78 86 / 0.14)) blur(calc((1 - var(--reveal)) * 1.1px));
+  transform: rotate(var(--base-rotate)) scale(var(--base-scale));
+  will-change: opacity, transform;
+}
+
+.visual[data-ambient-active="true"] .internalMolecule {
+  animation: internalMoleculeFloat var(--float-duration) ease-in-out infinite;
+}
+
+@keyframes internalMoleculeFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(var(--base-rotate)) scale(var(--base-scale));
+  }
+  34% {
+    transform: translate3d(var(--drift-x), var(--drift-y), 0)
+      rotate(calc(var(--base-rotate) + var(--drift-rotate))) scale(var(--base-scale));
+  }
+  68% {
+    transform: translate3d(calc(var(--drift-x) * -0.55), calc(var(--drift-y) * -0.7), 0)
+      rotate(calc(var(--base-rotate) - var(--drift-rotate) * 0.7)) scale(var(--base-scale));
+  }
+}
+
+.internalMolecule1 {
+  left: 17%;
+  top: 21%;
+  --base-rotate: -18deg;
+  --base-scale: 0.72;
+  --drift-x: 8px;
+  --drift-y: -10px;
+  --drift-rotate: 1.4deg;
+  --float-duration: 6.1s;
+}
+.internalMolecule2 {
+  left: 43%;
+  top: 12%;
+  --base-rotate: 24deg;
+  --base-scale: 0.56;
+  --drift-x: -6px;
+  --drift-y: -8px;
+  --drift-rotate: -1.2deg;
+  --float-duration: 7.3s;
+}
+.internalMolecule3 {
+  left: 50%;
+  top: 42%;
+  --base-rotate: -30deg;
+  --base-scale: 0.62;
+  --drift-x: 7px;
+  --drift-y: 9px;
+  --drift-rotate: 1.6deg;
+  --float-duration: 6.8s;
+}
+.internalMolecule4 {
+  left: 22%;
+  top: 51%;
+  --base-rotate: 38deg;
+  --base-scale: 0.5;
+  --drift-x: -8px;
+  --drift-y: 7px;
+  --drift-rotate: -1.5deg;
+  --float-duration: 7.7s;
+}
+.internalMolecule5 {
+  left: 36%;
+  top: 32%;
+  --base-rotate: 8deg;
+  --base-scale: 0.44;
+  --drift-x: 5px;
+  --drift-y: -7px;
+  --drift-rotate: 1.1deg;
+  --float-duration: 5.9s;
+  opacity: calc(var(--reveal) * 0.9);
+}
+.internalMolecule6 {
+  left: 57%;
+  top: 26%;
+  --base-rotate: -48deg;
+  --base-scale: 0.4;
+  --drift-x: -5px;
+  --drift-y: 8px;
+  --drift-rotate: -1.3deg;
+  --float-duration: 7.1s;
+  opacity: calc(var(--reveal) * 0.82);
+}
+.internalMolecule7 {
+  left: 13%;
+  top: 40%;
+  --base-rotate: 52deg;
+  --base-scale: 0.38;
+  --drift-x: 6px;
+  --drift-y: 6px;
+  --drift-rotate: 1.5deg;
+  --float-duration: 6.5s;
+  opacity: calc(var(--reveal) * 0.84);
+}
+.internalMolecule8 {
+  left: 64%;
+  top: 53%;
+  --base-rotate: 18deg;
+  --base-scale: 0.36;
+  --drift-x: -7px;
+  --drift-y: -6px;
+  --drift-rotate: -1deg;
+  --float-duration: 7.9s;
+  opacity: calc(var(--reveal) * 0.76);
+}
+.internalMolecule9 {
+  left: 31%;
+  top: 10%;
+  --base-rotate: -62deg;
+  --base-scale: 0.34;
+  --drift-x: 5px;
+  --drift-y: 7px;
+  --drift-rotate: 1.2deg;
+  --float-duration: 6.3s;
+  opacity: calc(var(--reveal) * 0.78);
+}
+.internalMolecule10 {
+  left: 69%;
+  top: 36%;
+  --base-rotate: 68deg;
+  --base-scale: 0.32;
+  --drift-x: -5px;
+  --drift-y: -8px;
+  --drift-rotate: -1.4deg;
+  --float-duration: 7.5s;
+  opacity: calc(var(--reveal) * 0.7);
+}
+
+.externalLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.externalMolecule {
+  --absorb: 0;
+  opacity: calc(1 - var(--absorb));
+  filter: blur(calc(var(--absorb) * 5px));
+  will-change: transform, opacity;
+}
+
+.moleculeOne {
+  top: 8%;
+  left: 72%;
+  width: clamp(125px, 17vw, 270px);
+  transform: translate3d(calc(var(--progress) * -29vw), calc(var(--progress) * 30vh), 0)
+    rotate(calc(-14deg + var(--progress) * 31deg)) scale(calc(0.82 - var(--absorb) * 0.48));
+}
+.moleculeTwo {
+  top: 43%;
+  left: 80%;
+  width: clamp(105px, 14vw, 225px);
+  transform: translate3d(calc(var(--progress) * -36vw), calc(var(--progress) * 3vh), 0)
+    rotate(calc(12deg - var(--progress) * 25deg)) scale(calc(0.72 - var(--absorb) * 0.42));
+}
+.moleculeThree {
+  top: 65%;
+  left: 66%;
+  width: clamp(120px, 16vw, 255px);
+  transform: translate3d(calc(var(--progress) * -23vw), calc(var(--progress) * -17vh), 0)
+    rotate(calc(-24deg + var(--progress) * 38deg)) scale(calc(0.78 - var(--absorb) * 0.46));
+}
+.moleculeFour {
+  top: 22%;
+  left: 55%;
+  width: clamp(95px, 12vw, 190px);
+  transform: translate3d(calc(var(--progress) * -12vw), calc(var(--progress) * 24vh), 0)
+    rotate(calc(28deg - var(--progress) * 42deg)) scale(calc(0.66 - var(--absorb) * 0.38));
+}
+.moleculeFive {
+  top: 4%;
+  left: 51%;
+  width: clamp(82px, 10vw, 160px);
+  transform: translate3d(calc(var(--progress) * -8vw), calc(var(--progress) * 38vh), 0)
+    rotate(calc(-48deg + var(--progress) * 64deg)) scale(calc(0.58 - var(--absorb) * 0.34));
+}
+.moleculeSix {
+  top: 77%;
+  left: 82%;
+  width: clamp(88px, 11vw, 175px);
+  transform: translate3d(calc(var(--progress) * -38vw), calc(var(--progress) * -28vh), 0)
+    rotate(calc(52deg - var(--progress) * 70deg)) scale(calc(0.62 - var(--absorb) * 0.36));
+}
+.moleculeSeven {
+  top: 14%;
+  left: 88%;
+  width: clamp(72px, 9vw, 145px);
+  transform: translate3d(calc(var(--progress) * -44vw), calc(var(--progress) * 31vh), 0)
+    rotate(calc(-68deg + var(--progress) * 84deg)) scale(calc(0.54 - var(--absorb) * 0.31));
+}
+.moleculeEight {
+  top: 84%;
+  left: 58%;
+  width: clamp(78px, 9.5vw, 150px);
+  transform: translate3d(calc(var(--progress) * -15vw), calc(var(--progress) * -35vh), 0)
+    rotate(calc(72deg - var(--progress) * 91deg)) scale(calc(0.56 - var(--absorb) * 0.32));
+}
+.moleculeNine {
+  top: 55%;
+  left: 91%;
+  width: clamp(66px, 8vw, 132px);
+  transform: translate3d(calc(var(--progress) * -47vw), calc(var(--progress) * -7vh), 0)
+    rotate(calc(38deg + var(--progress) * 58deg)) scale(calc(0.5 - var(--absorb) * 0.29));
+}
+.moleculeTen {
+  top: 32%;
+  left: 68%;
+  width: clamp(70px, 8.5vw, 138px);
+  transform: translate3d(calc(var(--progress) * -24vw), calc(var(--progress) * 14vh), 0)
+    rotate(calc(-82deg + var(--progress) * 103deg)) scale(calc(0.52 - var(--absorb) * 0.3));
+}
+
+.fusionGlow {
+  position: absolute;
+  z-index: 3;
+  top: 58%;
+  left: 52%;
+  width: 12vw;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: clamp(0, calc((var(--progress) - 0.58) * 1.8), 0.22);
+  transform: translate(-50%, -50%) scale(calc(0.6 + var(--progress) * 0.8));
+  background: radial-gradient(circle, rgb(255 255 255 / 0.82), transparent 70%);
+  filter: blur(18px);
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .serumAsset,
+  .internalLayer {
+    left: -2vw;
+    width: min(46.2vw, 551px);
+    transform: translate3d(calc(var(--progress) * 28vw), -50%, 0)
+      rotate(calc(-3deg + var(--progress) * 5deg));
+  }
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .serumAsset,
+  .internalLayer {
+    top: 62%;
+    left: -18vw;
+    width: min(74.5vw, 478px);
+    transform: translate3d(calc(var(--progress) * 41vw), -50%, 0)
+      rotate(calc(-3deg + var(--progress) * 5deg));
+  }
+
+  .externalMolecule {
+    filter: none;
+  }
+
+  .moleculeOne {
+    left: 70%;
+    width: 30vw;
+  }
+  .moleculeTwo {
+    left: 79%;
+    width: 25vw;
+  }
+  .moleculeThree {
+    left: 65%;
+    width: 28vw;
+  }
+  .moleculeFour {
+    left: 53%;
+    width: 22vw;
+  }
+  .moleculeFive {
+    left: 50%;
+    width: 18vw;
+  }
+  .moleculeSix {
+    left: 80%;
+    width: 20vw;
+  }
+  .moleculeSeven {
+    left: 87%;
+    width: 17vw;
+  }
+  .moleculeEight {
+    left: 58%;
+    width: 18vw;
+  }
+  .moleculeNine {
+    left: 90%;
+    width: 16vw;
+  }
+  .moleculeTen {
+    left: 67%;
+    width: 17vw;
+  }
+}
+
+@media (max-width: 899px) and (orientation: landscape) {
+  .serumAsset,
+  .internalLayer {
+    top: 63%;
+    left: -5vw;
+    width: min(48.6vw, 425px);
+    transform: translate3d(calc(var(--progress) * 31vw), -50%, 0)
+      rotate(calc(-3deg + var(--progress) * 5deg));
+  }
+
+  .externalMolecule {
+    filter: none;
+  }
+}
+
+@media (min-width: 900px) and (max-height: 700px) {
+  .serumAsset,
+  .internalLayer {
+    top: 63%;
+    width: min(33.2vw, 466px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .serumUnit,
+  .internalMolecule {
+    animation: none !important;
+  }
+}

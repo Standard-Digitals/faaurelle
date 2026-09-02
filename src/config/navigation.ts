@@ -14,20 +14,21 @@ export const sharedNavigationLinks = [...primaryNavigationLinks, innerCircleLink
 export const customerCareLabels = {
   heading: "Customer care",
   contact: "Contact",
-  shipping: "Shipping",
-  returns: "Returns",
+  shipping: "Shipping Policy",
+  cancellationAndRefund: "Cancellation & Refund Policy",
+  returns: "Return & Replacement Policy",
   faq: "FAQ",
-  privacy: "Privacy",
-  terms: "Terms",
+  terms: "Terms & Conditions",
 } as const;
 
 export const customerCareItems = [
-  customerCareLabels.contact,
-  customerCareLabels.shipping,
-  customerCareLabels.returns,
-  customerCareLabels.faq,
-  customerCareLabels.privacy,
-  customerCareLabels.terms,
+  { label: customerCareLabels.shipping, href: "/shipping-policy" },
+  {
+    label: customerCareLabels.cancellationAndRefund,
+    href: "/refund-and-cancellation-policy",
+  },
+  { label: customerCareLabels.returns, href: "/return-and-replacement-policy" },
+  { label: customerCareLabels.terms, href: "/terms-and-conditions" },
 ] as const;
 
 export const navigationAccessibility = {

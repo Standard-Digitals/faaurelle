@@ -32,8 +32,9 @@ function escapeHtml(value: string) {
   return value.replace(
     /[&<>'"]/g,
     (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character] ??
-      character,
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[
+        character
+      ] ?? character,
   );
 }
 
@@ -43,7 +44,11 @@ function getClientAddress(request: NextRequest) {
     ?.split(",")
     .map((address) => address.trim());
 
-  return forwardedAddresses?.at(-1) || request.headers.get("x-real-ip") || "unknown";
+  return (
+    forwardedAddresses?.at(-1) ||
+    request.headers.get("x-real-ip") ||
+    "unknown"
+  );
 }
 
 function isRateLimited(address: string) {
@@ -92,7 +97,6 @@ function getSmtpConfiguration() {
 }
 
 export async function POST(request: NextRequest) {
-  console.log("Request recuved");
   const contentLength = Number(request.headers.get("content-length") ?? "0");
   if (contentLength > MAX_REQUEST_BYTES) {
     return NextResponse.json({ error: "Request is too large." }, { status: 413 });
@@ -117,9 +121,7 @@ export async function POST(request: NextRequest) {
   if (normalizeText(payload.website, 100)) {
     return NextResponse.json({ success: true });
   }
-  console.log(`Payload`, {
-    payload,
-  });
+
   const name = normalizeText(payload.name, 100);
   const contact = normalizeText(payload.contact, 20).replace(/\D/g, "");
   const email = normalizeText(payload.email, 254).toLowerCase();
@@ -135,7 +137,6 @@ export async function POST(request: NextRequest) {
 
   try {
     const smtp = getSmtpConfiguration();
-    console.log("smtp config", smtp);
     const transporter = nodemailer.createTransport(smtp.transport);
     const submittedAt = new Date().toISOString();
 
@@ -164,7 +165,6 @@ export async function POST(request: NextRequest) {
         </table>
       `,
     });
-    console.log("Email send");
 
     return NextResponse.json({ success: true });
   } catch (error) {

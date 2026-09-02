@@ -1,5 +1,7 @@
 {
-  "Andaman and Nicobar Islands": ["Port Blair"],
+  "Andaman and Nicobar Islands": [
+    "Port Blair"
+  ],
   "Haryana": [
     "Faridabad",
     "Gurgaon",
@@ -266,9 +268,28 @@
     "Lohardaga",
     "Tenu dam-cum-Kathhara"
   ],
-  "Mizoram": ["Aizawl", "Lunglei", "Saiha"],
-  "Nagaland": ["Dimapur", "Kohima", "Zunheboto", "Tuensang", "Wokha", "Mokokchung"],
-  "Himachal Pradesh": ["Shimla", "Mandi", "Solan", "Nahan", "Sundarnagar", "Palampur", "Kullu"],
+  "Mizoram": [
+    "Aizawl",
+    "Lunglei",
+    "Saiha"
+  ],
+  "Nagaland": [
+    "Dimapur",
+    "Kohima",
+    "Zunheboto",
+    "Tuensang",
+    "Wokha",
+    "Mokokchung"
+  ],
+  "Himachal Pradesh": [
+    "Shimla",
+    "Mandi",
+    "Solan",
+    "Nahan",
+    "Sundarnagar",
+    "Palampur",
+    "Kullu"
+  ],
   "Tripura": [
     "Agartala",
     "Udaipur",
@@ -419,7 +440,9 @@
     "Mukerian",
     "Talwara"
   ],
-  "Chandigarh": ["Chandigarh"],
+  "Chandigarh": [
+    "Chandigarh"
+  ],
   "Rajasthan": [
     "Jaipur",
     "Jodhpur",
@@ -676,7 +699,12 @@
     "Piriyapatna",
     "Adyar"
   ],
-  "Manipur": ["Imphal", "Thoubal", "Lilong", "Mayang Imphal"],
+  "Manipur": [
+    "Imphal",
+    "Thoubal",
+    "Lilong",
+    "Mayang Imphal"
+  ],
   "Kerala": [
     "Thiruvananthapuram",
     "Kochi",
@@ -730,9 +758,19 @@
     "Puthuppally",
     "Panamattom"
   ],
-  "Delhi": ["Delhi", "New Delhi"],
-  "Dadra and Nagar Haveli": ["Silvassa"],
-  "Puducherry": ["Pondicherry", "Karaikal", "Yanam", "Mahe"],
+  "Delhi": [
+    "Delhi",
+    "New Delhi"
+  ],
+  "Dadra and Nagar Haveli": [
+    "Silvassa"
+  ],
+  "Puducherry": [
+    "Pondicherry",
+    "Karaikal",
+    "Yanam",
+    "Mahe"
+  ],
   "Uttarakhand": [
     "Dehradun",
     "Hardwar",
@@ -1062,9 +1100,18 @@
     "Kyathampalle",
     "Nagarkurnool"
   ],
-  "Meghalaya": ["Shillong", "Tura", "Nongstoin"],
-  "Himachal Praddesh": ["Manali"],
-  "Arunachal Pradesh": ["Naharlagun", "Pasighat"],
+  "Meghalaya": [
+    "Shillong",
+    "Tura",
+    "Nongstoin"
+  ],
+  "Himachal Praddesh": [
+    "Manali"
+  ],
+  "Arunachal Pradesh": [
+    "Naharlagun",
+    "Pasighat"
+  ],
   "Maharashtra": [
     "Mumbai",
     "Pune",
@@ -1187,7 +1234,12 @@
     "Nandgaon",
     "Warud"
   ],
-  "Goa": ["Marmagao", "Panaji", "Margao", "Mapusa"],
+  "Goa": [
+    "Marmagao",
+    "Panaji",
+    "Margao",
+    "Mapusa"
+  ],
   "West Bengal": [
     "Kolkata",
     "Siliguri",

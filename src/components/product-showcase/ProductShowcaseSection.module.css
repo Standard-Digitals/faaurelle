@@ -1,0 +1,334 @@
+.section {
+  --type-editorial-size: clamp(2.55rem, 4vw, 4.8rem);
+  --tracking-heading: -0.05em;
+  --leading-heading: 0.91;
+  --tracking-cta: 0.14em;
+
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-roboto-family);
+}
+
+.composition {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 56%) minmax(0, 44%);
+  align-items: center;
+  width: min(100%, var(--size-content-max));
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: clamp(5rem, 9vh, 8rem) var(--space-layout-x);
+}
+
+.galleryColumn {
+  display: grid;
+  grid-template-rows: minmax(24rem, 64svh);
+  min-width: 0;
+  padding-right: clamp(2rem, 5vw, 6rem);
+}
+
+.galleryStage {
+  position: relative;
+  align-self: center;
+  width: min(39vw, 35rem);
+  height: min(62svh, 39rem);
+  margin: 0 auto;
+}
+
+.productFigure {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  will-change: transform, opacity;
+}
+
+.productImage {
+  object-fit: contain;
+  filter: drop-shadow(0 1.25rem 1.5rem rgb(23 19 15 / 0.1));
+}
+
+.productContent {
+  position: relative;
+  z-index: 2;
+  max-width: 36rem;
+  padding-left: clamp(1.5rem, 3vw, 4rem);
+  border-left: 1px solid rgb(189 140 53 / 0.13);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  color: #17130f;
+  font-family: var(--font-roboto-family);
+}
+
+.eyebrow span {
+  width: 2rem;
+  height: 1px;
+  background: #17130f;
+}
+
+.productContent h2 {
+  max-width: 15ch;
+  margin: 1rem 0 0;
+  color: #17130f;
+  font-family: var(--font-raleway-family);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.tagline {
+  max-width: 34rem;
+  margin: 1.35rem 0 0;
+  color: #17130f;
+  font-family: var(--font-roboto-family);
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 0.85rem;
+  color: var(--color-muted);
+  font-size: var(--type-meta-size);
+  letter-spacing: 0.08em;
+}
+
+.stars {
+  color: var(--color-gold);
+  font-size: var(--type-meta-size);
+  letter-spacing: 0.16em;
+}
+
+.benefits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.62rem 1.35rem;
+  margin: 1.45rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  color: color-mix(in srgb, var(--color-foreground) 77%, transparent);
+  font-size: var(--type-small-size);
+  line-height: 1.45;
+}
+
+.benefits svg {
+  flex: 0 0 0.8rem;
+  width: 0.8rem;
+  margin-top: 0.12rem;
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
+}
+
+.contentDivider {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 1.35rem;
+  background: rgb(189 140 53 / 0.16);
+}
+
+.purchase {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.priceBlock {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+}
+
+.priceBlock p {
+  margin: 0;
+  font-family: var(--font-roboto-family);
+  font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+}
+
+.priceBlock span {
+  color: var(--color-muted);
+  font-size: var(--type-meta-size);
+  letter-spacing: 0.08em;
+}
+
+.purchaseRule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgb(189 140 53 / 0.34), transparent);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.2rem;
+}
+
+.actions button {
+  min-height: 3rem;
+  border-radius: 0.2rem;
+  font-family: var(--font-roboto-family);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-position 220ms ease,
+    background-color 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.addToCartButton {
+  color: #fff;
+  background: linear-gradient(180deg, #242424, #050505);
+  background-position: 50% 0%;
+  background-size: 100% 200%;
+  border: 1px solid #17130f;
+  box-shadow: 0 0.9rem 2.4rem rgb(23 19 15 / 0.12);
+}
+
+.buyNowButton {
+  border: 1px solid #17130f;
+  background: transparent;
+  color: #17130f;
+}
+
+.actions button:focus-visible {
+  outline: 1px solid var(--color-gold);
+  outline-offset: 4px;
+}
+
+@media (max-width: 1100px) and (min-width: 768px) {
+  .composition {
+    grid-template-columns: minmax(0, 53%) minmax(0, 47%);
+  }
+
+  .galleryColumn {
+    padding-right: 2rem;
+  }
+
+  .galleryStage {
+    width: min(43vw, 28rem);
+  }
+
+  .productContent {
+    padding-left: 2rem;
+  }
+
+  .productContent h2 {
+    font-size: clamp(2.4rem, 4.8vw, 3.6rem);
+  }
+
+  .benefits {
+    gap: 0.5rem 0.8rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .section,
+  .composition {
+    min-height: auto;
+  }
+
+  .composition {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.6rem;
+    padding: 4.5rem var(--space-layout-x) 5rem;
+  }
+
+  .galleryColumn {
+    grid-template-rows: minmax(21rem, 54svh);
+    padding: 0;
+  }
+
+  .galleryStage {
+    width: min(88vw, 30rem);
+    height: min(50svh, 28rem);
+  }
+
+
+  .productContent {
+    max-width: none;
+    padding: 1.5rem 0 0;
+    border-top: 1px solid rgb(189 140 53 / 0.13);
+    border-left: 0;
+  }
+
+  .eyebrow {
+    font-size: var(--font-mobile-meta);
+  }
+
+  .productContent h2 {
+    max-width: 15ch;
+    margin-top: 0.65rem;
+    font-size: clamp(2.1rem, 10vw, 3.1rem);
+  }
+
+  .tagline {
+    margin-top: 0.9rem;
+    font-size: 1rem;
+  }
+
+  .benefits {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+
+  .benefits li {
+    font-size: var(--font-mobile-small);
+  }
+
+  .rating,
+  .priceBlock span,
+  .actions button {
+    font-size: var(--font-mobile-meta);
+  }
+
+  .actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .actions button {
+    min-height: 44px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .addToCartButton:hover {
+    background-position: 50% 100%;
+    box-shadow: 0 1.1rem 2.6rem rgb(23 19 15 / 0.18);
+    transform: translateY(-2px);
+  }
+
+  .buyNowButton:hover {
+    background: #17130f;
+    color: #fff;
+    box-shadow: 0 0.85rem 2rem rgb(23 19 15 / 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .productFigure,
+  .productContent > * {
+    will-change: auto;
+  }
+}

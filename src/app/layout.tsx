@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat, Raleway, Roboto } from "next/font/google";
+import { Raleway, Roboto } from "next/font/google";
 import { brand } from "@/config/brand";
 import "./globals.css";
 
@@ -13,12 +13,6 @@ const raleway = Raleway({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-raleway",
-});
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
@@ -48,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${roboto.variable} ${raleway.variable} ${montserrat.variable}`}>
+      <body className={`${roboto.variable} ${raleway.variable}`}>
         <div className="site-stage">{children}</div>
       </body>
     </html>

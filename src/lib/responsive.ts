@@ -5,9 +5,13 @@ export const responsiveBreakpoints = {
 } as const;
 
 export const mobileViewportQuery = `(max-width: ${responsiveBreakpoints.mobile - 1}px)`;
-export const mobileLandscapeViewportQuery = `(max-width: ${responsiveBreakpoints.mobileLandscape - 1}px) and (orientation: landscape)`;
+export const mobileLandscapeViewportQuery =
+  `(max-width: ${responsiveBreakpoints.mobileLandscape - 1}px) and (orientation: landscape)`;
 
-export type HeroExperienceMode = "cinematic" | "phonePortrait" | "phoneLandscape";
+export type HeroExperienceMode =
+  | "cinematic"
+  | "phonePortrait"
+  | "phoneLandscape";
 
 export const cinematicHeroMode: HeroExperienceMode = "cinematic";
 
@@ -24,5 +28,7 @@ export function resolveHeroExperienceMode(): HeroExperienceMode {
     return "phoneLandscape";
   }
 
-  return window.matchMedia(mobileViewportQuery).matches ? "phonePortrait" : cinematicHeroMode;
+  return window.matchMedia(mobileViewportQuery).matches
+    ? "phonePortrait"
+    : cinematicHeroMode;
 }
