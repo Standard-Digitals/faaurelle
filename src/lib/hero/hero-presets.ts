@@ -121,7 +121,7 @@ export const heroResponsivePresets: Record<HeroResponsivePresetName, HeroRespons
     focusScale: 0.94,
     chapterTwoPosition: [0, -0.6, -1.2],
     chapterThreeEditorialEntryPosition: [10, 1, 0],
-    chapterThreeEditorialPosition: [7.5, 1, 0],
+    chapterThreeEditorialPosition: [6.9, 1, 0],
     chapterThreeEditorialRotation: [0, 0.35, 1.5707963267948966],
     chapterThreeEditorialScale: 1.48,
     bottlePosition: [0, -0.72, 0],
