@@ -27,6 +27,7 @@ import {
   type HeroCameraPreset,
   type HeroCameraPresetName,
   type HeroResponsivePresetName,
+  type HeroVector3,
 } from "@/lib/hero/hero-presets";
 import {
   formatHeroVector,
@@ -48,6 +49,36 @@ export type HeroTimelineObjects = {
 const productFadeColor = new THREE.Color("#ffffff");
 const rearFacingProductRotationY = Math.PI;
 const completedFrontProductRotationY = Math.PI * 2;
+const editorialReferenceViewports: Record<
+  HeroResponsivePresetName,
+  { width: number; height: number }
+> = {
+  desktopLandscape: { width: 1895, height: 934 },
+  tablet: { width: 1024, height: 800 },
+  mobilePortrait: { width: 430, height: 820 },
+  mobileLandscape: { width: 850, height: 480 },
+};
+
+function resolveChapterThreeEditorialPosition(
+  position: HeroVector3,
+  presetName: HeroResponsivePresetName,
+  viewportAspect: number,
+  productHalfWidth: number,
+): HeroVector3 {
+  if (productHalfWidth <= 0) {
+    return position;
+  }
+
+  const referenceViewport = editorialReferenceViewports[presetName];
+  const referenceAspect = referenceViewport.width / referenceViewport.height;
+
+  return [
+    productHalfWidth +
+      (position[0] - productHalfWidth) * (viewportAspect / referenceAspect),
+    position[1],
+    position[2],
+  ];
+}
 
 function applyOpeningRotation(
   object: THREE.Object3D,
@@ -91,6 +122,8 @@ export function useHeroTimeline({
   const presetRef = useRef<HeroResponsivePresetName>("desktopLandscape");
   const lastFrameRef = useRef(0);
   const fpsRef = useRef(0);
+  const chapterThreeBoundsRef = useRef(new THREE.Box3());
+  const chapterThreeUnitHalfWidthRef = useRef(new Map<HeroResponsivePresetName, number>());
   const productMaterialOpacityRef = useRef(new WeakMap<THREE.Material, number>());
   const productMaterialColorRef = useRef(new WeakMap<THREE.Material, THREE.Color>());
   const productMaterialEmissiveRef = useRef(new WeakMap<THREE.Material, THREE.Color>());
@@ -363,6 +396,7 @@ export function useHeroTimeline({
 
     const updateEditorialProductChapter = (
       chapterProgress: number,
+      presetName: HeroResponsivePresetName,
       preset: (typeof heroResponsivePresets)[HeroResponsivePresetName],
       currentCamera: HeroCameraPreset,
     ) => {
@@ -380,13 +414,12 @@ export function useHeroTimeline({
         editorialProductChapterTiming.cameraSettle,
       );
 
-      objects.product?.position.set(
-        ...mixHeroVector(
-          preset.chapterThreeEditorialEntryPosition,
-          preset.chapterThreeEditorialPosition,
-          entrance,
-        ),
+      const productScale = THREE.MathUtils.lerp(
+        preset.chapterThreeEditorialScale * 0.94,
+        preset.chapterThreeEditorialScale,
+        entrance,
       );
+      let productHalfWidth = 0;
       if (objects.product) {
         setHeroProductRoll(
           objects.product,
@@ -394,14 +427,35 @@ export function useHeroTimeline({
           preset.chapterThreeEditorialRotation[1],
           preset.chapterThreeEditorialRotation[2],
         );
+        objects.product.scale.setScalar(productScale);
+
+        let unitHalfWidth = chapterThreeUnitHalfWidthRef.current.get(presetName);
+        if (unitHalfWidth === undefined) {
+          objects.product.updateWorldMatrix(true, true);
+          const bounds = chapterThreeBoundsRef.current.setFromObject(objects.product);
+          const measuredHalfWidth = (bounds.max.x - bounds.min.x) / (2 * productScale);
+          if (Number.isFinite(measuredHalfWidth) && measuredHalfWidth > 0) {
+            unitHalfWidth = measuredHalfWidth;
+            chapterThreeUnitHalfWidthRef.current.set(presetName, measuredHalfWidth);
+          }
+        }
+        productHalfWidth = (unitHalfWidth ?? 0) * productScale;
       }
-      objects.product?.scale.setScalar(
-        THREE.MathUtils.lerp(
-          preset.chapterThreeEditorialScale * 0.94,
-          preset.chapterThreeEditorialScale,
-          entrance,
-        ),
+
+      const viewportAspect = Math.max(1, window.innerWidth) / Math.max(1, window.innerHeight);
+      const entryPosition = resolveChapterThreeEditorialPosition(
+        preset.chapterThreeEditorialEntryPosition,
+        presetName,
+        viewportAspect,
+        productHalfWidth,
       );
+      const settledPosition = resolveChapterThreeEditorialPosition(
+        preset.chapterThreeEditorialPosition,
+        presetName,
+        viewportAspect,
+        productHalfWidth,
+      );
+      objects.product?.position.set(...mixHeroVector(entryPosition, settledPosition, entrance));
       setProductOpacity(fadeIn);
 
       return {
@@ -476,6 +530,7 @@ export function useHeroTimeline({
           : updateBotanicalChapterHandoff(botanicalProgress, chapterTwoLayout, heroState.camera);
       const activeCamera = updateEditorialProductChapter(
         keyIngredientsProgress,
+        presetName,
         preset,
         botanicalCamera,
       );

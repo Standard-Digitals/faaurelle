@@ -81,8 +81,8 @@ export const heroResponsivePresets: Record<HeroResponsivePresetName, HeroRespons
       fov: 33,
     },
     openingPosition: [0.95, -0.35, 0],
-    openingRotation: [-0.24, 0.35, -0.65],
-    openingScale: 0.68,
+    openingRotation: [-0.24, 0.25, -0.65],
+    openingScale: 0.65,
 
     introCamera: {
       label: "Desktop opening front",
@@ -121,7 +121,7 @@ export const heroResponsivePresets: Record<HeroResponsivePresetName, HeroRespons
     focusScale: 0.94,
     chapterTwoPosition: [0, -0.6, -1.2],
     chapterThreeEditorialEntryPosition: [10, 1, 0],
-    chapterThreeEditorialPosition: [6.5, 1, 0],
+    chapterThreeEditorialPosition: [7.5, 1, 0],
     chapterThreeEditorialRotation: [0, 0.35, 1.5707963267948966],
     chapterThreeEditorialScale: 1.48,
     bottlePosition: [0, -0.72, 0],
