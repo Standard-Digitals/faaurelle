@@ -289,7 +289,7 @@ export const heroChapterTiming = {
   openingHold: [0, 0.025],
   rearFacingTurn: [0.025, 0.12],
   frontFacingSettle: [0.12, 0.26],
-  chapterTwoSettle: [0.72, 1],
+  chapterTwoSettle: [0.46, 1],
   scrollCueExit: [0.04, 0.12],
 } as const satisfies Record<string, ProgressRange | number>;
 
