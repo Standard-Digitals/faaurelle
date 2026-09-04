@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Component, type ErrorInfo, type ReactNode, Suspense, useCallback, useState } from "react";
+import { Component, type ErrorInfo, type ReactNode, useCallback, useState } from "react";
 import * as THREE from "three";
 import { HeroDebugControls } from "@/components/hero/HeroDebugControls";
 import { HeroLoader } from "@/components/hero/HeroLoader";
@@ -84,7 +84,10 @@ export function HeroScene({
       </div>
       <Canvas
         aria-hidden="true"
-        className={modelReady ? "opacity-100" : "opacity-0"}
+        className={[
+          "transition-opacity duration-150",
+          modelReady ? "opacity-100" : "opacity-0",
+        ].join(" ")}
         shadows
         frameloop="demand"
         dpr={[1, 1.65]}
@@ -98,20 +101,18 @@ export function HeroScene({
           scene.background = new THREE.Color("#ffffff");
         }}
       >
-        <Suspense fallback={null}>
-          <HeroSceneErrorBoundary onError={handleError}>
-            <HeroProductModel
-              debugMode={debugMode}
-              experienceMode={experienceMode}
-              scrollRootClassName={scrollRootClassName}
-              timelineEnabled
-              onReady={handleReady}
-              onProgress={onProgress}
-              onActiveChapterChange={onActiveChapterChange}
-              onDebug={setDebugState}
-            />
-          </HeroSceneErrorBoundary>
-        </Suspense>
+        <HeroSceneErrorBoundary onError={handleError}>
+          <HeroProductModel
+            debugMode={debugMode}
+            experienceMode={experienceMode}
+            scrollRootClassName={scrollRootClassName}
+            timelineEnabled
+            onReady={handleReady}
+            onProgress={onProgress}
+            onActiveChapterChange={onActiveChapterChange}
+            onDebug={setDebugState}
+          />
+        </HeroSceneErrorBoundary>
       </Canvas>
       {debugMode ? <HeroDebugControls debugState={debugState} /> : null}
     </div>

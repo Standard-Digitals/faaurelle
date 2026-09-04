@@ -2,7 +2,7 @@
 
 import { Environment, Lightformer, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { useHeroTimeline } from "@/components/hero/HeroTimeline";
 import {
@@ -16,6 +16,14 @@ import {
 } from "@/lib/hero/hero-presets";
 import { setHeroProductRoll } from "@/lib/hero/hero-timeline";
 import type { HeroExperienceMode } from "@/lib/responsive";
+
+function EnvironmentReadySignal({ onReady }: { onReady: () => void }) {
+  useEffect(() => {
+    onReady();
+  }, [onReady]);
+
+  return null;
+}
 
 export function HeroProductModel({
   debugMode,
@@ -42,10 +50,13 @@ export function HeroProductModel({
   const [productParts, setProductParts] = useState<NewBottleParts | null>(null);
   const [lightSweep, setLightSweep] = useState<THREE.DirectionalLight | null>(null);
   const [pointLight, setPointLight] = useState<THREE.PointLight | null>(null);
+  const [environmentReady, setEnvironmentReady] = useState(false);
 
   useEffect(() => {
-    onReady();
-  }, [onReady]);
+    if (productParts && environmentReady) {
+      onReady();
+    }
+  }, [environmentReady, onReady, productParts]);
 
   const handleProductRef = useCallback((node: THREE.Group | null) => {
     if (node) {
@@ -75,6 +86,17 @@ export function HeroProductModel({
 
   const handlePointLightRef = useCallback((node: THREE.PointLight | null) => {
     setPointLight(node);
+  }, []);
+
+  const handleProductPrepared = useCallback(
+    (parts: NewBottleParts | null) => {
+      setProductParts(parts);
+    },
+    [],
+  );
+
+  const handleEnvironmentReady = useCallback(() => {
+    setEnvironmentReady(true);
   }, []);
 
   const timelineObjects = useMemo(
@@ -124,30 +146,35 @@ export function HeroProductModel({
         decay={0.5}
         color="#ffe8cf"
       />
-      <CanonicalProductModel ref={handleProductRef} onPrepared={setProductParts} />
-      <Environment
-        files={heroEnvironmentPath}
-        background={false}
-        resolution={256}
-        environmentIntensity={0.65}
-      >
-        <Lightformer
-          form="rect"
-          color="#fff2dc"
-          intensity={2.2}
-          position={[5.5, 7, 4]}
-          scale={[3, 4, 1]}
-          onUpdate={(light) => light.lookAt(0, 1, 0)}
-        />
-        <Lightformer
-          form="rect"
-          color="#e8c99f"
-          intensity={1.35}
-          position={[3.5, 5, -5]}
-          scale={[2.5, 3.5, 1]}
-          onUpdate={(light) => light.lookAt(0, 1, 0)}
-        />
-      </Environment>
+      <Suspense fallback={null}>
+        <CanonicalProductModel ref={handleProductRef} onPrepared={handleProductPrepared} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Environment
+          files={heroEnvironmentPath}
+          background={false}
+          resolution={256}
+          environmentIntensity={0.65}
+        >
+          <Lightformer
+            form="rect"
+            color="#fff2dc"
+            intensity={2.2}
+            position={[5.5, 7, 4]}
+            scale={[3, 4, 1]}
+            onUpdate={(light) => light.lookAt(0, 1, 0)}
+          />
+          <Lightformer
+            form="rect"
+            color="#e8c99f"
+            intensity={1.35}
+            position={[3.5, 5, -5]}
+            scale={[2.5, 3.5, 1]}
+            onUpdate={(light) => light.lookAt(0, 1, 0)}
+          />
+        </Environment>
+        <EnvironmentReadySignal onReady={handleEnvironmentReady} />
+      </Suspense>
       {debugMode ? <OrbitControls makeDefault enableDamping target={[0, 1.3, 0]} /> : null}
     </>
   );

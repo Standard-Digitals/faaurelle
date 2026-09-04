@@ -27,7 +27,7 @@ export function CinematicHero({
   mode?: "production" | "review";
   scrollRootClassName?: string;
 }) {
-  const reducedMotion = useHeroReducedMotionPreference();
+  const { checkedReducedMotion, reducedMotion } = useHeroReducedMotionPreference();
   const experienceMode = useHeroExperienceMode();
   const responsivePresetName = useHeroResponsivePreset();
   const { checkedWebgl, webglReady } = useHeroWebGLStatus();
@@ -36,7 +36,8 @@ export function CinematicHero({
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
   const progressBucketRef = useRef(-1);
 
-  const showStaticFallback = checkedWebgl && (!webglReady || reducedMotion);
+  const checkedHeroCapabilities = checkedWebgl && checkedReducedMotion;
+  const showStaticFallback = checkedHeroCapabilities && (!webglReady || reducedMotion);
   const fallbackReason = useMemo(() => {
     if (!checkedWebgl) {
       return undefined;
@@ -91,7 +92,7 @@ export function CinematicHero({
       />
       <div className="viewport-screen sticky top-0 overflow-hidden bg-background-bright">
         <div className="absolute inset-0">
-          {!checkedWebgl ? (
+          {!checkedHeroCapabilities ? (
             <HeroLoader />
           ) : showStaticFallback ? (
             <HeroStaticFallback

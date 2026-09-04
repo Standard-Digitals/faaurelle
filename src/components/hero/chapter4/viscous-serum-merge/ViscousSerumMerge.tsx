@@ -105,7 +105,6 @@ export function ViscousSerumMerge({ progress }: { progress: number }) {
           height={1165}
           sizes="(max-width: 767px) 92vw, (max-width: 1100px) 57vw, 46vw"
           className={styles.serumAsset}
-          priority
           draggable={false}
         />
 

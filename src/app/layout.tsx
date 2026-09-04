@@ -19,7 +19,7 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://faaurelle.com"),
+  metadataBase: new URL("https://www.faaurelle.com"),
   title: {
     default: brand.seo.title,
     template: `%s | ${brand.displayName}`,

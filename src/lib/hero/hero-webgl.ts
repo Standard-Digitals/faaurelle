@@ -17,17 +17,21 @@ export function supportsHeroWebGL() {
 
 export function useHeroReducedMotionPreference() {
   const [reduced, setReduced] = useState(true);
+  const [checkedReducedMotion, setCheckedReducedMotion] = useState(false);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(query.matches);
+    const update = () => {
+      setReduced(query.matches);
+      setCheckedReducedMotion(true);
+    };
     update();
     query.addEventListener("change", update);
 
     return () => query.removeEventListener("change", update);
   }, []);
 
-  return reduced;
+  return { checkedReducedMotion, reducedMotion: reduced };
 }
 
 export function useHeroWebGLStatus() {

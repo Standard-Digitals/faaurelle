@@ -7,6 +7,28 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   poweredByHeader: false,
   reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: "/models/hero/fa-aurelle-new-bottle-runtime-v7.glb",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/environments/hero/fa-aurelle-serum-studio-v1.hdr",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
   images: {
     unoptimized: true,
   },
