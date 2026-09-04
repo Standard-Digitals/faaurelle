@@ -6,6 +6,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import * as THREE from "three";
 import {
+  resolveChapterOneLayout,
+  type ChapterOneLayout,
+} from "@/lib/hero/chapter-one-layout";
+import {
   chapterTwoLayoutEventName,
   resolveChapterTwoLayout,
   type ChapterTwoLayout,
@@ -17,7 +21,6 @@ import {
   getHeroChapterProgress,
   heroChapterTiming,
   moleculeMergeTiming,
-  phoneHeroOpeningTiming,
   smoothStepBetween,
 } from "@/lib/hero/hero-chapters";
 import {
@@ -148,6 +151,15 @@ export function useHeroTimeline({
     const presetName = resolveHeroResponsivePreset();
     presetRef.current = presetName;
     const preset = heroResponsivePresets[presetName];
+    const responsiveChapterOneLayout =
+      presetName === "desktopLandscape"
+        ? null
+        : resolveChapterOneLayout(
+            window.innerWidth,
+            window.innerHeight,
+            presetName,
+            preset,
+          );
     const chapterTwoLayout = resolveChapterTwoLayout(
       window.innerWidth,
       window.innerHeight,
@@ -155,29 +167,28 @@ export function useHeroTimeline({
       preset,
     );
     const heroProgress = getHeroChapterProgress(progressRef.current, "hero", experienceMode);
-    const openingTiming =
-      experienceMode === "phonePortrait"
-        ? phoneHeroOpeningTiming.phonePortrait
-        : experienceMode === "phoneLandscape"
-          ? phoneHeroOpeningTiming.phoneLandscape
-          : heroChapterTiming;
-    const rearFacing = smoothStepBetween(heroProgress, openingTiming.rearFacingTurn);
-    const frontFacing = smoothStepBetween(heroProgress, openingTiming.frontFacingSettle);
-    const chapterTwoSettle = smoothStepBetween(heroProgress, openingTiming.chapterTwoSettle);
+    const rearFacing = smoothStepBetween(heroProgress, heroChapterTiming.rearFacingTurn);
+    const frontFacing = smoothStepBetween(heroProgress, heroChapterTiming.frontFacingSettle);
+    const chapterTwoSettle = smoothStepBetween(heroProgress, heroChapterTiming.chapterTwoSettle);
+    const openingPosition = responsiveChapterOneLayout?.openingPosition ?? preset.openingPosition;
+    const settledPosition =
+      responsiveChapterOneLayout?.settledPosition ?? preset.initialPosition;
+    const openingScale = responsiveChapterOneLayout?.openingScale ?? preset.openingScale;
+    const settledScale = responsiveChapterOneLayout?.settledScale ?? preset.settledScale;
     if (objects.product) {
       objects.product.position.set(
         THREE.MathUtils.lerp(
-          THREE.MathUtils.lerp(preset.openingPosition[0], preset.initialPosition[0], frontFacing),
+          THREE.MathUtils.lerp(openingPosition[0], settledPosition[0], frontFacing),
           chapterTwoLayout.bottlePosition[0],
           chapterTwoSettle,
         ),
         THREE.MathUtils.lerp(
-          THREE.MathUtils.lerp(preset.openingPosition[1], preset.initialPosition[1], frontFacing),
+          THREE.MathUtils.lerp(openingPosition[1], settledPosition[1], frontFacing),
           chapterTwoLayout.bottlePosition[1],
           chapterTwoSettle,
         ),
         THREE.MathUtils.lerp(
-          THREE.MathUtils.lerp(preset.openingPosition[2], preset.initialPosition[2], frontFacing),
+          THREE.MathUtils.lerp(openingPosition[2], settledPosition[2], frontFacing),
           chapterTwoLayout.bottlePosition[2],
           chapterTwoSettle,
         ),
@@ -185,7 +196,7 @@ export function useHeroTimeline({
       applyOpeningRotation(objects.product, preset.openingRotation, rearFacing, frontFacing);
       objects.product.scale.setScalar(
         THREE.MathUtils.lerp(
-          THREE.MathUtils.lerp(preset.openingScale, preset.settledScale, frontFacing),
+          THREE.MathUtils.lerp(openingScale, settledScale, frontFacing),
           chapterTwoLayout.bottleScale,
           chapterTwoSettle,
         ),
@@ -194,15 +205,17 @@ export function useHeroTimeline({
     window.dispatchEvent(
       new CustomEvent<ChapterTwoLayout>(chapterTwoLayoutEventName, { detail: chapterTwoLayout }),
     );
+    const openingCamera = responsiveChapterOneLayout?.openingCamera ?? preset.openingCamera;
+    const introCamera = responsiveChapterOneLayout?.introCamera ?? preset.introCamera;
     const settledCamera = {
-      label: frontFacing > 0 ? preset.introCamera.label : preset.openingCamera.label,
+      label: frontFacing > 0 ? introCamera.label : openingCamera.label,
       position: mixHeroVector(
-        preset.openingCamera.position,
-        preset.introCamera.position,
+        openingCamera.position,
+        introCamera.position,
         frontFacing,
       ),
-      target: mixHeroVector(preset.openingCamera.target, preset.introCamera.target, frontFacing),
-      fov: THREE.MathUtils.lerp(preset.openingCamera.fov, preset.introCamera.fov, frontFacing),
+      target: mixHeroVector(openingCamera.target, introCamera.target, frontFacing),
+      fov: THREE.MathUtils.lerp(openingCamera.fov, introCamera.fov, frontFacing),
     };
     applyCamera(settledCamera);
   }, [applyCamera, experienceMode, objects]);
@@ -300,38 +313,47 @@ export function useHeroTimeline({
 
     const updateHeroChapter = (
       heroProgress: number,
+      presetName: HeroResponsivePresetName,
       preset: (typeof heroResponsivePresets)[HeroResponsivePresetName],
       chapterTwoLayout: ChapterTwoLayout,
     ) => {
-      const openingTiming =
-        experienceMode === "phonePortrait"
-          ? phoneHeroOpeningTiming.phonePortrait
-          : experienceMode === "phoneLandscape"
-            ? phoneHeroOpeningTiming.phoneLandscape
-            : heroChapterTiming;
-      const rearFacing = smoothStepBetween(heroProgress, openingTiming.rearFacingTurn);
-      const frontFacing = smoothStepBetween(heroProgress, openingTiming.frontFacingSettle);
-      const chapterTwoSettle = smoothStepBetween(heroProgress, openingTiming.chapterTwoSettle);
-      const settledPosition = [
+      const responsiveChapterOneLayout: ChapterOneLayout | null =
+        presetName === "desktopLandscape"
+          ? null
+          : resolveChapterOneLayout(
+              window.innerWidth,
+              window.innerHeight,
+              presetName,
+              preset,
+            );
+      const rearFacing = smoothStepBetween(heroProgress, heroChapterTiming.rearFacingTurn);
+      const frontFacing = smoothStepBetween(heroProgress, heroChapterTiming.frontFacingSettle);
+      const chapterTwoSettle = smoothStepBetween(heroProgress, heroChapterTiming.chapterTwoSettle);
+      const openingPosition = responsiveChapterOneLayout?.openingPosition ?? preset.openingPosition;
+      const settledPosition =
+        responsiveChapterOneLayout?.settledPosition ?? preset.initialPosition;
+      const openingScale = responsiveChapterOneLayout?.openingScale ?? preset.openingScale;
+      const settledScale = responsiveChapterOneLayout?.settledScale ?? preset.settledScale;
+      const productPosition = [
         THREE.MathUtils.lerp(
-          THREE.MathUtils.lerp(preset.openingPosition[0], preset.initialPosition[0], frontFacing),
+          THREE.MathUtils.lerp(openingPosition[0], settledPosition[0], frontFacing),
           chapterTwoLayout.bottlePosition[0],
           chapterTwoSettle,
         ),
         THREE.MathUtils.lerp(
-          THREE.MathUtils.lerp(preset.openingPosition[1], preset.initialPosition[1], frontFacing),
+          THREE.MathUtils.lerp(openingPosition[1], settledPosition[1], frontFacing),
           chapterTwoLayout.bottlePosition[1],
           chapterTwoSettle,
         ),
         THREE.MathUtils.lerp(
-          THREE.MathUtils.lerp(preset.openingPosition[2], preset.initialPosition[2], frontFacing),
+          THREE.MathUtils.lerp(openingPosition[2], settledPosition[2], frontFacing),
           chapterTwoLayout.bottlePosition[2],
           chapterTwoSettle,
         ),
       ] as const;
       const introScale = THREE.MathUtils.lerp(
-        preset.openingScale,
-        preset.settledScale,
+        openingScale,
+        settledScale,
         frontFacing,
       );
       const productScale = THREE.MathUtils.lerp(
@@ -340,7 +362,7 @@ export function useHeroTimeline({
         chapterTwoSettle,
       );
 
-      objects.product?.position.set(...settledPosition);
+      objects.product?.position.set(...productPosition);
       if (objects.product) {
         applyOpeningRotation(objects.product, preset.openingRotation, rearFacing, frontFacing);
       }
@@ -350,15 +372,17 @@ export function useHeroTimeline({
       objects.lightSweep!.intensity = 0.35;
       objects.lightSweep!.position.x = 5.5;
 
+      const openingCamera = responsiveChapterOneLayout?.openingCamera ?? preset.openingCamera;
+      const resolvedIntroCamera = responsiveChapterOneLayout?.introCamera ?? preset.introCamera;
       const introCamera = {
-        label: frontFacing > 0 ? preset.introCamera.label : preset.openingCamera.label,
+        label: frontFacing > 0 ? resolvedIntroCamera.label : openingCamera.label,
         position: mixHeroVector(
-          preset.openingCamera.position,
-          preset.introCamera.position,
+          openingCamera.position,
+          resolvedIntroCamera.position,
           frontFacing,
         ),
-        target: mixHeroVector(preset.openingCamera.target, preset.introCamera.target, frontFacing),
-        fov: THREE.MathUtils.lerp(preset.openingCamera.fov, preset.introCamera.fov, frontFacing),
+        target: mixHeroVector(openingCamera.target, resolvedIntroCamera.target, frontFacing),
+        fov: THREE.MathUtils.lerp(openingCamera.fov, resolvedIntroCamera.fov, frontFacing),
       };
       return {
         camera: {
@@ -523,7 +547,7 @@ export function useHeroTimeline({
       );
 
       progressRef.current = scrollProgress;
-      const heroState = updateHeroChapter(heroProgress, preset, chapterTwoLayout);
+      const heroState = updateHeroChapter(heroProgress, presetName, preset, chapterTwoLayout);
       const botanicalCamera =
         heroProgress < 1
           ? heroState.camera

@@ -11,6 +11,7 @@ import {
   phoneChapterConfig,
 } from "@/lib/hero/hero-chapters";
 import { useHeroExperienceMode } from "@/lib/hero/use-hero-experience-mode";
+import { useHeroResponsivePreset } from "@/lib/hero/use-hero-responsive-preset";
 import { useHeroReducedMotionPreference, useHeroWebGLStatus } from "@/lib/hero/hero-webgl";
 import { isPhoneHeroMode } from "@/lib/responsive";
 
@@ -28,6 +29,7 @@ export function CinematicHero({
 }) {
   const reducedMotion = useHeroReducedMotionPreference();
   const experienceMode = useHeroExperienceMode();
+  const responsivePresetName = useHeroResponsivePreset();
   const { checkedWebgl, webglReady } = useHeroWebGLStatus();
   const [debugMode, setDebugMode] = useState(mode === "review");
   const [progress, setProgress] = useState(0);
@@ -75,6 +77,7 @@ export function CinematicHero({
     <section
       className={`${scrollRootClassName} relative bg-background`}
       data-hero-mode={experienceMode}
+      data-hero-preset={responsivePresetName}
       style={{ minHeight: `${getHeroScrollHeightVh(experienceMode)}vh` }}
     >
       <span

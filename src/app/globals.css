@@ -939,11 +939,13 @@ h6 {
   }
 
   [data-hero-mode="phonePortrait"] .hero-copy-intro {
-    top: 50%;
+    top: max(calc(var(--site-header-total-height) + 0.75rem), 10vh);
     right: auto;
-    left: max(var(--space-layout-x), var(--safe-area-left));
-    width: min(68vw, 19rem);
+    left: 50%;
+    width: min(82vw, 22rem);
     max-width: none;
+    text-align: left;
+    transform: translateX(-50%);
   }
 
   [data-hero-mode="phonePortrait"] .hero-copy-intro h1 {
@@ -953,14 +955,16 @@ h6 {
     line-height: 0.92;
     letter-spacing: -0.045em;
     text-wrap: balance;
+    text-align: left;
   }
 
   [data-hero-mode="phonePortrait"] .hero-copy-intro p:last-child {
     max-width: 17rem;
-    margin-top: 1.15rem;
+    margin: 1.15rem 0 0;
     padding-left: 0.85rem;
     font-size: 1rem;
     line-height: 1.52;
+    text-align: left;
   }
 
   .hero-botanical-heading p {
@@ -1069,7 +1073,7 @@ h6 {
 
 @media (max-width: 767px) and (max-height: 700px) and (orientation: portrait) {
   [data-hero-mode="phonePortrait"] .hero-copy-intro {
-    top: 50%;
+    top: max(calc(var(--site-header-total-height) + 0.4rem), 8vh);
   }
 
   [data-hero-mode="phonePortrait"] .hero-copy-intro h1 {
@@ -1089,35 +1093,67 @@ h6 {
   }
 }
 
-@media (max-width: 767px) and (orientation: landscape) {
+@media (min-width: 768px) and (max-width: 1100px) {
+  [data-hero-preset="tablet"] .hero-copy-intro {
+    top: max(calc(var(--site-header-total-height) + 1rem), 10vh);
+    left: 50%;
+    width: min(72vw, 38rem);
+    text-align: left;
+    transform: translateX(-50%);
+  }
+
+  [data-hero-preset="tablet"] .hero-copy-intro h1 {
+    font-size: clamp(2.35rem, 5.2vw, 4.4rem);
+    line-height: 0.94;
+    text-wrap: balance;
+    text-align: left;
+  }
+
+  [data-hero-preset="tablet"] .hero-copy-intro p:last-child {
+    max-width: 27rem;
+    margin: clamp(1rem, 2.2vh, 1.5rem) 0 0;
+    text-align: left;
+  }
+}
+
+@media (max-width: 899px) and (orientation: landscape) {
   :root {
     --site-header-height: 3.5rem;
   }
 
+  [data-hero-mode="phoneLandscape"] .hero-copy {
+    transition:
+      opacity 70ms linear,
+      transform 70ms linear;
+  }
+
   [data-hero-mode="phoneLandscape"] .hero-copy-intro {
-    top: 50%;
+    top: max(calc(var(--site-header-total-height) + 0.25rem), 5vh);
     right: auto;
     bottom: auto;
-    left: max(var(--space-layout-x), var(--safe-area-left));
-    width: min(48vw, 22rem);
+    left: 50%;
+    width: min(88vw, 40rem);
     max-width: none;
     text-align: left;
+    transform: translateX(-50%);
   }
 
   [data-hero-mode="phoneLandscape"] .hero-copy-intro h1 {
-    max-width: 18ch;
-    margin-top: 3rem;
+    max-width: 22ch;
+    margin: 0;
     font-size: clamp(1.55rem, 4.1vw, 2.15rem);
     line-height: 0.92;
     text-wrap: balance;
+    text-align: left;
   }
 
   [data-hero-mode="phoneLandscape"] .hero-copy-intro p:last-child {
-    max-width: 15rem;
-    margin-top: 0.65rem;
+    max-width: 31rem;
+    margin: 0.65rem 0 0;
     padding-left: 0.75rem;
     font-size: 1rem;
     line-height: 1.32;
+    text-align: left;
   }
 
   [data-hero-mode="phoneLandscape"] .hero-botanical-heading p {

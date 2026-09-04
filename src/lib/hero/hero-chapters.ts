@@ -293,21 +293,6 @@ export const heroChapterTiming = {
   scrollCueExit: [0.04, 0.12],
 } as const satisfies Record<string, ProgressRange | number>;
 
-export const phoneHeroOpeningTiming = {
-  phonePortrait: {
-    openingHold: [0, 0.04],
-    rearFacingTurn: [0.04, 0.13],
-    frontFacingSettle: [0.13, 0.26],
-    chapterTwoSettle: [0.72, 1],
-  },
-  phoneLandscape: {
-    openingHold: [0, 0.025],
-    rearFacingTurn: [0.025, 0.1],
-    frontFacingSettle: [0.1, 0.2],
-    chapterTwoSettle: [0.68, 1],
-  },
-} as const satisfies Record<"phonePortrait" | "phoneLandscape", Record<string, ProgressRange>>;
-
 export const botanicalEssenceTiming = {
   sectionFadeIn: [0, 0.08],
   headingReveal: [0.03, 0.13],

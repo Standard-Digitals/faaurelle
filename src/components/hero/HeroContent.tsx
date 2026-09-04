@@ -75,10 +75,7 @@ export function HeroContent({
           chapterConfig.hero.end - (chapterConfig.hero.outroOverlap ?? 0),
           chapterConfig.hero.end,
         ] as const;
-    const heroTextExitProgress = smoothStepBetween(
-      progress,
-      heroTextExitRange,
-    );
+    const heroTextExitProgress = smoothStepBetween(progress, heroTextExitRange);
 
     return (
       <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden text-foreground">
