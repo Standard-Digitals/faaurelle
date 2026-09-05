@@ -1,7 +1,7 @@
 export const primaryNavigationLinks = [
   { label: "Discover", href: "about" },
   { label: "Silk Botanique Fusion", href: "silk-botanique-fusion" },
-  { label: "Transformations", href: "#transformations" },
+  { label: "Transformations", href: "product" },
 ] as const;
 
 export const innerCircleLink = {
