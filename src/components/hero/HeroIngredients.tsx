@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { heroContent } from "@/config/hero-content";
 import {
   chapterTwoLayoutEventName,
@@ -48,6 +48,8 @@ type IngredientStyle = CSSProperties & {
   "--label-width": string;
   "--label-name-size": string;
   "--label-benefit-size": string;
+  "--label-offset-x": string;
+  "--label-offset-y": string;
 };
 
 type ChapterTwoSectionStyle = CSSProperties & {
@@ -57,7 +59,7 @@ type ChapterTwoSectionStyle = CSSProperties & {
   "--chapter-two-eyebrow-size": string;
 };
 
-function resolveCurrentLayout() {
+function resolveCurrentLayout(measuredHeadingHeight?: number) {
   const presetName = resolveHeroResponsivePreset();
   const preset = heroResponsivePresets[presetName];
   return resolveChapterTwoLayout(
@@ -65,6 +67,7 @@ function resolveCurrentLayout() {
     typeof window === "undefined" ? 880 : window.innerHeight,
     presetName,
     preset,
+    presetName === "desktopLandscape" ? undefined : measuredHeadingHeight,
   );
 }
 
@@ -73,6 +76,7 @@ function formatLabelOrientation(orientation: ChapterTwoLabelOrientation) {
 }
 
 export function HeroIngredients({ progress }: { progress: number }) {
+  const headingRef = useRef<HTMLElement>(null);
   const [layout, setLayout] = useState<ChapterTwoLayout>(() =>
     resolveChapterTwoLayout(
       1440,
@@ -82,16 +86,21 @@ export function HeroIngredients({ progress }: { progress: number }) {
     ),
   );
 
-  useEffect(() => {
-    const updateLayout = (event: Event) => {
-      setLayout((event as CustomEvent<ChapterTwoLayout>).detail);
+  useLayoutEffect(() => {
+    const updateLayout = () => {
+      setLayout(resolveCurrentLayout(headingRef.current?.getBoundingClientRect().height));
     };
     window.addEventListener(chapterTwoLayoutEventName, updateLayout);
     const initialLayoutFrame = window.requestAnimationFrame(() => {
-      setLayout(resolveCurrentLayout());
+      updateLayout();
     });
+    const headingObserver = new ResizeObserver(updateLayout);
+    if (headingRef.current) {
+      headingObserver.observe(headingRef.current);
+    }
     return () => {
       window.cancelAnimationFrame(initialLayoutFrame);
+      headingObserver.disconnect();
       window.removeEventListener(chapterTwoLayoutEventName, updateLayout);
     };
   }, []);
@@ -123,6 +132,7 @@ export function HeroIngredients({ progress }: { progress: number }) {
       aria-hidden={sectionOpacity < 0.01}
     >
       <header
+        ref={headingRef}
         className="hero-botanical-heading"
         style={{
           opacity: headingProgress,
@@ -179,6 +189,8 @@ export function HeroIngredients({ progress }: { progress: number }) {
             "--label-width": `${layout.labelWidth}px`,
             "--label-name-size": `${layout.labelNameSize}px`,
             "--label-benefit-size": `${layout.labelBenefitSize}px`,
+            "--label-offset-x": `${itemLayout.labelOffset[0]}px`,
+            "--label-offset-y": `${itemLayout.labelOffset[1]}px`,
           };
 
           return (

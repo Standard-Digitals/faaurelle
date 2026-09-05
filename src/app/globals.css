@@ -365,6 +365,15 @@ h6 {
   transform: none;
 }
 
+.hero-botanical-ingredient--bottom figcaption {
+  top: calc(100% + var(--label-gap));
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
 .hero-botanical-ingredient figcaption::before {
   display: block;
   width: 1.75rem;
@@ -381,8 +390,13 @@ h6 {
 }
 
 .hero-botanical-ingredient--right figcaption::before,
-.hero-botanical-ingredient--upper-right figcaption::before {
+.hero-botanical-ingredient--upper-right figcaption::before,
+.hero-botanical-ingredient--bottom figcaption::before {
   margin-right: auto;
+}
+
+.hero-botanical-ingredient--bottom figcaption::before {
+  margin-left: auto;
 }
 
 .hero-botanical-ingredient figcaption span,
@@ -406,8 +420,54 @@ h6 {
   text-transform: uppercase;
 }
 
+:is(
+  [data-hero-preset="tablet"],
+  [data-hero-preset="mobilePortrait"],
+  [data-hero-preset="mobileLandscape"]
+) .hero-botanical-heading h2 {
+  white-space: normal;
+  text-wrap: balance;
+}
 
+:is(
+  [data-hero-preset="tablet"],
+  [data-hero-preset="mobilePortrait"],
+  [data-hero-preset="mobileLandscape"]
+) .hero-botanical-ingredient figcaption small {
+  text-wrap: balance;
+}
 
+:is(
+  [data-hero-preset="tablet"],
+  [data-hero-preset="mobilePortrait"],
+  [data-hero-preset="mobileLandscape"]
+) .hero-botanical-ingredient--bottom figcaption {
+  max-width: var(--label-width);
+  font-family: var(--font-roboto-family);
+  transform: translate(
+    calc(-50% + var(--label-offset-x)),
+    var(--label-offset-y)
+  );
+}
+
+:is(
+  [data-hero-preset="tablet"],
+  [data-hero-preset="mobilePortrait"],
+  [data-hero-preset="mobileLandscape"]
+) .hero-botanical-ingredient--bottom figcaption span {
+  font-family: var(--font-raleway-family);
+  line-height: 1.1;
+}
+
+:is(
+  [data-hero-preset="tablet"],
+  [data-hero-preset="mobilePortrait"],
+  [data-hero-preset="mobileLandscape"]
+) .hero-botanical-ingredient--bottom figcaption small {
+  margin-top: clamp(0.16rem, 0.4vh, 0.3rem);
+  line-height: 1.15;
+  letter-spacing: 0.06em;
+}
 .hero-static-fallback-molecule-merge {
   padding: clamp(8rem, 16vh, 11rem) clamp(3rem, 20vw, 20rem) clamp(7rem, 15vh, 10rem);
 }

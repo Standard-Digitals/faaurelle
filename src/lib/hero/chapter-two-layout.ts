@@ -6,7 +6,7 @@ import type {
 
 export type ChapterTwoPoint = readonly [number, number];
 export type ChapterTwoLabelOrientation =
-  "left" | "right" | "upperLeft" | "lowerLeft" | "upperRight";
+  "left" | "right" | "upperLeft" | "lowerLeft" | "upperRight" | "bottom";
 
 export type ChapterTwoIngredientLayout = {
   final: ChapterTwoPoint;
@@ -14,6 +14,7 @@ export type ChapterTwoIngredientLayout = {
   size: number;
   labelOrientation: ChapterTwoLabelOrientation;
   labelGap: number;
+  labelOffset: ChapterTwoPoint;
 };
 
 export type ChapterTwoLayout = {
@@ -50,12 +51,16 @@ type ModeLayoutConfig = {
   safeInsetMax: number;
   labelWidthMin: number;
   labelWidthMax: number;
+  labelGapMin: number;
+  labelGapMax: number;
   headingTopMin: number;
   headingTopMax: number;
   headingWidthRatio: number;
   headingWidthMax: number;
   headingFontMin: number;
   headingFontMax: number;
+  headingIngredientGap: number;
+  stageBottomReserve: number;
   eyebrowFontMin: number;
   eyebrowFontMax: number;
   labelNameMin: number;
@@ -68,6 +73,9 @@ type ModeLayoutConfig = {
     ChapterTwoLabelOrientation,
     ChapterTwoLabelOrientation,
   ];
+  labelOffsets: readonly [ChapterTwoPoint, ChapterTwoPoint, ChapterTwoPoint];
+  reserveLabelBesideImage: readonly [boolean, boolean, boolean];
+  reserveHeadingCaptionSpace: readonly [boolean, boolean, boolean];
 };
 
 const modeLayoutConfig: Record<HeroResponsivePresetName, ModeLayoutConfig> = {
@@ -84,12 +92,16 @@ const modeLayoutConfig: Record<HeroResponsivePresetName, ModeLayoutConfig> = {
     safeInsetMax: 64,
     labelWidthMin: 150,
     labelWidthMax: 210,
+    labelGapMin: 10,
+    labelGapMax: 24,
     headingTopMin: 88,
     headingTopMax: 116,
     headingWidthRatio: 0.58,
     headingWidthMax: 736,
     headingFontMin: 40,
     headingFontMax: 72,
+    headingIngredientGap: 0,
+    stageBottomReserve: 0,
     eyebrowFontMin: 16,
     eyebrowFontMax: 18,
     labelNameMin: 24,
@@ -102,37 +114,55 @@ const modeLayoutConfig: Record<HeroResponsivePresetName, ModeLayoutConfig> = {
       [60, 45],
     ],
     labelOrientations: ["left", "right", "right"],
+    labelOffsets: [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+    ],
+    reserveLabelBesideImage: [true, true, true],
+    reserveHeadingCaptionSpace: [false, false, false],
   },
   tablet: {
     referenceWidth: 1024,
     referenceHeight: 800,
     minimumBottleScale: 0.55,
     minimumViewportFactor: 0.785,
-    ingredientMin: 170,
-    ingredientMax: 300,
-    ingredientRatio: 0.32,
+    ingredientMin: 160,
+    ingredientMax: 270,
+    ingredientRatio: 0.29,
     safeInsetMin: 24,
     safeInsetMax: 44,
-    labelWidthMin: 126,
-    labelWidthMax: 172,
-    headingTopMin: 78,
-    headingTopMax: 104,
-    headingWidthRatio: 0.68,
+    labelWidthMin: 136,
+    labelWidthMax: 184,
+    labelGapMin: 14,
+    labelGapMax: 20,
+    headingTopMin: 76,
+    headingTopMax: 100,
+    headingWidthRatio: 0.72,
     headingWidthMax: 620,
     headingFontMin: 34,
     headingFontMax: 56,
+    headingIngredientGap: 14,
+    stageBottomReserve: 52,
     eyebrowFontMin: 16,
     eyebrowFontMax: 17,
-    labelNameMin: 20,
-    labelNameMax: 28,
+    labelNameMin: 18,
+    labelNameMax: 22,
     labelBenefitMin: 16,
-    labelBenefitMax: 17,
+    labelBenefitMax: 16,
     basePositions: [
-      [36, 50],
-      [52, 75],
-      [64, 47],
+      [28, 18],
+      [26, 68],
+      [74, 38],
     ],
-    labelOrientations: ["left", "right", "right"],
+    labelOrientations: ["bottom", "bottom", "bottom"],
+    labelOffsets: [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+    ],
+    reserveLabelBesideImage: [false, false, false],
+    reserveHeadingCaptionSpace: [true, false, true],
   },
   mobilePortrait: {
     referenceWidth: 430,
@@ -141,29 +171,40 @@ const modeLayoutConfig: Record<HeroResponsivePresetName, ModeLayoutConfig> = {
     minimumViewportFactor: 0.88,
     ingredientMin: 104,
     ingredientMax: 138,
-    ingredientRatio: 0.3,
+    ingredientRatio: 0.28,
     safeInsetMin: 16,
     safeInsetMax: 24,
-    labelWidthMin: 88,
-    labelWidthMax: 112,
-    headingTopMin: 72,
-    headingTopMax: 94,
-    headingWidthRatio: 0.82,
-    headingWidthMax: 350,
+    labelWidthMin: 96,
+    labelWidthMax: 116,
+    labelGapMin: 8,
+    labelGapMax: 12,
+    headingTopMin: 68,
+    headingTopMax: 90,
+    headingWidthRatio: 0.88,
+    headingWidthMax: 378,
     headingFontMin: 28,
     headingFontMax: 38,
+    headingIngredientGap: 12,
+    stageBottomReserve: 58,
     eyebrowFontMin: 16,
     eyebrowFontMax: 16,
     labelNameMin: 16,
-    labelNameMax: 20,
+    labelNameMax: 18,
     labelBenefitMin: 16,
     labelBenefitMax: 16,
     basePositions: [
-      [29, 42],
-      [54, 82],
-      [71, 47],
+      [25, 12],
+      [23, 68],
+      [75, 35],
     ],
-    labelOrientations: ["upperLeft", "upperRight", "upperRight"],
+    labelOrientations: ["bottom", "bottom", "bottom"],
+    labelOffsets: [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+    ],
+    reserveLabelBesideImage: [false, false, false],
+    reserveHeadingCaptionSpace: [true, false, true],
   },
   mobileLandscape: {
     referenceWidth: 850,
@@ -172,29 +213,40 @@ const modeLayoutConfig: Record<HeroResponsivePresetName, ModeLayoutConfig> = {
     minimumViewportFactor: 0.875,
     ingredientMin: 104,
     ingredientMax: 136,
-    ingredientRatio: 0.27,
+    ingredientRatio: 0.25,
     safeInsetMin: 16,
     safeInsetMax: 28,
-    labelWidthMin: 96,
-    labelWidthMax: 128,
+    labelWidthMin: 104,
+    labelWidthMax: 136,
+    labelGapMin: 8,
+    labelGapMax: 10,
     headingTopMin: 58,
     headingTopMax: 76,
     headingWidthRatio: 0.58,
     headingWidthMax: 440,
     headingFontMin: 24,
     headingFontMax: 34,
+    headingIngredientGap: 8,
+    stageBottomReserve: 36,
     eyebrowFontMin: 16,
     eyebrowFontMax: 16,
     labelNameMin: 16,
-    labelNameMax: 20,
+    labelNameMax: 17,
     labelBenefitMin: 16,
     labelBenefitMax: 16,
     basePositions: [
-      [33, 49],
-      [55, 79],
-      [67, 48],
+      [27, 14],
+      [27, 72],
+      [73, 41],
     ],
-    labelOrientations: ["left", "right", "right"],
+    labelOrientations: ["bottom", "bottom", "bottom"],
+    labelOffsets: [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+    ],
+    reserveLabelBesideImage: [true, false, true],
+    reserveHeadingCaptionSpace: [false, false, false],
   },
 };
 
@@ -209,9 +261,7 @@ function resolveSharedHeroHeadingSize(
   presetName: HeroResponsivePresetName,
 ) {
   if (presetName === "mobilePortrait") {
-    return height <= 700
-      ? clamp(width * 0.075, 28, 36.8)
-      : clamp(width * 0.08, 28.8, 40);
+    return height <= 700 ? clamp(width * 0.075, 28, 36.8) : clamp(width * 0.08, 28.8, 40);
   }
 
   if (presetName === "mobileLandscape") {
@@ -226,6 +276,7 @@ export function resolveChapterTwoLayout(
   viewportHeight: number,
   presetName: HeroResponsivePresetName,
   preset: HeroResponsivePreset,
+  measuredHeadingHeight?: number,
 ): ChapterTwoLayout {
   const width = Math.max(1, viewportWidth);
   const height = Math.max(1, viewportHeight);
@@ -248,7 +299,7 @@ export function resolveChapterTwoLayout(
 
   const safeInsetX = clamp(width * 0.035, config.safeInsetMin, config.safeInsetMax);
   const safeInsetBottom = clamp(height * 0.045, 18, 44);
-  const labelWidth = clamp(width * 0.14, config.labelWidthMin, config.labelWidthMax);
+  const viewportLabelWidth = clamp(width * 0.14, config.labelWidthMin, config.labelWidthMax);
   const headingTop = clamp(height * 0.105, config.headingTopMin, config.headingTopMax);
   const headingWidth = Math.min(width * config.headingWidthRatio, config.headingWidthMax);
   const headingFontSize = resolveSharedHeroHeadingSize(width, height, presetName);
@@ -269,27 +320,48 @@ export function resolveChapterTwoLayout(
     config.ingredientMax,
   );
   const ingredientSizes = [baseIngredientSize, baseIngredientSize, baseIngredientSize] as const;
-  const labelGap = clamp(shorterDimension * 0.025, 10, 24);
-  const headingBottom = headingTop + eyebrowFontSize + 12 + headingFontSize * 0.96;
+  const labelGap = clamp(shorterDimension * 0.025, config.labelGapMin, config.labelGapMax);
+  const isDesktop = presetName === "desktopLandscape";
+  const labelWidth = isDesktop
+    ? viewportLabelWidth
+    : clamp(baseIngredientSize * 0.82, config.labelWidthMin, config.labelWidthMax);
+  const fallbackHeadingHeight = eyebrowFontSize + 12 + headingFontSize * (isDesktop ? 0.96 : 1.92);
+  const headingBottom = headingTop + (measuredHeadingHeight ?? fallbackHeadingHeight);
   const origin: ChapterTwoPoint = [50, clamp(59 + (1 - heightFactor) * 3, 59, 62)];
   const bottleHalfWidth = shorterDimension * 0.115 * (bottleScale / preset.chapterTwoScale);
+  const stageTop = headingBottom + config.headingIngredientGap;
+  const stageBottom = Math.max(
+    stageTop + baseIngredientSize,
+    height - safeInsetBottom - config.stageBottomReserve,
+  );
 
   const resolvedPositions: ChapterTwoPoint[] = [];
   config.basePositions.forEach((basePosition, index) => {
     const size = ingredientSizes[index];
     const orientation = config.labelOrientations[index];
-    const horizontalLabelReserve =
-      orientation === "left" || orientation === "right" ? labelWidth + labelGap : labelWidth * 0.28;
+    const horizontalLabelReserve = config.reserveLabelBesideImage[index]
+      ? labelWidth + labelGap
+      : 0;
     const minimumCenterX = ((safeInsetX + size / 2 + horizontalLabelReserve) / width) * 100;
     const maximumCenterX = 100 - minimumCenterX;
-    const upperLabelReserve =
-      orientation === "upperLeft" || orientation === "upperRight"
-        ? labelNameSize + labelBenefitSize * 1.35 + labelGap * 2
-        : labelGap;
-    const headingClearanceY = ((headingBottom + size / 2 + upperLabelReserve) / height) * 100;
-    const bottomReserve = orientation === "lowerLeft" ? labelBenefitSize * 3 : 0;
-    const maximumCenterY =
-      index === 1 ? 95 : 100 - ((safeInsetBottom + size / 2 + bottomReserve) / height) * 100;
+    const upperLabelReserve = config.reserveHeadingCaptionSpace[index]
+      ? labelNameSize + labelBenefitSize * 1.35 + labelGap * 2
+      : labelGap;
+    const headingClearanceY = ((stageTop + size / 2 + upperLabelReserve) / height) * 100;
+    const bottomReserve =
+      orientation === "bottom"
+        ? labelGap + labelNameSize * 1.05 + labelBenefitSize * 2.7 + 10
+        : orientation === "lowerLeft"
+          ? labelBenefitSize * 3
+          : 0;
+    const maximumCenterY = isDesktop
+      ? index === 1
+        ? 95
+        : 100 - ((safeInsetBottom + size / 2 + bottomReserve) / height) * 100
+      : ((stageBottom - size / 2 - bottomReserve) / height) * 100;
+    const stagedY = isDesktop
+      ? basePosition[1]
+      : ((stageTop + ((stageBottom - stageTop) * basePosition[1]) / 100) / height) * 100;
     const bottleClearance = ((bottleHalfWidth + size / 2 + labelGap) / width) * 100;
     const bottleSafeX =
       index === 0
@@ -297,8 +369,30 @@ export function resolveChapterTwoLayout(
         : index === 1
           ? basePosition[0]
           : Math.max(basePosition[0], 50 + bottleClearance);
-    const x = clamp(bottleSafeX, minimumCenterX, maximumCenterX);
-    const y = clamp(basePosition[1], headingClearanceY, maximumCenterY);
+    let x = clamp(bottleSafeX, minimumCenterX, maximumCenterX);
+    const y = clamp(stagedY, headingClearanceY, maximumCenterY);
+
+    if (!isDesktop) {
+      const imageHalfWidthPercent = (size / 2 / width) * 100;
+      const imageHalfHeightPercent = (size / 2 / height) * 100;
+      const gapPercent = (labelGap / width) * 100;
+      const exclusionZones = [
+        { top: 30, bottom: 57, halfWidth: 9 },
+        { top: 48, bottom: 88, halfWidth: 14 },
+      ] as const;
+      const side = index === 2 ? 1 : -1;
+
+      exclusionZones.forEach((zone) => {
+        const overlapsVertically =
+          y + imageHalfHeightPercent > zone.top && y - imageHalfHeightPercent < zone.bottom;
+        if (!overlapsVertically) {
+          return;
+        }
+        const requiredCenterX = 50 + side * (zone.halfWidth + imageHalfWidthPercent + gapPercent);
+        x = side < 0 ? Math.min(x, requiredCenterX) : Math.max(x, requiredCenterX);
+      });
+      x = clamp(x, minimumCenterX, maximumCenterX);
+    }
     resolvedPositions.push([x, y]);
   });
 
@@ -310,6 +404,7 @@ export function resolveChapterTwoLayout(
       size: ingredientSizes[index],
       labelOrientation: config.labelOrientations[index],
       labelGap,
+      labelOffset: config.labelOffsets[index],
     };
   };
   const ingredients: ChapterTwoLayout["ingredients"] = [
