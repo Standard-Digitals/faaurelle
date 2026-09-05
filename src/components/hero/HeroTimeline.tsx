@@ -614,11 +614,13 @@ export function useHeroTimeline({
         end: "bottom bottom",
         scrub: true,
         invalidateOnRefresh: true,
+        onRefresh: (self) => updateExperience(self.progress),
         onUpdate: (self) => updateExperience(self.progress),
       },
     });
     timeline.to({ value: 0 }, { value: 1, duration: 1 });
-    updateExperience(0);
+    timeline.scrollTrigger?.refresh();
+    updateExperience(timeline.scrollTrigger?.progress ?? progressRef.current);
 
     const handleResize = () => {
       applyResponsivePreset();
