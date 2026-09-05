@@ -72,7 +72,7 @@ export function SiteFooter() {
           <ul>
             {closingExploreLinks.map((link) => (
               <li key={link.href}>
-                <a href={link.href}>{link.label}</a>
+                <a href={`${basePath}/${link.href}`}>{link.label}</a>
               </li>
             ))}
           </ul>

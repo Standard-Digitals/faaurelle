@@ -18,6 +18,12 @@
 .page h3 {
   font-family: var(--font-raleway-family);
   font-weight: 400;
+  text-wrap: balance;
+}
+
+.headingLine {
+  display: block;
+  white-space: nowrap;
 }
 
 .hero,
@@ -29,24 +35,22 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.72fr);
+  grid-template-columns: minmax(0, 0.88fr) minmax(25rem, 1fr);
   align-items: center;
-  min-height: min(52rem, calc(100svh - var(--site-header-total-height)));
-  background:
-    radial-gradient(circle at 20% 45%, rgb(221 183 104 / 0.12), transparent 24rem),
-    #fff;
+  min-height: min(54rem, calc(100svh - var(--site-header-total-height)));
+  background: radial-gradient(circle at 78% 48%, rgb(196 144 56 / 0.12), transparent 28rem);
 }
 
 .heroCopy {
   position: relative;
   z-index: 1;
-  max-width: 42rem;
-  padding: clamp(4rem, 8vw, 8rem) 0;
+  max-width: 44rem;
+  padding-block: clamp(5rem, 9vw, 9rem);
 }
 
 .eyebrow {
-  margin-bottom: 1rem;
-  color: #9a6a25;
+  margin-bottom: 1.1rem;
+  color: #a56e1c;
   font-family: var(--font-roboto-family) !important;
   font-size: 1rem;
   font-weight: 500;
@@ -56,19 +60,19 @@
 }
 
 .hero h1 {
-  max-width: 40rem;
+  max-width: 44rem;
   margin-bottom: 2rem;
-  font-size: clamp(2.7rem, 4.2vw, 4.8rem);
-  letter-spacing: -0.045em;
-  line-height: 0.98;
+  font-size: clamp(2.55rem, 3.8vw, 4.5rem);
+  letter-spacing: -0.055em;
+  line-height: 0.94;
 }
 
 .heroDescription {
-  max-width: 42rem;
+  max-width: 40rem;
   margin-bottom: 0;
   padding-top: 1.5rem;
   border-top: 1px solid rgb(189 140 53 / 0.48);
-  color: #554d45;
+  color: #655d54;
   font-family: var(--font-roboto-family);
   font-size: clamp(1rem, 1.15vw, 1.15rem);
   line-height: 1.75;
@@ -77,8 +81,7 @@
 .heroVisual,
 .sectionVisual,
 .differenceVisual,
-.ritualVisual,
-.botanicalImage {
+.ritualVisual {
   position: relative;
 }
 
@@ -86,8 +89,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: min(49rem, calc(100svh - var(--site-header-total-height) - 2rem));
-  min-height: 38rem;
+  height: min(51rem, calc(100svh - var(--site-header-total-height) - 2rem));
+  min-height: 37rem;
   padding: 2rem 0;
 }
 
@@ -108,18 +111,19 @@
 }
 
 .benefitStrip div {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.9rem;
-  min-height: 7rem;
+  min-height: 8rem;
   padding: 1.5rem;
   border-left: 1px solid rgb(23 19 15 / 0.12);
 }
 
 .benefitStrip svg {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
   fill: none;
   stroke: #bd8c35;
   stroke-width: 1.35;
@@ -142,15 +146,15 @@
 
 .benefitStrip p {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .section {
-  padding-top: clamp(6rem, 10vw, 11rem);
-  padding-bottom: clamp(6rem, 10vw, 11rem);
+  padding-top: clamp(7rem, 11vw, 12rem);
+  padding-bottom: clamp(7rem, 11vw, 12rem);
 }
 
 .science,
@@ -190,16 +194,14 @@
 
 .sectionCopy h2,
 .difference h2,
-.ritual h2,
-.centeredHeader h2 {
+.ritual h2 {
   margin-bottom: 2rem;
-  font-size: clamp(3.2rem, 5.4vw, 6.2rem);
+  font-size: clamp(2.45rem, 3.8vw, 4.3rem);
   letter-spacing: -0.055em;
-  line-height: 0.92;
+  line-height: 0.94;
 }
 
-.sectionCopy > p:not(.eyebrow),
-.centeredHeader > p:not(.eyebrow) {
+.sectionCopy > p:not(.eyebrow) {
   max-width: 43rem;
   color: #554d45;
   font-size: 1rem;
@@ -257,61 +259,6 @@
   color: #746b62;
   font-size: 0.9rem;
   line-height: 1.5;
-}
-
-.fusion {
-  background: #f7f4ee;
-}
-
-.centeredHeader {
-  max-width: 57rem;
-  margin: 0 auto clamp(3.5rem, 6vw, 6rem);
-  text-align: center;
-}
-
-.centeredHeader > p:not(.eyebrow) {
-  margin-inline: auto;
-}
-
-.botanicalGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(1rem, 2.5vw, 2.5rem);
-}
-
-.botanicalGrid article {
-  padding-bottom: 1.8rem;
-  border-bottom: 1px solid rgb(189 140 53 / 0.45);
-}
-
-.botanicalImage {
-  aspect-ratio: 4 / 4.6;
-  margin-bottom: 1.5rem;
-  overflow: hidden;
-  background: #d8cfbb;
-}
-
-.botanicalImage img {
-  object-fit: cover;
-  transition: transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-.botanicalGrid article:hover img {
-  transform: scale(1.035);
-}
-
-.botanicalGrid article > p {
-  margin-bottom: 0.45rem;
-  color: #8a8177;
-  font-size: 0.8rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-}
-
-.botanicalGrid h3 {
-  margin: 0;
-  font-size: clamp(1.7rem, 2.5vw, 2.7rem);
-  text-transform: uppercase;
 }
 
 .differenceCopy {
@@ -452,7 +399,7 @@
 
   .heroCopy {
     max-width: 38rem;
-    padding: 3rem 0 0;
+    padding: 2rem 0 1rem;
   }
 
   .heroVisual {
@@ -471,7 +418,8 @@
   }
 
   .benefitStrip div {
-    min-height: 5.5rem;
+    justify-content: flex-start;
+    min-height: 6.5rem;
     border-bottom: 1px solid rgb(23 19 15 / 0.12);
   }
 
@@ -505,7 +453,11 @@
 
   .hero h1 {
     max-width: 30rem;
-    font-size: clamp(2.5rem, 12vw, 3.8rem);
+    font-size: clamp(2rem, 9vw, 3.2rem);
+  }
+
+  .difference .headingLine {
+    white-space: normal;
   }
 
   .science {
@@ -533,11 +485,10 @@
   }
 
   .benefitStrip div {
-    grid-template-columns: 2.25rem 1fr;
+    min-height: 5.5rem;
   }
 
   .principles,
-  .botanicalGrid,
   .moments {
     grid-template-columns: 1fr;
   }
@@ -547,19 +498,9 @@
   }
 
   .sectionCopy h2,
-  .difference h2,
-  .ritual h2,
-  .centeredHeader h2 {
-    font-size: clamp(2.8rem, 14vw, 4.25rem);
+.difference h2,
+.ritual h2 {
+    font-size: clamp(2.05rem, 9.5vw, 3.1rem);
   }
 
-  .botanicalImage {
-    aspect-ratio: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .botanicalImage img {
-    transition: none;
-  }
 }

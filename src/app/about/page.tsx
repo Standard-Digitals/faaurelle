@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { BotanicalIngredientsSection } from "@/components/botanicals/BotanicalIngredientsSection";
+import { SectionDivider } from "@/components/layout/SectionDivider";
 import { SiteFooter } from "@/components/closing/SiteFooter";
 import { TrustDetailsSection } from "@/components/closing/TrustDetailsSection";
 import { SiteHeader } from "@/components/header/SiteHeader";
@@ -59,9 +61,9 @@ const shinePrinciples: Array<{ title: string; description: string; icon: ReactNo
 ];
 
 const botanicals = [
-  ["Argan oil", "Nourishes & softens", "/images/about/argan.png"],
-  ["Jojoba oil", "Smooths & conditions", "/images/about/jojoba.png"],
-  ["Camellia oil", "Enhances silky shine", "/images/about/camellia.png"],
+  { name: "Argan oil", description: "Nourishes & softens", image: "/images/ingredients/argan-oil.png" },
+  { name: "Jojoba oil", description: "Smooths & conditions", image: "/images/ingredients/jojoba-oil.png" },
+  { name: "Camellia oil", description: "Enhances silky shine", image: "/images/ingredients/camellia-oil.png" },
 ];
 
 const differences = [
@@ -109,7 +111,11 @@ export default function AboutPage() {
         <section className={styles.hero}>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>About</p>
-            <h1>Where Nature Meets Science For Extraordinary Hair</h1>
+            <h1>
+              <span className={styles.headingLine}>Where Nature Meets</span>
+              <span className={styles.headingLine}>Science For</span>
+              <span className={styles.headingLine}>Extraordinary Hair</span>
+            </h1>
             <p className={styles.heroDescription}>
               FA AURELLE is a luxurious hair elixir crafted to transform dull, frizzy hair into
               silky, luminous strands with mirror-like shine and effortless elegance. Powered by
@@ -138,6 +144,7 @@ export default function AboutPage() {
           ))}
         </section>
 
+        <SectionDivider />
         <section className={`${styles.section} ${styles.science}`}>
           <div className={styles.sectionCopy}>
             <p className={styles.eyebrow}>The science of</p>
@@ -167,33 +174,22 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className={`${styles.section} ${styles.fusion}`}>
-          <header className={styles.centeredHeader}>
-            <p className={styles.eyebrow}>Silk Botanique Fusion</p>
-            <h2>Nature. Science.<br />Silk. Perfected.</h2>
-            <p>
-              An exclusive blend of botanical oils and advanced shine-enhancing actives that
-              smooth the hair surface, enhance light reflection, and deliver unparalleled
-              softness and brilliance.
-            </p>
-          </header>
-          <div className={styles.botanicalGrid}>
-            {botanicals.map(([name, benefit, image]) => (
-              <article key={name}>
-                <div className={styles.botanicalImage}>
-                  <Image src={image} alt="" fill sizes="(max-width: 700px) 90vw, 30vw" />
-                </div>
-                <p>{benefit}</p>
-                <h3>{name}</h3>
-              </article>
-            ))}
-          </div>
-        </section>
+        <SectionDivider />
+        <BotanicalIngredientsSection
+          eyebrow="Silk Botanique Fusion"
+          heading={<><span>Nature. Science.</span><span>Silk. Perfected.</span></>}
+          description="An exclusive blend of botanical oils and advanced shine-enhancing actives that smooth the hair surface, enhance light reflection, and deliver unparalleled softness and brilliance."
+          ingredients={botanicals}
+        />
 
+        <SectionDivider />
         <section className={`${styles.section} ${styles.difference}`}>
           <div className={styles.differenceCopy}>
             <p className={styles.eyebrow}>The FA ÀURELLE difference</p>
-            <h2>Crafted for performance.<br />Designed for elegance.</h2>
+            <h2>
+              <span className={styles.headingLine}>Crafted for performance.</span>
+              <span className={styles.headingLine}>Designed for elegance.</span>
+            </h2>
             <div className={styles.differenceList}>
               {differences.map((item, index) => (
                 <div key={item}>
@@ -213,6 +209,7 @@ export default function AboutPage() {
           </div>
         </section>
 
+        <SectionDivider />
         <section className={`${styles.section} ${styles.formula}`}>
           {formulaDetails.map((group) => (
             <article key={group.title}>
@@ -224,6 +221,7 @@ export default function AboutPage() {
           ))}
         </section>
 
+        <SectionDivider />
         <section className={`${styles.section} ${styles.ritual}`}>
           <div className={styles.ritualVisual}>
             <Image

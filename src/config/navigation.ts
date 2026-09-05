@@ -1,6 +1,6 @@
 export const primaryNavigationLinks = [
-  { label: "Discover", href: "#discover" },
-  { label: "Silk Botanique Fusion", href: "#silk-botanique-fusion" },
+  { label: "Discover", href: "about" },
+  { label: "Silk Botanique Fusion", href: "silk-botanique-fusion" },
   { label: "Transformations", href: "#transformations" },
 ] as const;
 
