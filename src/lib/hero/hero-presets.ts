@@ -40,7 +40,7 @@ export type HeroResponsivePreset = {
 
 const heroBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-export const heroModelPath = `${heroBasePath}/models/hero/fa-aurelle-new-bottle-runtime-v7.glb`;
+export const heroModelPath = `${heroBasePath}/models/hero/fa-aurelle-new-bottle-runtime-v11.glb`;
 export const heroEnvironmentPath = `${heroBasePath}/environments/hero/fa-aurelle-serum-studio-v1.hdr`;
 export const heroStaticFallbackPath = `${heroBasePath}/images/products/best-seller-hair-elixir.png`;
 export const moleculeMergeStaticFallbackPath = `${heroBasePath}/images/sections/viscous-serum-merge/serum-blob.png`;

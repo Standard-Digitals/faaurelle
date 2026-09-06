@@ -1,4 +1,16 @@
 .page {
+  --reference-icon-font: "FA Reference Icons";
+}
+
+@font-face {
+  font-family: "FA Reference Icons";
+  src: url("/fonts/reference-elementskit.woff") format("woff");
+  font-display: block;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.page {
   padding-top: var(--site-header-total-height);
   overflow: hidden;
   background: #fff;
@@ -107,28 +119,47 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   width: min(calc(100% - 2 * var(--space-layout-x)), var(--size-content-max));
   margin: 0 auto;
-  border-block: 1px solid rgb(23 19 15 / 0.14);
+  overflow: hidden;
+  border: 1px solid rgb(23 19 15 / 0.14);
+  border-radius: 0.875rem;
+  background: #fff;
 }
 
 .benefitStrip div {
-  display: flex;
+  display: grid;
+  grid-template-rows: auto 1fr;
   align-items: center;
   justify-content: center;
-  gap: 0.9rem;
-  min-height: 8rem;
-  padding: 1.5rem;
+  gap: 1rem;
+  min-height: 10rem;
+  padding: 1.75rem 1rem;
   border-left: 1px solid rgb(23 19 15 / 0.12);
+  text-align: center;
 }
 
-.benefitStrip svg {
+.benefitIcon {
+  box-sizing: content-box;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-inline: auto;
+  padding: 0.85rem;
+  border: 1px solid rgb(189 140 53 / 0.32);
+  border-radius: 50%;
+  background: #fcfaf6;
+  color: #bd8c35;
+}
+
+.benefitIcon svg {
+  display: block;
   width: 2rem;
   height: 2rem;
-  flex: 0 0 auto;
   fill: none;
-  stroke: #bd8c35;
-  stroke-width: 1.35;
+  stroke: currentColor;
   stroke-linecap: round;
   stroke-linejoin: round;
+  stroke-width: 1.45;
 }
 
 .benefitStrip div:first-child {
@@ -171,6 +202,7 @@
   align-items: center;
   min-height: clamp(44rem, 62vw, 70rem);
   background-image: url("/images/about/science-of-shine.png");
+  background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -229,8 +261,13 @@
 }
 
 .principles svg {
-  width: 1.7rem;
-  height: 1.7rem;
+  box-sizing: content-box;
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0.65rem;
+  border: 1px solid rgb(189 140 53 / 0.28);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 0.72);
   fill: none;
   stroke: #bd8c35;
   stroke-width: 1.35;
@@ -261,46 +298,161 @@
   line-height: 1.5;
 }
 
-.differenceCopy {
-  padding-left: clamp(0rem, 3vw, 3rem);
-}
-
-.differenceVisual {
-  min-height: clamp(34rem, 55vw, 56rem);
-  order: -1;
-  overflow: hidden;
-}
-
-.differenceList {
-  margin-top: 3rem;
-  border-top: 1px solid rgb(23 19 15 / 0.14);
-}
-
-.differenceList div {
+.formula {
   display: grid;
-  grid-template-columns: 2.5rem 1fr;
-  align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid rgb(23 19 15 / 0.14);
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.82fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  background: #fff;
 }
 
-.differenceList p {
-  margin: 0;
-  font-weight: 500;
+.difference {
+  display: block;
+  padding-top: clamp(3rem, 5vw, 5rem);
+  padding-bottom: clamp(3rem, 5vw, 5rem);
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.82), rgb(255 255 255 / 0.82)),
+    url("/images/about/difference-background.png");
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.differenceCopy {
+  max-width: 64rem;
+  margin: 0 auto clamp(1.75rem, 3vw, 2.75rem);
+  text-align: center;
+}
+
+.differenceCopy h2 {
+  margin-bottom: 1rem;
+  margin-inline: auto;
+}
+
+.differenceCarousel {
+  position: relative;
+}
+
+.differenceViewport {
+  overflow: hidden;
+  border: 1px solid rgb(189 140 53 / 0.38);
+  border-radius: 0.875rem;
+  background: rgb(255 255 255 / 0.82);
+}
+
+.differenceTrack {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.differenceTrack article {
+  width: calc((min(100vw, var(--size-content-max)) - 2 * var(--space-layout-x)) / 4);
+  flex: 0 0 auto;
+  min-height: 12.5rem;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  border-right: 1px solid rgb(189 140 53 / 0.28);
+}
+
+.differenceIcon {
+  display: grid;
+  width: 3.75rem;
+  height: 3.75rem;
+  margin-bottom: 1.15rem;
+  place-items: center;
+  border: 1px solid rgb(189 140 53 / 0.36);
+  border-radius: 50%;
+  color: #bd8c35;
+}
+
+.differenceIcon svg {
+  width: 1.65rem;
+  height: 1.65rem;
+  fill: currentColor;
+}
+
+.differenceTrack h3 {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
   letter-spacing: 0.04em;
+  line-height: 1.35;
   text-transform: uppercase;
 }
 
-.formula {
-  display: grid;
-  grid-template-columns: 1.35fr 0.8fr 0.8fr;
-  gap: clamp(2rem, 6vw, 7rem);
-  border-block: 1px solid rgb(23 19 15 / 0.12);
+.differenceTrack p {
+  margin: 0;
+  color: #6c6259;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
-.formula article + article {
-  padding-left: clamp(2rem, 4vw, 4rem);
+.carouselControls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.carouselControls button {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid rgb(189 140 53 / 0.5);
+  border-radius: 50%;
+  background: #fff;
+  color: #8c611f;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.carouselControls button:hover {
+  background: #bd8c35;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.carouselControls button:focus-visible {
+  outline: 2px solid #8c611f;
+  outline-offset: 3px;
+}
+
+.formulaVisual {
+  position: relative;
+  min-height: 42rem;
+  overflow: hidden;
+}
+
+.formulaVisual img {
+  object-fit: cover;
+}
+
+.formulaColumn,
+.formulaSide article {
+  padding: clamp(2rem, 4vw, 3.5rem);
+}
+
+.formulaColumn {
+  align-self: stretch;
+  border-block: 1px solid rgb(23 19 15 / 0.14);
   border-left: 1px solid rgb(23 19 15 / 0.14);
+}
+
+.formulaSide {
+  display: grid;
+  grid-template-rows: repeat(2, 1fr);
+  align-content: center;
+  border-top: 1px solid rgb(23 19 15 / 0.14);
+}
+
+.formulaSide article {
+  border-right: 1px solid rgb(23 19 15 / 0.14);
+  border-bottom: 1px solid rgb(23 19 15 / 0.14);
 }
 
 .formula ul {
@@ -313,20 +465,19 @@
 
 .formula li {
   position: relative;
-  padding-left: 1.25rem;
+  padding-left: 1.75rem;
   color: #554d45;
   line-height: 1.55;
 }
 
 .formula li::before {
   position: absolute;
-  top: 0.65em;
+  top: 0.2em;
   left: 0;
-  width: 0.35rem;
-  height: 0.35rem;
-  border-radius: 50%;
-  background: #bd8c35;
-  content: "";
+  color: #bd8c35;
+  content: "\e832";
+  font-family: var(--reference-icon-font);
+  font-size: 1rem;
 }
 
 .ritual {
@@ -382,6 +533,7 @@
 
   .science {
     min-height: 50rem;
+    background-attachment: scroll;
     background-position: 58% center;
   }
 
@@ -419,8 +571,15 @@
 
   .benefitStrip div {
     justify-content: flex-start;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr;
     min-height: 6.5rem;
     border-bottom: 1px solid rgb(23 19 15 / 0.12);
+    text-align: left;
+  }
+
+  .benefitIcon {
+    margin-inline: 0;
   }
 
   .sectionVisual,
@@ -429,19 +588,18 @@
     min-height: min(100vw, 45rem);
   }
 
-  .differenceVisual {
-    order: 0;
+  .differenceTrack article {
+    width: calc((100vw - 2 * var(--space-layout-x)) / 2);
   }
 
   .formula {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .formula article + article {
-    padding-top: 2rem;
-    padding-left: 0;
-    border-top: 1px solid rgb(23 19 15 / 0.14);
-    border-left: 0;
+  .formulaVisual {
+    min-height: min(110vw, 48rem);
+    order: -1;
+    grid-column: 1 / -1;
   }
 }
 
@@ -493,14 +651,33 @@
     grid-template-columns: 1fr;
   }
 
+  .differenceTrack article {
+    width: calc(100vw - 2.5rem);
+  }
+
+  .differenceTrack article {
+    min-height: 0;
+  }
+
+  .formula {
+    grid-template-columns: 1fr;
+  }
+
+  .formulaVisual {
+    grid-column: auto;
+  }
+
+  .formulaColumn {
+    border-right: 1px solid rgb(23 19 15 / 0.14);
+  }
+
   .principles article:nth-child(even) {
     padding-left: 0;
   }
 
   .sectionCopy h2,
-.difference h2,
-.ritual h2 {
+  .difference h2,
+  .ritual h2 {
     font-size: clamp(2.05rem, 9.5vw, 3.1rem);
   }
-
 }

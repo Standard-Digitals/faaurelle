@@ -8,14 +8,9 @@ import { brand } from "@/config/brand";
 import {
   botanicalEssenceTiming,
   chapterConfig,
-  chapters,
-  formatChapterCount,
-  formatChapterNumber,
   getHeroChapterProgress,
-  heroChapterTiming,
   moleculeMergeTiming,
   phoneChapterConfig,
-  progressBetween,
   smoothStepBetween,
 } from "@/lib/hero/hero-chapters";
 import {
@@ -59,9 +54,6 @@ export function HeroContent({
       experienceMode,
     );
     const chapterThreeExitRange = moleculeMergeTiming.sectionThreeExit;
-    const activeChapterNumber = formatChapterNumber(activeChapterIndex);
-    const chapterCount = formatChapterCount(chapters.length);
-    const activeChapterName = chapters[activeChapterIndex]?.label ?? chapters[0].label;
     const sectionThreeChromeOpacity =
       1 - smoothStepBetween(keyIngredientsProgress, [0.02, 0.14]);
     const progressPercent = `${Math.round(progress * 100)}%`;
@@ -116,27 +108,6 @@ export function HeroContent({
         </div>
 
         <div
-          className="hero-chapter-progress absolute bottom-7 left-layout-x z-20 flex items-baseline gap-2 sm:bottom-9"
-          aria-label={`Chapter ${activeChapterNumber} of ${chapterCount}: ${activeChapterName}`}
-        >
-          <span
-            className="font-serif text-lg tabular-nums text-foreground"
-            aria-hidden="true"
-          >
-            {activeChapterNumber}
-          </span>
-          <span className="text-base text-gold/60" aria-hidden="true">
-            /
-          </span>
-          <span
-            className="text-base tabular-nums tracking-[0.12em] text-muted"
-            aria-hidden="true"
-          >
-            {chapterCount}
-          </span>
-        </div>
-
-        <div
           className="bg-amber/10 absolute bottom-7 right-layout-x top-24 z-20 hidden w-px sm:block"
           style={{ opacity: sectionThreeChromeOpacity }}
         >
@@ -146,21 +117,6 @@ export function HeroContent({
           />
         </div>
 
-        <div
-          className="absolute bottom-8 left-1/2 z-20 hidden -translate-x-1/2 items-center gap-3 text-base uppercase tracking-[0.18em] text-muted md:flex"
-          style={{
-            opacity:
-              1 -
-              progressBetween(
-                heroProgress,
-                heroChapterTiming.scrollCueExit[0],
-                heroChapterTiming.scrollCueExit[1],
-              ),
-          }}
-        >
-          <span className="h-7 w-px bg-gradient-to-b from-gold to-transparent" />
-          Scroll to unveil
-        </div>
       </div>
     );
   }

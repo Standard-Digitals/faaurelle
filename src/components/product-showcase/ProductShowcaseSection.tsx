@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import styles from "./ProductShowcaseSection.module.css";
 import { productShowcase, productShowcaseImage } from "./product-showcase.data";
@@ -16,58 +16,29 @@ function Checkmark() {
 
 export function ProductShowcaseSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const section = sectionRef.current;
-    if (!section) {
-      return;
-    }
+    const gallery = galleryRef.current;
+    const content = contentRef.current;
+
+    if (!section || !gallery || !content) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const context = gsap.context(() => {
-      const image = section.querySelector<HTMLElement>("[data-showcase-image]");
-      const entranceItems = gsap.utils.toArray<HTMLElement>("[data-showcase-entrance]");
-      const media = gsap.matchMedia();
+      const travel = () => window.innerWidth + Math.max(gallery.offsetWidth, content.offsetWidth);
 
-      media.add("(prefers-reduced-motion: no-preference)", () => {
-        let hasEntered = false;
-        let entranceTimeline: gsap.core.Timeline | undefined;
-        gsap.set(image, { autoAlpha: 0, y: 28, scale: 0.96 });
-        gsap.set(entranceItems, { autoAlpha: 0, y: 18 });
-
-        const observer = new IntersectionObserver(
-          ([entry]) => {
-            if (!entry.isIntersecting || hasEntered) {
-              return;
-            }
-            hasEntered = true;
-            entranceTimeline = gsap.timeline({ defaults: { ease: "power3.out" } });
-            entranceTimeline.to(image, { autoAlpha: 1, y: 0, scale: 1, duration: 1.15 }, 0);
-            entranceItems.forEach((item, index) => {
-              entranceTimeline?.to(
-                item,
-                { autoAlpha: 1, y: 0, duration: 0.62 },
-                0.12 + index * 0.1,
-              );
-            });
-            observer.disconnect();
-          },
-          { threshold: 0.25 },
-        );
-        observer.observe(section);
-
-        return () => {
-          observer.disconnect();
-          entranceTimeline?.kill();
-        };
-      });
-
-      media.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(image, { autoAlpha: 1, y: 0, scale: 1 });
-        gsap.set(entranceItems, { autoAlpha: 1, y: 0 });
-      });
-
-      return () => media.revert();
+      gsap
+        .timeline({
+          defaults: { duration: 1.15, ease: "power4.out" },
+          onComplete: () =>
+            gsap.set([gallery, content], { clearProps: "transform,opacity,visibility" }),
+        })
+        .fromTo(content, { x: () => -travel(), autoAlpha: 0 }, { x: 0, autoAlpha: 1 }, 0)
+        .fromTo(gallery, { x: () => travel(), autoAlpha: 0 }, { x: 0, autoAlpha: 1 }, 0.08);
     }, section);
 
     return () => context.revert();
@@ -81,7 +52,7 @@ export function ProductShowcaseSection() {
       aria-labelledby="product-showcase-title"
     >
       <div className={styles.composition}>
-        <div className={styles.galleryColumn}>
+        <div ref={galleryRef} className={styles.galleryColumn}>
           <div className={styles.galleryStage}>
             <figure className={styles.productFigure} data-showcase-image>
               <Image
@@ -95,7 +66,7 @@ export function ProductShowcaseSection() {
           </div>
         </div>
 
-        <div className={styles.productContent}>
+        <div ref={contentRef} className={styles.productContent}>
           <p className={`${styles.eyebrow} type-eyebrow`} data-showcase-entrance>
             <span aria-hidden="true" />
             {productShowcase.eyebrow}

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { BotanicalIngredientsSection } from "@/components/botanicals/BotanicalIngredientsSection";
+import { InnerCircleSection } from "@/components/closing/InnerCircleSection";
 import { SectionDivider } from "@/components/layout/SectionDivider";
 import { SiteFooter } from "@/components/closing/SiteFooter";
 import { TrustDetailsSection } from "@/components/closing/TrustDetailsSection";
 import { SiteHeader } from "@/components/header/SiteHeader";
+import { SilkBotaniqueHero } from "./SilkBotaniqueHero";
 import styles from "./SilkBotaniqueFusionPage.module.css";
 
 export const metadata: Metadata = {
@@ -37,24 +38,6 @@ const principles: Array<{ title: string; icon: ReactNode }> = [
   },
 ];
 
-const oils = [
-  {
-    name: "Argan Oil",
-    description: "Helps nourish and soften hair while improving smoothness.",
-    image: "/images/ingredients/argan-oil.png",
-  },
-  {
-    name: "Jojoba Oil",
-    description: "Supports manageability and enhances natural shine.",
-    image: "/images/ingredients/jojoba-oil.png",
-  },
-  {
-    name: "Camellia Oil",
-    description: "Known for promoting softness, silkiness, and radiant-looking hair.",
-    image: "/images/ingredients/camellia-oil.png",
-  },
-];
-
 const sciencePoints = [
   "Smooth the cuticle for a refined finish",
   "Enhance light reflection for mirror-like shine",
@@ -67,33 +50,7 @@ export default function SilkBotaniqueFusionPage() {
     <>
       <SiteHeader />
       <main id="main-content" className={styles.page}>
-        <section className={styles.hero}>
-          <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>The heart of FA ÀURELLE</p>
-            <h1>Nature. Science.<br />Luxurious Shine.</h1>
-            <p className={styles.lead}>
-              Silk Botanique Fusion™ is an exclusive blend of botanical oils and advanced
-              shine-enhancing actives designed to transform dull, frizzy hair into silky,
-              luminous strands with exceptional radiance.
-            </p>
-            <p>
-              Inspired by the elegance of silk and the restorative power of nature, this
-              lightweight fusion smooths the hair surface, enhances light reflection, and helps
-              create a refined, glass-like finish without heaviness.
-            </p>
-          </div>
-          <div className={styles.heroVisual}>
-            <div className={styles.emblemGlow} />
-            <Image
-              src="/images/silk-botanique-fusion/fusion-hero.png"
-              alt="Silk Botanique Fusion emblem"
-              width={819}
-              height={819}
-              priority
-              sizes="(max-width: 800px) 88vw, 46vw"
-            />
-          </div>
-        </section>
+        <SilkBotaniqueHero />
 
         <section className={styles.principles} aria-label="Silk Botanique Fusion principles">
           {principles.map(({ title, icon }) => (
@@ -105,22 +62,7 @@ export default function SilkBotaniqueFusionPage() {
         </section>
 
         <SectionDivider />
-        <BotanicalIngredientsSection
-          eyebrow="Powered by botanical oils"
-          heading={<><span>Nature’s most refined</span><span>sources of nourishment.</span></>}
-          ingredients={oils}
-        />
-
-        <SectionDivider />
         <section className={styles.science}>
-          <div className={styles.scienceVisual}>
-            {/* The original GIF supplies the reference page's subtle oil movement. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/silk-botanique-fusion/hair-fusion.gif"
-              alt="Golden botanical serum flowing around a hair strand"
-            />
-          </div>
           <div className={styles.scienceCopy}>
             <p className={styles.eyebrow}>The science behind our fusion</p>
             <h2>
@@ -143,18 +85,30 @@ export default function SilkBotaniqueFusionPage() {
 
         <SectionDivider />
         <section className={styles.closing}>
-          <p className={styles.eyebrow}>The signature fusion</p>
-          <h2>Silk. Botanicals. Brilliance.</h2>
-          <p>Experience the perfect fusion of nature and science.</p>
-          <div className={styles.closingBenefits}>
-            <span>Mirror-Like Shine</span>
-            <span>Silk-Touch Softness</span>
-            <span>Frizz Control</span>
-            <span>Weightless Elegance</span>
-            <span>Humidity Defence</span>
+          <div className={styles.closingVisual}>
+            <Image
+              src="/images/silk-botanique-fusion/fusion-hero.png"
+              alt="Silk Botanique Fusion emblem"
+              width={819}
+              height={819}
+              sizes="(max-width: 800px) 70vw, 24vw"
+            />
+          </div>
+          <div className={styles.closingCopy}>
+            <p className={styles.eyebrow}>The signature fusion</p>
+            <h2>Silk. Botanicals. Brilliance.</h2>
+            <p>Experience the perfect fusion of nature and science.</p>
+            <div className={styles.closingBenefits}>
+              <span>Mirror-Like Shine</span>
+              <span>Silk-Touch Softness</span>
+              <span>Frizz Control</span>
+              <span>Weightless Elegance</span>
+              <span>Humidity Defence</span>
+            </div>
           </div>
         </section>
       </main>
+      <InnerCircleSection />
       <TrustDetailsSection />
       <SiteFooter />
     </>

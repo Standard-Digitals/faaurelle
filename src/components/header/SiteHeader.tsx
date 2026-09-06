@@ -158,8 +158,6 @@ export function SiteHeader() {
     };
   }, [closeMenu, menuOpen]);
 
-  const handlePlaceholder = () => closeMenu();
-
   return (
     <>
       <header className={styles.header}>
@@ -196,12 +194,8 @@ export function SiteHeader() {
           <div className={styles.rightCluster}>
             <nav className={styles.secondaryNavigation} aria-label={navigationAccessibility.secondary}>
               <a href={homeAnchor(innerCircleLink.href)}>{innerCircleLink.label}</a>
-              <button type="button" onClick={handlePlaceholder} title={`${customerCareLabels.contact} — coming soon`}>
-                {customerCareLabels.contact}
-              </button>
-              <button type="button" onClick={handlePlaceholder} title={`${customerCareLabels.faq} — coming soon`}>
-                {customerCareLabels.faq}
-              </button>
+              <a href={`${basePath}/contact`}>{customerCareLabels.contact}</a>
+              <a href={`${basePath}/faq`}>{customerCareLabels.faq}</a>
             </nav>
 
             <div className={styles.utilities} aria-label={navigationAccessibility.utilities}>
@@ -252,14 +246,14 @@ export function SiteHeader() {
                 {link.label}
               </a>
             ))}
-            <button type="button" onClick={handlePlaceholder}>
+            <a href={`${basePath}/contact`} onClick={closeMenu}>
               <span>05</span>
               {customerCareLabels.contact}
-            </button>
-            <button type="button" onClick={handlePlaceholder}>
+            </a>
+            <a href={`${basePath}/faq`} onClick={closeMenu}>
               <span>06</span>
               {customerCareLabels.faq}
-            </button>
+            </a>
           </nav>
 
           <div className={styles.panelUtilities}>

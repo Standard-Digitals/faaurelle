@@ -22,6 +22,8 @@ export const customerCareLabels = {
 } as const;
 
 export const customerCareItems = [
+  { label: customerCareLabels.contact, href: "/contact" },
+  { label: customerCareLabels.faq, href: "/faq" },
   { label: customerCareLabels.shipping, href: "/shipping-policy" },
   {
     label: customerCareLabels.cancellationAndRefund,

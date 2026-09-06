@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
 import { BotanicalIngredientsSection } from "@/components/botanicals/BotanicalIngredientsSection";
+import { InnerCircleSection } from "@/components/closing/InnerCircleSection";
 import { SectionDivider } from "@/components/layout/SectionDivider";
 import { SiteFooter } from "@/components/closing/SiteFooter";
 import { TrustDetailsSection } from "@/components/closing/TrustDetailsSection";
 import { SiteHeader } from "@/components/header/SiteHeader";
+import { AboutHero } from "./AboutHero";
+import { DifferenceCarousel } from "./DifferenceCarousel";
 import styles from "./AboutPage.module.css";
 
 export const metadata: Metadata = {
@@ -17,23 +20,48 @@ export const metadata: Metadata = {
 const benefits: Array<{ label: string; icon: ReactNode }> = [
   {
     label: "Mirror-like shine",
-    icon: <><path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z" /><path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z" /></>,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2Z" />
+        <path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z" />
+      </svg>
+    ),
   },
   {
     label: "Weightless feel",
-    icon: <><path d="M6 19c5.8-.4 10.5-4.3 12-11-6.7.2-11.2 3.8-12 11Z" /><path d="M5 21c2.8-5.1 6.2-8 11-10.2" /></>,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6 19c5.8-.4 10.5-4.3 12-11-6.7.2-11.2 3.8-12 11Z" />
+        <path d="M5 21c2.8-5.1 6.2-8 11-10.2" />
+      </svg>
+    ),
   },
   {
     label: "Frizz control",
-    icon: <><path d="M4 8c3.2 0 3.2-3 6.4-3s3.2 3 6.4 3S20 5 20 5" /><path d="M4 13c3.2 0 3.2-3 6.4-3s3.2 3 6.4 3S20 10 20 10" /><path d="M4 18c3.2 0 3.2-3 6.4-3s3.2 3 6.4 3S20 15 20 15" /></>,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3.5S6.5 10 6.5 14.2a5.5 5.5 0 0 0 11 0C17.5 10 12 3.5 12 3.5Z" />
+        <path d="M9.4 15.2a2.9 2.9 0 0 0 2.8 2.2" />
+      </svg>
+    ),
   },
   {
     label: "Soft & smooth",
-    icon: <><path d="M4 16.5C8 16.5 7.2 8 12 8s4 8.5 8 8.5" /><path d="M5 20c4.2 0 4.1-8.5 8.2-8.5 2.7 0 3.2 3.2 5.8 3.2" /></>,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 16.5C8 16.5 7.2 8 12 8s4 8.5 8 8.5" />
+        <path d="M5 20c4.2 0 4.1-8.5 8.2-8.5 2.7 0 3.2 3.2 5.8 3.2" />
+      </svg>
+    ),
   },
   {
     label: "Suitable for all",
-    icon: <><circle cx="12" cy="8" r="3.25" /><path d="M5.5 20c.7-4 2.9-6 6.5-6s5.8 2 6.5 6" /></>,
+    icon: (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="8" r="3.25" />
+        <path d="M5.5 20c.7-4 2.9-6 6.5-6s5.8 2 6.5 6" />
+      </svg>
+    ),
   },
 ];
 
@@ -41,39 +69,62 @@ const shinePrinciples: Array<{ title: string; description: string; icon: ReactNo
   {
     title: "Refines hair surface",
     description: "Smooths and aligns the cuticle layer.",
-    icon: <><path d="M4 8.5c3 0 3-2 6-2s3 2 6 2 3-2 4-2" /><path d="M4 12c3 0 3-2 6-2s3 2 6 2 3-2 4-2" /><path d="M4 15.5c3 0 3-2 6-2s3 2 6 2 3-2 4-2" /></>,
+    icon: (
+      <>
+        <path d="M4 8.5c3 0 3-2 6-2s3 2 6 2 3-2 4-2" />
+        <path d="M4 12c3 0 3-2 6-2s3 2 6 2 3-2 4-2" />
+        <path d="M4 15.5c3 0 3-2 6-2s3 2 6 2 3-2 4-2" />
+      </>
+    ),
   },
   {
     title: "Enhances light reflection",
     description: "Helps hair reflect light evenly for exceptional brilliance.",
-    icon: <><path d="m12 2 1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7L12 2Z" /><path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z" /></>,
+    icon: (
+      <>
+        <path d="m12 2 1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7L12 2Z" />
+        <path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z" />
+      </>
+    ),
   },
   {
     title: "Locks in softness",
     description: "Supports smoothness and a silky-touch finish.",
-    icon: <><path d="M12 21s-7-4.2-7-10.2A4.1 4.1 0 0 1 12 8a4.1 4.1 0 0 1 7 2.8C19 16.8 12 21 12 21Z" /><path d="M8.5 12.3c1.6.2 2.6-.5 3.5-1.8" /></>,
+    icon: (
+      <>
+        <path d="M12 21s-7-4.2-7-10.2A4.1 4.1 0 0 1 12 8a4.1 4.1 0 0 1 7 2.8C19 16.8 12 21 12 21Z" />
+        <path d="M8.5 12.3c1.6.2 2.6-.5 3.5-1.8" />
+      </>
+    ),
   },
   {
     title: "Defends against humidity",
     description: "Helps tame frizz and flyaways throughout the day.",
-    icon: <><path d="M12 3 5.5 6v5.2c0 4.3 2.6 7.7 6.5 9.8 3.9-2.1 6.5-5.5 6.5-9.8V6L12 3Z" /><path d="M12 8.2c-1.5 2-2.3 3.2-2.3 4.4a2.3 2.3 0 0 0 4.6 0c0-1.2-.8-2.4-2.3-4.4Z" /></>,
+    icon: (
+      <>
+        <path d="M12 3 5.5 6v5.2c0 4.3 2.6 7.7 6.5 9.8 3.9-2.1 6.5-5.5 6.5-9.8V6L12 3Z" />
+        <path d="M12 8.2c-1.5 2-2.3 3.2-2.3 4.4a2.3 2.3 0 0 0 4.6 0c0-1.2-.8-2.4-2.3-4.4Z" />
+      </>
+    ),
   },
 ];
 
 const botanicals = [
-  { name: "Argan oil", description: "Nourishes & softens", image: "/images/ingredients/argan-oil.png" },
-  { name: "Jojoba oil", description: "Smooths & conditions", image: "/images/ingredients/jojoba-oil.png" },
-  { name: "Camellia oil", description: "Enhances silky shine", image: "/images/ingredients/camellia-oil.png" },
-];
-
-const differences = [
-  "Multi-dimensional shine",
-  "Botanical-infused performance",
-  "Frizz control",
-  "Instant salon finish",
-  "Weightless luxury",
-  "Premium experience",
-  "Designed for modern hair",
+  {
+    name: "Argan oil",
+    description: "Nourishes & softens",
+    image: "/images/ingredients/argan-oil.png",
+  },
+  {
+    name: "Jojoba oil",
+    description: "Smooths & conditions",
+    image: "/images/ingredients/jojoba-oil.png",
+  },
+  {
+    name: "Camellia oil",
+    description: "Enhances silky shine",
+    image: "/images/ingredients/camellia-oil.png",
+  },
 ];
 
 const formulaDetails = [
@@ -108,37 +159,12 @@ export default function AboutPage() {
     <>
       <SiteHeader />
       <main id="main-content" className={styles.page}>
-        <section className={styles.hero}>
-          <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>About</p>
-            <h1>
-              <span className={styles.headingLine}>Where Nature Meets</span>
-              <span className={styles.headingLine}>Science For</span>
-              <span className={styles.headingLine}>Extraordinary Hair</span>
-            </h1>
-            <p className={styles.heroDescription}>
-              FA AURELLE is a luxurious hair elixir crafted to transform dull, frizzy hair into
-              silky, luminous strands with mirror-like shine and effortless elegance. Powered by
-              Silk Botanique Fusion™, it delivers a salon-finished look while preserving the
-              natural movement and beauty of the hair.
-            </p>
-          </div>
-          <div className={styles.heroVisual}>
-            <Image
-              src="/images/about/product-hero.jpeg"
-              alt="FA ÀURELLE Hair Elixir with its presentation box"
-              width={705}
-              height={1536}
-              priority
-              sizes="(max-width: 800px) 100vw, 52vw"
-            />
-          </div>
-        </section>
+        <AboutHero />
 
         <section className={styles.benefitStrip} aria-label="Product benefits">
           {benefits.map((benefit) => (
             <div key={benefit.label}>
-              <svg viewBox="0 0 24 24" aria-hidden="true">{benefit.icon}</svg>
+              <span className={styles.benefitIcon}>{benefit.icon}</span>
               <p>{benefit.label}</p>
             </div>
           ))}
@@ -151,19 +177,21 @@ export default function AboutPage() {
             <h2>Shine</h2>
             <p className={styles.lead}>
               Beautiful hair reflects light evenly across its surface. When the cuticle becomes
-              rough, light scatters unevenly, causing hair to appear dull and lifeless. <em>FA
-              AURELLE</em> helps smooth the hair surface and enhance light reflection, revealing
-              exceptional shine, softness, and a luminous glass-like finish.
+              rough, light scatters unevenly, causing hair to appear dull and lifeless.{" "}
+              <em>FA AURELLE</em> helps smooth the hair surface and enhance light reflection,
+              revealing exceptional shine, softness, and a luminous glass-like finish.
             </p>
             <p>
               <em>FA AURELLE</em> helps refine the hair surface and enhance light reflection,
-              creating a luminous, glass-like finish that makes hair appear smoother, healthier,
-              and more radiant.
+              creating a luminous, glass-like finish that makes hair appear smoother, healthier, and
+              more radiant.
             </p>
             <div className={styles.principles}>
               {shinePrinciples.map(({ title, description, icon }) => (
                 <article key={title}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">{icon}</svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    {icon}
+                  </svg>
                   <div>
                     <h3>{title}</h3>
                     <p>{description}</p>
@@ -177,7 +205,12 @@ export default function AboutPage() {
         <SectionDivider />
         <BotanicalIngredientsSection
           eyebrow="Silk Botanique Fusion"
-          heading={<><span>Nature. Science.</span><span>Silk. Perfected.</span></>}
+          heading={
+            <>
+              <span>Nature. Science.</span>
+              <span>Silk. Perfected.</span>
+            </>
+          }
           description="An exclusive blend of botanical oils and advanced shine-enhancing actives that smooth the hair surface, enhance light reflection, and deliver unparalleled softness and brilliance."
           ingredients={botanicals}
         />
@@ -190,35 +223,40 @@ export default function AboutPage() {
               <span className={styles.headingLine}>Crafted for performance.</span>
               <span className={styles.headingLine}>Designed for elegance.</span>
             </h2>
-            <div className={styles.differenceList}>
-              {differences.map((item, index) => (
-                <div key={item}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <p>{item}</p>
-                </div>
-              ))}
-            </div>
           </div>
-          <div className={styles.differenceVisual}>
-            <Image
-              src="/images/about/difference.png"
-              alt="Golden serum drop infused with botanical oils"
-              fill
-              sizes="(max-width: 800px) 100vw, 48vw"
-            />
-          </div>
+          <DifferenceCarousel />
         </section>
 
         <SectionDivider />
         <section className={`${styles.section} ${styles.formula}`}>
-          {formulaDetails.map((group) => (
-            <article key={group.title}>
-              <p className={styles.eyebrow}>{group.title}</p>
-              <ul>
-                {group.items.map((item) => <li key={item}>{item}</li>)}
-              </ul>
-            </article>
-          ))}
+          <article className={styles.formulaColumn}>
+            <p className={styles.eyebrow}>{formulaDetails[0].title}</p>
+            <ul>
+              {formulaDetails[0].items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+          <div className={styles.formulaVisual}>
+            <Image
+              src="/images/about/difference.png"
+              alt="Golden botanical serum drop with camellia flower and argan nuts"
+              fill
+              sizes="(max-width: 900px) 100vw, 34vw"
+            />
+          </div>
+          <div className={styles.formulaSide}>
+            {formulaDetails.slice(1).map((group) => (
+              <article key={group.title}>
+                <p className={styles.eyebrow}>{group.title}</p>
+                <ul>
+                  {group.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
         </section>
 
         <SectionDivider />
@@ -235,16 +273,28 @@ export default function AboutPage() {
             <p className={styles.eyebrow}>How to use</p>
             <h2>Made for every moment</h2>
             <ol>
-              <li><span>01</span><p>Dispense a small amount into your palm.</p></li>
-              <li><span>02</span><p>Warm gently between your hands.</p></li>
-              <li><span>03</span><p>Smooth through mid-lengths and ends on dry or damp hair.</p></li>
+              <li>
+                <span>01</span>
+                <p>Dispense a small amount into your palm.</p>
+              </li>
+              <li>
+                <span>02</span>
+                <p>Warm gently between your hands.</p>
+              </li>
+              <li>
+                <span>03</span>
+                <p>Smooth through mid-lengths and ends on dry or damp hair.</p>
+              </li>
             </ol>
             <div className={styles.moments}>
-              {moments.map((moment) => <p key={moment}>{moment}</p>)}
+              {moments.map((moment) => (
+                <p key={moment}>{moment}</p>
+              ))}
             </div>
           </div>
         </section>
       </main>
+      <InnerCircleSection />
       <TrustDetailsSection />
       <SiteFooter />
     </>
