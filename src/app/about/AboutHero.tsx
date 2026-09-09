@@ -53,10 +53,10 @@ export function AboutHero() {
       </div>
       <div ref={visualRef} className={styles.heroVisual}>
         <Image
-          src="/images/about/product-hero.jpeg"
+          src="/images/products/elixir-bottle-and-box.jpeg"
           alt="FA ÀURELLE Hair Elixir with its presentation box"
-          width={705}
-          height={1536}
+          width={1145}
+          height={1374}
           priority
           sizes="(max-width: 800px) 100vw, 52vw"
         />

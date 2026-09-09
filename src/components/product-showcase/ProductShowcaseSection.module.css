@@ -25,7 +25,7 @@
 
 .galleryColumn {
   display: grid;
-  grid-template-rows: minmax(24rem, 64svh);
+  grid-template-rows: auto;
   min-width: 0;
   padding-right: clamp(2rem, 5vw, 6rem);
 }
@@ -34,21 +34,62 @@
   position: relative;
   align-self: center;
   width: min(39vw, 35rem);
-  height: min(62svh, 39rem);
   margin: 0 auto;
 }
 
+.slider {
+  display: flex;
+  width: 100%;
+  height: min(62svh, 39rem);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.slider::-webkit-scrollbar { display: none; }
+
 .productFigure {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
   margin: 0;
-  will-change: transform, opacity;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .productImage {
   object-fit: contain;
-  filter: drop-shadow(0 1.25rem 1.5rem rgb(23 19 15 / 0.1));
 }
+
+.galleryControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.4rem, 1.5vw, 1.5rem);
+  margin-top: 1rem;
+}
+
+.galleryControls button {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  color: var(--color-foreground);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+
+.imageSelectors { display: flex; gap: 0.5rem; }
+.imageSelectors button { padding: 3px; opacity: 0.65; }
+.imageSelectors button[aria-pressed="true"] { border-color: var(--color-gold); opacity: 1; }
+.imageSelectors img { width: 44px; height: 52px; object-fit: cover; }
+.galleryControls button:hover { opacity: 1; border-color: var(--color-gold); }
+.galleryControls button:focus-visible,
+.slider:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 3px; }
 
 .productContent {
   position: relative;
@@ -255,14 +296,15 @@
   }
 
   .galleryColumn {
-    grid-template-rows: minmax(21rem, 54svh);
+    grid-template-rows: auto;
     padding: 0;
   }
 
   .galleryStage {
     width: min(88vw, 30rem);
-    height: min(50svh, 28rem);
   }
+
+  .slider { height: min(50svh, 28rem); }
 
 
   .productContent {

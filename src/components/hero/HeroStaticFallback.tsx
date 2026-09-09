@@ -23,6 +23,9 @@ export function HeroStaticFallback({
       <div className="sr-only">
         <h1>{heroContent.chapterOne.heading}</h1>
         <p>{product.formalName}. {heroContent.chapterOne.body}</p>
+        {heroContent.chapterOne.benefits.map((benefit) => (
+          <p key={benefit.label}>{benefit.label}: {benefit.description}</p>
+        ))}
       </div>
       <Image
         src={imagePath}

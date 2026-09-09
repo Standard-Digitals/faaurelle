@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import styles from "./ProductShowcaseSection.module.css";
-import { productShowcase, productShowcaseImage } from "./product-showcase.data";
+import { productShowcase, productShowcaseImages } from "./product-showcase.data";
 
 function Checkmark() {
   return (
@@ -18,7 +18,30 @@ export function ProductShowcaseSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [activeImage, setActiveImage] = useState(0);
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+  const showImage = useCallback((index: number) => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+    const next = (index + productShowcaseImages.length) % productShowcaseImages.length;
+    slider.scrollTo({
+      left: next * slider.clientWidth,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    });
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const gallery = galleryRef.current;
+      if (!gallery || document.hidden || gallery.matches(":hover") || gallery.contains(document.activeElement)) return;
+      const bounds = gallery.getBoundingClientRect();
+      if (bounds.bottom <= 0 || bounds.top >= window.innerHeight) return;
+      showImage(activeImage + 1);
+    }, 1500);
+    return () => window.clearInterval(timer);
+  }, [activeImage, showImage]);
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -53,16 +76,42 @@ export function ProductShowcaseSection() {
     >
       <div className={styles.composition}>
         <div ref={galleryRef} className={styles.galleryColumn}>
-          <div className={styles.galleryStage}>
-            <figure className={styles.productFigure} data-showcase-image>
+          <div className={styles.galleryStage} role="region" aria-roledescription="carousel" aria-label="Hair Elixir photographs">
+            <div ref={sliderRef} className={styles.slider} tabIndex={0} aria-label="Product images. Use left and right arrow keys to browse."
+              onScroll={(event) => {
+                const slider = event.currentTarget;
+                setActiveImage(Math.round(slider.scrollLeft / slider.clientWidth));
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+                  event.preventDefault();
+                  showImage(activeImage + (event.key === "ArrowRight" ? 1 : -1));
+                }
+              }}>
+            {productShowcaseImages.map((photo, index) => (
+            <figure key={photo.image} className={styles.productFigure} data-showcase-image role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${productShowcaseImages.length}`}>
               <Image
-                src={`${basePath}${productShowcaseImage.image}`}
-                alt={productShowcaseImage.alt}
+                src={`${basePath}${photo.image}`}
+                alt={photo.alt}
                 fill
                 sizes="(max-width: 767px) 82vw, (max-width: 1100px) 48vw, 42vw"
                 className={styles.productImage}
               />
             </figure>
+            ))}
+            </div>
+            <div className={styles.galleryControls}>
+              <button type="button" onClick={() => showImage(activeImage - 1)} aria-label="Previous image">←</button>
+              <div className={styles.imageSelectors}>
+                {productShowcaseImages.map((photo, index) => (
+                  <button type="button" key={photo.image} onClick={() => showImage(index)} aria-label={`Show image ${index + 1}: ${photo.alt}`} aria-pressed={activeImage === index}>
+                    <Image src={`${basePath}${photo.image}`} alt="" width={44} height={52} />
+                  </button>
+                ))}
+              </div>
+              <button type="button" onClick={() => showImage(activeImage + 1)} aria-label="Next image">→</button>
+              <span className="sr-only" aria-live="off">Image {activeImage + 1} of {productShowcaseImages.length}</span>
+            </div>
           </div>
         </div>
 

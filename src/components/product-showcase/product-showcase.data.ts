@@ -5,6 +5,12 @@ export const productShowcaseImage = {
   alt: product.altText,
 } as const;
 
+export const productShowcaseImages = [
+  { image: "/images/products/elixir-packaging.jpeg", alt: "FA ÀURELLE Hair Elixir presentation box on a warmly lit vanity" },
+  { image: "/images/products/elixir-model.jpeg", alt: "Model with glossy dark hair holding FA ÀURELLE Hair Elixir" },
+  { image: "/images/products/elixir-bottle-and-box.jpeg", alt: "FA ÀURELLE Hair Elixir bottle and black-and-gold presentation box on a marble vanity" },
+] as const;
+
 export const productShowcase = {
   eyebrow: "Bestseller",
   name: product.formalName,

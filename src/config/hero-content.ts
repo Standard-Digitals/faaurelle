@@ -4,8 +4,12 @@ export const heroContent = {
   chapterOne: {
     label: "Hero",
     heading: "Mirror-Like Shine. Weightless Elegance.",
-    body:
-      "Transform dull, frizzy hair into silky, luminous strands with exceptional glass-like radiance powered by Silk Botanique Fusion.",
+    body: "Transform dull, frizzy hair into silky, luminous strands with exceptional glass-like radiance powered by Silk Botanique Fusion.",
+    benefits: [
+      { label: "Shine", description: "Delivers a brilliant, light-reflecting finish for glass-like radiance." },
+      { label: "Smooth", description: "Effortlessly tames flyaways to create a flawless, velvet-soft texture." },
+      { label: "Nourish", description: "Infuses each strand with weightless hydration for long-lasting health." },
+    ],
   },
   chapterTwo: {
     label: "Botanical Essence Blend",
