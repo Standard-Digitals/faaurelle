@@ -6,29 +6,41 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "pnpm db:deploy && pnpm build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "format": "prettier --write ."
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "clsx": "latest",
+    "dotenv": "^17.4.2",
     "framer-motion": "latest",
     "gsap": "latest",
     "lenis": "latest",
     "next": "latest",
     "nodemailer": "^9.0.6",
+    "pg": "^8.23.0",
     "react": "latest",
     "react-dom": "latest",
+    "server-only": "^0.0.1",
     "three": "^0.185.1"
   },
   "devDependencies": {
     "@tailwindcss/forms": "latest",
     "@types/node": "latest",
     "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.23.1",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/three": "0.185.1",
@@ -38,7 +50,9 @@
     "postcss": "latest",
     "prettier": "latest",
     "prettier-plugin-tailwindcss": "latest",
+    "prisma": "7.10.0",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

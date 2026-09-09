@@ -12,7 +12,7 @@ import styles from "./SiteHeader.module.css";
 import { brand } from "@/config/brand";
 import {
   customerCareLabels,
-  innerCircleLink,
+  trackOrderLink,
   navigationAccessibility,
   primaryNavigationLinks,
 } from "@/config/navigation";
@@ -193,7 +193,7 @@ export function SiteHeader() {
 
           <div className={styles.rightCluster}>
             <nav className={styles.secondaryNavigation} aria-label={navigationAccessibility.secondary}>
-              <a href={homeAnchor(innerCircleLink.href)}>{innerCircleLink.label}</a>
+              <a href={homeAnchor(trackOrderLink.href)}>{trackOrderLink.label}</a>
               <a href={`${basePath}/contact`}>{customerCareLabels.contact}</a>
               <a href={`${basePath}/faq`}>{customerCareLabels.faq}</a>
             </nav>
@@ -240,7 +240,7 @@ export function SiteHeader() {
           </div>
 
           <nav className={styles.panelNavigation} aria-label={navigationAccessibility.mobile}>
-            {[...primaryNavigationLinks, innerCircleLink].map((link, index) => (
+            {[...primaryNavigationLinks, trackOrderLink].map((link, index) => (
               <a key={link.href} href={homeAnchor(link.href)} onClick={closeMenu}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 {link.label}

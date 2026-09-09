@@ -59,6 +59,8 @@ export default function RootLayout({
           fbq('track', 'PageView');`}
         </Script>
         <noscript>
+          {/* Meta Pixel requires a literal tracking pixel when JavaScript is disabled. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             height="1"
             width="1"

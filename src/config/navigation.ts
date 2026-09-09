@@ -4,12 +4,12 @@ export const primaryNavigationLinks = [
   { label: "Transformations", href: "product" },
 ] as const;
 
-export const innerCircleLink = {
-  label: "The Inner Circle",
-  href: "#inner-circle",
+export const trackOrderLink = {
+  label: "Track Order",
+  href: "track-order",
 } as const;
 
-export const sharedNavigationLinks = [...primaryNavigationLinks, innerCircleLink] as const;
+export const sharedNavigationLinks = [...primaryNavigationLinks, trackOrderLink] as const;
 
 export const customerCareLabels = {
   heading: "Customer care",

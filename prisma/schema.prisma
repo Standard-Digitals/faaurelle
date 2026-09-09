@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Currency {
+  INR
+}
+
+enum OrderState {
+  CHECKOUT_CREATED
+  AWAITING_PAYMENT
+  PAID
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentState {
+  NOT_STARTED
+  ORDER_CREATING
+  AWAITING_PAYMENT
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum FulfillmentState {
+  NOT_READY
+  PENDING
+  CREATING
+  CREATED
+  FAILED
+}
+
+enum PaymentAttemptState {
+  CREATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+enum ShipmentState {
+  PENDING
+  CREATING
+  CREATED
+  FAILED
+}
+
+enum PaymentMode {
+  PREPAID
+}
+
+enum WebhookProcessingState {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model Order {
+  id                String           @id @default(uuid()) @db.Uuid
+  publicToken       String           @unique
+  checkoutKey       String           @unique
+  productCode       String
+  productName       String
+  unitAmountPaisa   Int
+  quantity          Int
+  subtotalPaisa     Int
+  shippingPaisa     Int
+  taxPaisa          Int
+  totalPaisa        Int
+  currency          Currency         @default(INR)
+  customerName      String
+  customerEmail     String
+  customerPhone     String
+  addressLine1      String
+  addressLine2      String?
+  city              String
+  state             String
+  postalCode        String
+  countryCode       String           @default("IN")
+  status            OrderState       @default(CHECKOUT_CREATED)
+  paymentStatus     PaymentState     @default(NOT_STARTED)
+  fulfillmentStatus FulfillmentState @default(NOT_READY)
+  razorpayOrderId   String?          @unique
+  paidAt            DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  payments          Payment[]
+  shipment          Shipment?
+
+  @@index([customerEmail])
+  @@index([createdAt])
+}
+
+model Payment {
+  id                  String              @id @default(uuid()) @db.Uuid
+  orderId             String              @db.Uuid
+  razorpayPaymentId   String              @unique
+  razorpayOrderId     String
+  status              PaymentAttemptState
+  amountPaisa         Int
+  currency            Currency            @default(INR)
+  captured            Boolean             @default(false)
+  signatureVerifiedAt DateTime?
+  providerCreatedAt   DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  order               Order               @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([razorpayOrderId])
+}
+
+model Shipment {
+  id                      String        @id @default(uuid()) @db.Uuid
+  orderId                 String        @unique @db.Uuid
+  status                  ShipmentState @default(PENDING)
+  paymentMode             PaymentMode   @default(PREPAID)
+  delhiveryWaybill        String?       @unique
+  delhiveryOrderReference String        @unique
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  order                   Order         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+}
+
+model WebhookEvent {
+  id                  String                 @id @default(uuid()) @db.Uuid
+  providerEventId     String                 @unique
+  eventType           String
+  processingStatus    WebhookProcessingState @default(RECEIVED)
+  razorpayOrderId     String?
+  razorpayPaymentId   String?
+  receivedAt          DateTime               @default(now())
+  processingStartedAt DateTime?
+  processedAt         DateTime?
+  errorMessage        String?
+
+  @@index([razorpayOrderId])
+  @@index([razorpayPaymentId])
+}

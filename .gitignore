@@ -25,12 +25,18 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# local env files
-.env*.local
+# environment files (templates remain committed)
+.env*
+!.env.example
+!.env.prod.example
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
-.env
+src/generated/prisma/
+docs/extras/*
+reference/
+
+metaball-molecule-merge-source*

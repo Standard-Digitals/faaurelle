@@ -5,6 +5,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import gsap from "gsap";
 import styles from "./ProductShowcaseSection.module.css";
 import { productShowcase, productShowcaseImages } from "./product-showcase.data";
+import { product } from "@/config/product";
 
 function Checkmark() {
   return (
@@ -162,12 +163,20 @@ export function ProductShowcaseSection() {
 
           <div className={styles.actions} data-showcase-entrance>
             {/* Commerce actions remain presentational until cart and checkout infrastructure exists. */}
-            <button type="button" className={`${styles.addToCartButton} type-cta`}>
+            <button
+              type="button"
+              className={`${styles.addToCartButton} type-cta`}
+              disabled
+              title="Cart checkout is not available yet"
+            >
               {productShowcase.actions.addToCart}
             </button>
-            <button type="button" className={`${styles.buyNowButton} type-cta`}>
+            <a
+              className={`${styles.buyNowButton} type-cta`}
+              href={`${basePath}/checkout?product=${encodeURIComponent(product.code)}`}
+            >
               {productShowcase.actions.buyNow}
-            </button>
+            </a>
           </div>
         </div>
       </div>

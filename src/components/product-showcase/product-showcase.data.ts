@@ -1,4 +1,5 @@
 import { product } from "@/config/product";
+import { formatInr } from "@/lib/commerce/money";
 
 export const productShowcaseImage = {
   image: "/images/products/best-seller-hair-elixir.png",
@@ -16,7 +17,7 @@ export const productShowcase = {
   name: product.formalName,
   tagline: "Mirror-Like Shine · Silk-Touch Softness · Weightless Elegance",
   rating: "4.9/5 (762 reviews)",
-  price: "₹999",
+  price: formatInr(product.unitAmountPaisa),
   taxNote: "Inc. of all taxes",
   benefits: [
     "Instantly Boosts Shine & Radiance",

@@ -221,12 +221,16 @@
   margin-top: 1.2rem;
 }
 
-.actions button {
+.actions :is(button, a) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 3rem;
   border-radius: 0.2rem;
   font-family: var(--font-roboto-family);
   font-size: 1rem;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
   transition:
     background-position 220ms ease,
@@ -238,21 +242,23 @@
 }
 
 .addToCartButton {
-  color: #fff;
-  background: linear-gradient(180deg, #242424, #050505);
-  background-position: 50% 0%;
-  background-size: 100% 200%;
-  border: 1px solid #17130f;
-  box-shadow: 0 0.9rem 2.4rem rgb(23 19 15 / 0.12);
+  color: #6e665e;
+  background: transparent;
+  border: 1px solid rgb(23 19 15 / 0.25);
 }
 
 .buyNowButton {
   border: 1px solid #17130f;
-  background: transparent;
-  color: #17130f;
+  background: #17130f;
+  color: #fff;
 }
 
-.actions button:focus-visible {
+.actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.actions :is(button, a):focus-visible {
   outline: 1px solid var(--color-gold);
   outline-offset: 4px;
 }
@@ -340,7 +346,7 @@
 
   .rating,
   .priceBlock span,
-  .actions button {
+  .actions :is(button, a) {
     font-size: var(--font-mobile-meta);
   }
 
@@ -348,21 +354,15 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .actions button {
+  .actions :is(button, a) {
     min-height: 44px;
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .addToCartButton:hover {
-    background-position: 50% 100%;
-    box-shadow: 0 1.1rem 2.6rem rgb(23 19 15 / 0.18);
-    transform: translateY(-2px);
-  }
-
   .buyNowButton:hover {
-    background: #17130f;
-    color: #fff;
+    background: #fff;
+    color: #17130f;
     box-shadow: 0 0.85rem 2rem rgb(23 19 15 / 0.12);
     transform: translateY(-2px);
   }
