@@ -41,7 +41,7 @@ function dependencies(orders: ReturnType<typeof fakeOrders>["store"]) {
   return {
     orders,
     checkServiceability: vi.fn().mockResolvedValue({ postalCode: "400064", prepaidServiceable: true }),
-    createProviderOrder: vi.fn().mockResolvedValue({ id: "order_test", amount: 99_900, currency: "INR", receipt: "fa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", status: "created" }),
+    createProviderOrder: vi.fn().mockResolvedValue({ id: "order_test", amount: 209_900, currency: "INR", receipt: "fa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", status: "created" }),
     findProviderOrder: vi.fn().mockResolvedValue(null),
     publicKey: () => "rzp_test_example",
     randomId: () => "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -55,10 +55,10 @@ describe("payable checkout orchestration", () => {
     const deps = dependencies(fake.store);
     const { createPayableCheckout } = await import("./checkout-order");
     const result = await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details }, deps as never);
-    expect(result).toMatchObject({ success: true, checkout: { amount: 99_900, publicOrderToken: "opaque-public-token-generated-on-server" } });
+    expect(result).toMatchObject({ success: true, checkout: { amount: 209_900, publicOrderToken: "opaque-public-token-generated-on-server" } });
     expect(fake.store.create).toHaveBeenCalledTimes(1);
-    expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 99_900, currency: "INR" }));
-    expect([...fake.rows.values()][0]).toMatchObject({ unitAmountPaisa: 99_900, shippingPaisa: 0, taxPaisa: 0, totalPaisa: 99_900, quantity: 1 });
+    expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 209_900, currency: "INR" }));
+    expect([...fake.rows.values()][0]).toMatchObject({ unitAmountPaisa: 209_900, shippingPaisa: 0, taxPaisa: 0, totalPaisa: 209_900, quantity: 1 });
   });
 
   it("reuses the same internal and persisted Razorpay order on duplicate submission", async () => {

@@ -2,7 +2,7 @@ import "server-only";
 import { DelhiveryServiceabilityError } from "./types";
 
 const SERVICEABILITY_PATH = "/c/api/pin-codes/json/";
-const REQUEST_TIMEOUT_MS = 5_000;
+const REQUEST_TIMEOUT_MS = 30_000;
 
 type DelhiveryClientOptions = Readonly<{
   fetchImpl?: typeof fetch;

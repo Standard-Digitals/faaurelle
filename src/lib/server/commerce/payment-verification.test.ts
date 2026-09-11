@@ -33,6 +33,7 @@ function dependencies() {
     verifySignature: vi.fn().mockReturnValue(true),
     fetchPayment: vi.fn().mockResolvedValue(payment),
     reconcile: vi.fn().mockResolvedValue({ status: "captured" }),
+    fulfil: vi.fn().mockResolvedValue({ status: "created", waybill: "1122345678722", reused: false }),
   };
 }
 
@@ -60,6 +61,18 @@ describe("Checkout payment verification", () => {
     expect(deps.verifySignature).toHaveBeenCalledWith(order.razorpayOrderId, callback.razorpay_payment_id, callback.razorpay_signature);
     expect(deps.fetchPayment).toHaveBeenCalledWith(callback.razorpay_payment_id);
     expect(deps.reconcile).toHaveBeenCalledWith(expect.objectContaining({ id: order.id }), payment, expect.any(Date), callback.razorpay_payment_id);
+    expect(deps.fulfil).toHaveBeenCalledWith(order.id);
+  });
+
+  it("keeps captured payment successful when fulfilment remains pending", async () => {
+    const deps = dependencies();
+    deps.fulfil.mockResolvedValueOnce({ status: "pending", retryable: true });
+    const { verifyCheckoutPayment } = await import("./payment-verification");
+    await expect(verifyCheckoutPayment(callback, deps as never)).resolves.toMatchObject({
+      success: true,
+      payment: { status: "captured" },
+      fulfilment: { status: "pending" },
+    });
   });
 
   it("keeps provider unavailability retryable", async () => {

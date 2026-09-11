@@ -34,6 +34,10 @@ function attemptState(payment: RazorpayPayment) {
   return "CREATED" as const;
 }
 
+function isUniqueConstraintRace(error: unknown) {
+  return Boolean(error && typeof error === "object" && "code" in error && error.code === "P2002");
+}
+
 export async function reconcileRazorpayPayment(
   order: Order,
   payment: RazorpayPayment,
@@ -44,7 +48,7 @@ export async function reconcileRazorpayPayment(
   assertProviderFacts(order, payment, expectedPaymentId);
   const target = attemptState(payment);
 
-  return database.$transaction(async (tx) => {
+  const persist = () => database.$transaction(async (tx) => {
     const persisted = await tx.payment.upsert({
       where: { razorpayPaymentId: payment.id },
       create: {
@@ -103,4 +107,14 @@ export async function reconcileRazorpayPayment(
     if (currentPayment.status === "FAILED") return { status: "failed" };
     return { status: "processing" };
   });
+
+  try {
+    return await persist();
+  } catch (error) {
+    if (!isUniqueConstraintRace(error)) throw error;
+    // Concurrent browser/webhook reconciliation can race on the same unique
+    // Razorpay payment. Once the winning transaction commits, one bounded retry
+    // follows the normal upsert/ownership checks and converges on that row.
+    return persist();
+  }
 }

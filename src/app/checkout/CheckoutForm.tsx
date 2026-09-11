@@ -91,7 +91,11 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
         body: JSON.stringify(verification),
       });
       const result = await response.json() as
-        | { success: true; payment: { status: "captured" | "processing" | "failed" } }
+        | {
+            success: true;
+            payment: { status: "captured" | "processing" | "failed" };
+            fulfilment?: { status: "created" | "pending" | "failed" | "ineligible" };
+          }
         | { success: false; retryable: boolean; message: string };
 
       if (!result.success) {
@@ -100,7 +104,11 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
       } else if (result.payment.status === "captured") {
         setSubmissionState("payment-captured");
         setPendingVerification(null);
-        setFormMessage("Payment received. Shipment creation has not started yet.");
+        setFormMessage(
+          result.fulfilment?.status === "created"
+            ? "Payment received. Your shipment has been created."
+            : "Payment received. Order processing is pending.",
+        );
       } else if (result.payment.status === "processing") {
         setSubmissionState("payment-processing");
         setFormMessage("Payment is authorized or still processing. It has not been marked paid yet.");

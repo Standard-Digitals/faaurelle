@@ -41,7 +41,7 @@ export function OrderSummary({ summary }: { summary: CheckoutSummary }) {
         <div><dt>Total</dt><dd>{formatInr(summary.totalPaisa)}</dd></div>
       </dl>
 
-      <p className={styles.summaryNote}>₹999 is the tax-inclusive selling price. No separate tax or shipping amount is added. Delivery remains subject to prepaid pincode serviceability.</p>
+      <p className={styles.summaryNote}>{formatInr(summary.totalPaisa)} is the tax-inclusive selling price. No separate tax or shipping amount is added. Delivery remains subject to prepaid pincode serviceability.</p>
     </aside>
   );
 }

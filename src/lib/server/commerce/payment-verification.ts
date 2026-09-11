@@ -4,6 +4,7 @@ import { fetchRazorpayPayment } from "@/lib/server/razorpay/client";
 import { verifyRazorpayCheckoutSignature } from "@/lib/server/razorpay/signatures";
 import { RazorpayOrderError } from "@/lib/server/razorpay/types";
 import { PaymentIntegrityError, reconcileRazorpayPayment, type DurablePaymentResult } from "./payment-service";
+import { fulfilPaidOrder, type FulfilmentResult } from "./fulfilment-service";
 
 const PUBLIC_TOKEN = /^[A-Za-z0-9_-]{32,128}$/;
 const PAYMENT_ID = /^pay_[A-Za-z0-9]{6,64}$/;
@@ -18,7 +19,7 @@ export type PaymentVerificationInput = Readonly<{
 }>;
 
 export type PaymentVerificationResponse =
-  | { success: true; payment: DurablePaymentResult }
+  | { success: true; payment: DurablePaymentResult; fulfilment?: FulfilmentResult }
   | {
       success: false;
       kind: "invalid_request" | "not_found" | "conflict" | "invalid_signature" | "payment_not_found" | "integrity" | "provider_unavailable";
@@ -31,6 +32,7 @@ type Dependencies = Readonly<{
   verifySignature?: typeof verifyRazorpayCheckoutSignature;
   fetchPayment?: typeof fetchRazorpayPayment;
   reconcile?: typeof reconcileRazorpayPayment;
+  fulfil?: typeof fulfilPaidOrder;
   now?: () => Date;
 }>;
 
@@ -91,7 +93,13 @@ export async function verifyCheckoutPayment(
       (dependencies.now ?? (() => new Date()))(),
       input.razorpay_payment_id,
     );
-    return { success: true, payment };
+    if (payment.status !== "captured") return { success: true, payment };
+    try {
+      const fulfilment = await (dependencies.fulfil ?? fulfilPaidOrder)(order.id);
+      return { success: true, payment, fulfilment };
+    } catch {
+      return { success: true, payment, fulfilment: { status: "pending", retryable: true } };
+    }
   } catch (error) {
     if (error instanceof PaymentIntegrityError) {
       return { success: false, kind: "integrity", retryable: false, message: "The provider payment does not match this order." };

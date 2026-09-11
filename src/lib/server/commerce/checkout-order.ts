@@ -15,6 +15,41 @@ import { RazorpayOrderError, type RazorpayOrder } from "@/lib/server/razorpay/ty
 
 const CHECKOUT_KEY = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function safeCause(error: unknown) {
+  if (!error || typeof error !== "object") return {};
+  const value = error as { name?: unknown; code?: unknown; cause?: unknown };
+  const nested = value.cause && typeof value.cause === "object" ? value.cause as { code?: unknown } : undefined;
+  return {
+    ...(typeof value.name === "string" ? { causeName: value.name } : {}),
+    ...(typeof value.code === "string"
+      ? { causeCode: value.code }
+      : typeof nested?.code === "string" ? { causeCode: nested.code } : {}),
+  };
+}
+
+function logCheckoutPreparationFailure(stage: string, error: unknown, orderId?: string) {
+  const diagnosticId = randomUUID();
+  if (error instanceof RazorpayOrderError) {
+    console.error("[commerce:checkout-payment-preparation]", {
+      diagnosticId,
+      operation: stage,
+      kind: error.kind,
+      ...(orderId ? { orderId } : {}),
+      ...error.diagnostic,
+    });
+  } else {
+    console.error("[commerce:checkout-payment-preparation]", {
+      diagnosticId,
+      operation: stage,
+      stage: "unknown",
+      kind: "unexpected",
+      ...(orderId ? { orderId } : {}),
+      ...safeCause(error),
+    });
+  }
+  return diagnosticId;
+}
+
 export type CreateCheckoutInput = Readonly<{
   checkoutKey: string;
   productCode: string;
@@ -103,7 +138,8 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
   let serviceability;
   try {
     serviceability = await checkServiceability(validation.data.pincode);
-  } catch {
+  } catch (error) {
+    logCheckoutPreparationFailure("serviceability_recheck", error);
     return { success: false, kind: "service_unavailable", message: "We couldn’t verify delivery availability right now. Please try again." };
   }
   if (!serviceability.prepaidServiceable) {
@@ -112,7 +148,10 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
 
   const publicKey = dependencies.publicKey ?? getRazorpayPublicKey;
   let keyId: string;
-  try { keyId = publicKey(); } catch { return { success: false, kind: "payment_unavailable", message: "Test payment is not configured." }; }
+  try { keyId = publicKey(); } catch (error) {
+    logCheckoutPreparationFailure("razorpay_configuration", error);
+    return { success: false, kind: "payment_unavailable", message: "Test payment is not configured." };
+  }
 
   const pricing = calculateV1Pricing(product);
   const details = validation.data;
@@ -146,7 +185,10 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
       ownsCreation = true;
     } catch (error) {
       order = await orders.findUnique({ where: { checkoutKey: input.checkoutKey } });
-      if (!order) throw error;
+      if (!order) {
+        logCheckoutPreparationFailure("internal_order_create", error);
+        throw error;
+      }
       if (!materialMatches(order, snapshot)) return { success: false, kind: "conflict", message: "This checkout attempt belongs to different details. Please start a new checkout." };
     }
   }
@@ -162,11 +204,15 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
   let providerOrder: RazorpayOrder | null = null;
   if (!ownsCreation) {
     try { providerOrder = await (dependencies.findProviderOrder ?? findRazorpayOrderByReceipt)(providerInput); }
-    catch { return { success: false, kind: "payment_pending", message: "Payment setup is still being reconciled. Please try again shortly." }; }
+    catch (error) {
+      logCheckoutPreparationFailure("razorpay_order_lookup", error, order.id);
+      return { success: false, kind: "payment_pending", message: "Payment setup is still being reconciled. Please try again shortly." };
+    }
     if (!providerOrder) return { success: false, kind: "payment_pending", message: "Payment setup is still being reconciled. Please try again shortly." };
   } else {
     try { providerOrder = await (dependencies.createProviderOrder ?? createRazorpayOrder)(providerInput); }
     catch (error) {
+      logCheckoutPreparationFailure("razorpay_order_create", error, order.id);
       if (error instanceof RazorpayOrderError && ["authentication", "configuration", "definitive"].includes(error.kind)) {
         await orders.updateMany({ where: { id: order.id, paymentStatus: "ORDER_CREATING", razorpayOrderId: null }, data: { paymentStatus: "FAILED" } });
         return { success: false, kind: "payment_unavailable", message: "Test payment could not be prepared. Please try again." };

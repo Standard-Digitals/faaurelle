@@ -26,6 +26,9 @@ export type DelhiveryDiagnosticContext = Readonly<{
   missingConfiguration?: readonly string[];
   causeName?: string;
   causeCode?: string;
+  providerMessage?: string;
+  providerStatus?: string;
+  providerReference?: string;
 }>;
 
 export class DelhiveryServiceabilityError extends Error {

@@ -58,6 +58,15 @@ function fakeDatabase() {
 }
 
 describe("durable payment reconciliation", () => {
+  it("converges after one concurrent unique-constraint race", async () => {
+    const fake = fakeDatabase();
+    const transaction = fake.database.$transaction;
+    transaction.mockRejectedValueOnce({ code: "P2002" });
+    const { reconcileRazorpayPayment } = await import("./payment-service");
+    await expect(reconcileRazorpayPayment(order as never, providerPayment, new Date(), providerPayment.id, fake.database as never)).resolves.toMatchObject({ status: "captured" });
+    expect(transaction).toHaveBeenCalledTimes(2);
+  });
+
   it("creates one captured attempt and atomically marks the Order paid", async () => {
     const fake = fakeDatabase();
     const { reconcileRazorpayPayment } = await import("./payment-service");

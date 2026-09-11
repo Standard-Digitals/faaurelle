@@ -7,7 +7,7 @@ describe("authoritative checkout product", () => {
     const { getAuthoritativeProduct } = await import("./products");
     expect(getAuthoritativeProduct("hair-elixir")).toMatchObject({
       code: "hair-elixir",
-      unitAmountPaisa: 99_900,
+      unitAmountPaisa: 209_900,
       currency: "INR",
       active: true,
     });

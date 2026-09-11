@@ -1,9 +1,13 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/server/db/prisma";
 import { fetchRazorpayPayment } from "@/lib/server/razorpay/client";
+import { RazorpayOrderError } from "@/lib/server/razorpay/types";
 import { PaymentIntegrityError, reconcileRazorpayPayment } from "./payment-service";
+import { fulfilPaidOrder } from "./fulfilment-service";
 
 const SUPPORTED_EVENTS = new Set(["payment.captured", "payment.failed", "order.paid"]);
+const FULFILMENT_EVENT = "payment.captured";
 const EVENT_ID = /^[A-Za-z0-9_-]{6,128}$/;
 const PAYMENT_ID = /^pay_[A-Za-z0-9]{6,64}$/;
 const ORDER_ID = /^order_[A-Za-z0-9]{6,64}$/;
@@ -31,6 +35,7 @@ type Dependencies = Readonly<{
   findOrder?: typeof prisma.order.findUnique;
   fetchPayment?: typeof fetchRazorpayPayment;
   reconcile?: typeof reconcileRazorpayPayment;
+  fulfil?: typeof fulfilPaidOrder;
   now?: () => Date;
 }>;
 
@@ -39,6 +44,37 @@ export class WebhookProcessingError extends Error {
     super("Razorpay webhook processing failed");
     this.name = "WebhookProcessingError";
   }
+}
+
+function safeCause(error: unknown) {
+  if (!error || typeof error !== "object") return {};
+  const value = error as { name?: unknown; code?: unknown; cause?: unknown };
+  const nested = value.cause && typeof value.cause === "object" ? value.cause as { code?: unknown } : undefined;
+  return {
+    ...(typeof value.name === "string" ? { causeName: value.name } : {}),
+    ...(typeof value.code === "string"
+      ? { causeCode: value.code }
+      : typeof nested?.code === "string" ? { causeCode: nested.code } : {}),
+  };
+}
+
+function logWebhook(
+  diagnosticId: string,
+  stage: string,
+  eventId: string,
+  signal: WebhookSignal,
+  details: Record<string, unknown> = {},
+) {
+  const log = details.outcome === "retryable_failure" ? console.error : console.info;
+  log("[commerce:razorpay-webhook]", {
+    diagnosticId,
+    operation: stage,
+    eventId,
+    eventType: signal.eventType,
+    ...(signal.orderId ? { razorpayOrderId: signal.orderId } : {}),
+    ...(signal.paymentId ? { razorpayPaymentId: signal.paymentId } : {}),
+    ...details,
+  });
 }
 
 function entity(payload: unknown, name: "payment" | "order") {
@@ -107,17 +143,25 @@ export async function processRazorpayWebhook(
   if (!EVENT_ID.test(eventId)) throw new WebhookProcessingError(false);
   const signal = extractRazorpayWebhookSignal(payload);
   if (!signal) throw new WebhookProcessingError(false);
+  const diagnosticId = randomUUID();
   const events = dependencies.events ?? (prisma.webhookEvent as unknown as WebhookStore);
   const now = (dependencies.now ?? (() => new Date()))();
   const claim = await claimEvent(eventId, signal, events, now);
-  if (claim === "processed") return { outcome: "duplicate" };
-  if (claim === "in_progress") return { outcome: "in_progress" };
+  if (claim === "processed") {
+    logWebhook(diagnosticId, "claim", eventId, signal, { outcome: "duplicate" });
+    return { outcome: "duplicate" };
+  }
+  if (claim === "in_progress") {
+    logWebhook(diagnosticId, "claim", eventId, signal, { outcome: "in_progress" });
+    return { outcome: "in_progress" };
+  }
 
   if (!SUPPORTED_EVENTS.has(signal.eventType)) {
     await events.update({
       where: { providerEventId: eventId },
       data: { processingStatus: "PROCESSED", processingStartedAt: null, processedAt: now, errorMessage: "Unsupported event ignored" },
     });
+    logWebhook(diagnosticId, "filter", eventId, signal, { outcome: "ignored", reason: "unsupported_event" });
     return { outcome: "ignored" };
   }
   if (!signal.paymentId || !signal.orderId) {
@@ -125,6 +169,7 @@ export async function processRazorpayWebhook(
       where: { providerEventId: eventId },
       data: { processingStatus: "PROCESSED", processingStartedAt: null, processedAt: now, errorMessage: "Supported event lacked correlation identifiers" },
     });
+    logWebhook(diagnosticId, "correlation", eventId, signal, { outcome: "ignored", reason: "missing_identifiers" });
     return { outcome: "ignored" };
   }
 
@@ -135,15 +180,43 @@ export async function processRazorpayWebhook(
       where: { providerEventId: eventId },
       data: { processingStatus: "PROCESSED", processingStartedAt: null, processedAt: now, errorMessage: "No matching internal order" },
     });
+    logWebhook(diagnosticId, "order_lookup", eventId, signal, { outcome: "ignored", reason: "order_not_found" });
     return { outcome: "ignored" };
   }
 
+  let processingStage = "payment_fetch";
   try {
     const payment = await (dependencies.fetchPayment ?? fetchRazorpayPayment)(signal.paymentId);
-    await (dependencies.reconcile ?? reconcileRazorpayPayment)(order, payment, now, signal.paymentId);
+    processingStage = "payment_reconciliation";
+    const reconciliation = await (dependencies.reconcile ?? reconcileRazorpayPayment)(order, payment, now, signal.paymentId);
+    if (reconciliation.status === "captured" && signal.eventType === FULFILMENT_EVENT) {
+      processingStage = "fulfilment";
+      const fulfilment = await (dependencies.fulfil ?? fulfilPaidOrder)(order.id);
+      if (fulfilment.retryable) {
+        logWebhook(diagnosticId, processingStage, eventId, signal, {
+          outcome: "retryable_failure",
+          internalOrderId: order.id,
+          fulfilmentStatus: fulfilment.status,
+        });
+        throw new WebhookProcessingError(true);
+      }
+      if (fulfilment.status === "failed") {
+        logWebhook(diagnosticId, processingStage, eventId, signal, {
+          outcome: "definitive_failure",
+          internalOrderId: order.id,
+          fulfilmentStatus: fulfilment.status,
+        });
+      }
+    }
+    processingStage = "event_finalize";
     await events.update({
       where: { providerEventId: eventId },
       data: { processingStatus: "PROCESSED", processingStartedAt: null, processedAt: now, errorMessage: null },
+    });
+    logWebhook(diagnosticId, "complete", eventId, signal, {
+      outcome: "processed",
+      internalOrderId: order.id,
+      paymentStatus: reconciliation.status,
     });
     return { outcome: "processed" };
   } catch (error) {
@@ -152,11 +225,27 @@ export async function processRazorpayWebhook(
         where: { providerEventId: eventId },
         data: { processingStatus: "PROCESSED", processingStartedAt: null, processedAt: now, errorMessage: "Payment integrity mismatch" },
       });
+      logWebhook(diagnosticId, processingStage, eventId, signal, {
+        outcome: "ignored",
+        reason: "payment_integrity_mismatch",
+        integrityKind: error.kind,
+        internalOrderId: order.id,
+      });
       return { outcome: "ignored" };
+    }
+    if (!(error instanceof WebhookProcessingError && processingStage === "fulfilment")) {
+      const providerDetails = error instanceof RazorpayOrderError
+        ? { kind: error.kind, ...error.diagnostic }
+        : { kind: "unexpected", ...safeCause(error) };
+      logWebhook(diagnosticId, processingStage, eventId, signal, {
+        outcome: "retryable_failure",
+        internalOrderId: order.id,
+        ...providerDetails,
+      });
     }
     await events.update({
       where: { providerEventId: eventId },
-      data: { processingStatus: "FAILED", processingStartedAt: null, errorMessage: "Payment reconciliation failed" },
+      data: { processingStatus: "FAILED", processingStartedAt: null, errorMessage: `Webhook ${processingStage} failed` },
     });
     throw new WebhookProcessingError(true);
   }

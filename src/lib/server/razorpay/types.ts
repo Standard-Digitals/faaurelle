@@ -26,8 +26,31 @@ export type RazorpayErrorKind =
   | "network"
   | "malformed_response";
 
+export type RazorpayDiagnosticContext = Readonly<{
+  stage: "configuration" | "request" | "response" | "parsing" | "unknown";
+  providerHost?: string;
+  httpStatus?: number;
+  responseContentType?: string;
+  causeName?: string;
+  causeCode?: string;
+  missingConfiguration?: readonly string[];
+  paymentModeSupported?: boolean;
+  responseShape?: string;
+  providerErrorCode?: string;
+  providerReason?: string;
+  providerStep?: string;
+  providerSource?: string;
+  providerMessage?: string;
+  providerRequestId?: string;
+  responseContentLength?: string;
+}>;
+
 export class RazorpayOrderError extends Error {
-  constructor(readonly kind: RazorpayErrorKind, options?: ErrorOptions) {
+  constructor(
+    readonly kind: RazorpayErrorKind,
+    readonly diagnostic: RazorpayDiagnosticContext = { stage: "unknown" },
+    options?: ErrorOptions,
+  ) {
     super(`Razorpay order operation failed: ${kind}`, options);
     this.name = "RazorpayOrderError";
   }

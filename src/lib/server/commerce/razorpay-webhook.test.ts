@@ -47,6 +47,7 @@ function dependencies(events: ReturnType<typeof fakeEvents>["store"]) {
     findOrder: vi.fn().mockResolvedValue({ id: "internal-order", razorpayOrderId: "order_Order123" }),
     fetchPayment: vi.fn().mockResolvedValue({ id: "pay_Payment123", orderId: "order_Order123", amount: 99_900, currency: "INR", status: "captured", captured: true, createdAt: new Date() }),
     reconcile: vi.fn().mockResolvedValue({ status: "captured" }),
+    fulfil: vi.fn().mockResolvedValue({ status: "created", waybill: "1122345678722", reused: false }),
     now: () => new Date("2026-09-09T12:00:00Z"),
   };
 }
@@ -59,6 +60,7 @@ describe("Razorpay webhook processing", () => {
     await expect(processRazorpayWebhook(`evt_${event.replace(".", "_")}`, payload(event), deps as never)).resolves.toEqual({ outcome: "processed" });
     expect(deps.fetchPayment).toHaveBeenCalledWith("pay_Payment123");
     expect(deps.reconcile).toHaveBeenCalledTimes(1);
+    expect(deps.fulfil).toHaveBeenCalledTimes(event === "payment.captured" ? 1 : 0);
   });
 
   it("deduplicates an already processed event", async () => {
@@ -78,6 +80,24 @@ describe("Razorpay webhook processing", () => {
     await expect(processRazorpayWebhook("evt_retry123", payload(), deps as never)).rejects.toMatchObject({ retryable: true });
     await expect(processRazorpayWebhook("evt_retry123", payload(), deps as never)).resolves.toEqual({ outcome: "processed" });
     expect(deps.reconcile).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks the event retryable when captured payment fulfilment is pending", async () => {
+    const fake = fakeEvents();
+    const deps = dependencies(fake.store);
+    deps.fulfil.mockResolvedValueOnce({ status: "pending", retryable: true });
+    const { processRazorpayWebhook } = await import("./razorpay-webhook");
+    await expect(processRazorpayWebhook("evt_fulfilment123", payload(), deps as never)).rejects.toMatchObject({ retryable: true });
+    expect(fake.rows.get("evt_fulfilment123")).toMatchObject({ processingStatus: "FAILED" });
+  });
+
+  it("acknowledges a definitive fulfilment failure without asking Razorpay to retry", async () => {
+    const fake = fakeEvents();
+    const deps = dependencies(fake.store);
+    deps.fulfil.mockResolvedValueOnce({ status: "failed", retryable: false });
+    const { processRazorpayWebhook } = await import("./razorpay-webhook");
+    await expect(processRazorpayWebhook("evt_definitive123", payload(), deps as never)).resolves.toEqual({ outcome: "processed" });
+    expect(fake.rows.get("evt_definitive123")).toMatchObject({ processingStatus: "PROCESSED" });
   });
 
   it("acknowledges unsupported events and unknown internal orders without business mutation", async () => {

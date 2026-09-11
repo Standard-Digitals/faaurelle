@@ -1,4 +1,5 @@
 import "server-only";
+import { commerceDebug } from "@/lib/server/commerce/debug";
 import { RazorpayOrderError, type RazorpayOrder, type RazorpayPayment } from "./types";
 
 const ORDERS_URL = "https://api.razorpay.com/v1/orders";
@@ -23,7 +24,15 @@ function credentials(options: RazorpayClientOptions) {
     !keyId?.trim() ||
     !keySecret?.trim()
   ) {
-    throw new RazorpayOrderError("configuration");
+    throw new RazorpayOrderError("configuration", {
+      stage: "configuration",
+      missingConfiguration: [
+        ...(!paymentMode ? ["RAZORPAY_PAYMENT_MODE"] : []),
+        ...(!keyId?.trim() ? ["RAZORPAY_KEY_ID"] : []),
+        ...(!keySecret?.trim() ? ["RAZORPAY_KEY_SECRET"] : []),
+      ],
+      paymentModeSupported: paymentMode === "test",
+    });
   }
   return {
     keyId: keyId.trim(),
@@ -31,8 +40,56 @@ function credentials(options: RazorpayClientOptions) {
   };
 }
 
+function safeCause(error: unknown) {
+  if (!error || typeof error !== "object") return {};
+  const value = error as { name?: unknown; code?: unknown; cause?: unknown };
+  const nested = value.cause && typeof value.cause === "object" ? value.cause as { code?: unknown } : undefined;
+  return {
+    ...(typeof value.name === "string" ? { causeName: value.name } : {}),
+    ...(typeof value.code === "string"
+      ? { causeCode: value.code }
+      : typeof nested?.code === "string" ? { causeCode: nested.code } : {}),
+  };
+}
+
+function safeProviderValue(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.replace(/[^A-Za-z0-9_. -]/g, "").trim();
+  return normalized ? normalized.slice(0, 100) : undefined;
+}
+
+function safeProviderMessage(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  const normalized = value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized ? normalized.slice(0, 300) : undefined;
+}
+
+function providerErrorDetails(payload: unknown) {
+  if (!payload || typeof payload !== "object") return {};
+  const error = (payload as Record<string, unknown>).error;
+  if (!error || typeof error !== "object") return {};
+  const value = error as Record<string, unknown>;
+  return {
+    ...(safeProviderValue(value.code) ? { providerErrorCode: safeProviderValue(value.code) } : {}),
+    ...(safeProviderValue(value.reason) ? { providerReason: safeProviderValue(value.reason) } : {}),
+    ...(safeProviderValue(value.step) ? { providerStep: safeProviderValue(value.step) } : {}),
+    ...(safeProviderValue(value.source) ? { providerSource: safeProviderValue(value.source) } : {}),
+    ...(safeProviderMessage(value.description) ? { providerMessage: safeProviderMessage(value.description) } : {}),
+  };
+}
+
 async function request(url: URL, init: RequestInit, options: RazorpayClientOptions) {
   const { authorization } = credentials(options);
+  commerceDebug("razorpay-request", {
+    method: init.method ?? "GET",
+    url: url.toString(),
+    headers: { Accept: "application/json", ...init.headers, Authorization: "Basic <redacted>" },
+    body: init.body ?? null,
+  });
   let response: Response;
   try {
     response = await (options.fetchImpl ?? fetch)(url, {
@@ -43,29 +100,68 @@ async function request(url: URL, init: RequestInit, options: RazorpayClientOptio
     });
   } catch (error) {
     const isTimeout = error instanceof DOMException && (error.name === "TimeoutError" || error.name === "AbortError");
-    throw new RazorpayOrderError(isTimeout ? "timeout" : "network", { cause: error });
+    throw new RazorpayOrderError(
+      isTimeout ? "timeout" : "network",
+      { stage: "request", providerHost: url.host, ...safeCause(error) },
+      { cause: error },
+    );
   }
-  if (response.status === 401 || response.status === 403) throw new RazorpayOrderError("authentication");
+  const responseContext = {
+    stage: "response" as const,
+    providerHost: url.host,
+    httpStatus: response.status,
+    responseContentType: response.headers.get("content-type") ?? undefined,
+    responseContentLength: response.headers.get("content-length") ?? undefined,
+    providerRequestId:
+      response.headers.get("x-razorpay-request-id") ??
+      response.headers.get("x-request-id") ??
+      undefined,
+  };
+  commerceDebug("razorpay-response-headers", {
+    url: url.toString(),
+    status: response.status,
+    statusText: response.statusText,
+    headers: Object.fromEntries(response.headers.entries()),
+  });
+  if (response.status === 401 || response.status === 403) throw new RazorpayOrderError("authentication", responseContext);
   if (!response.ok) {
     let authenticationFailure = false;
+    let providerDiagnostic = {};
     try {
-      const body = JSON.stringify(await response.json()).toLocaleLowerCase();
+      const responseText = await response.text();
+      commerceDebug("razorpay-error-response-body", { url: url.toString(), body: responseText });
+      let payload: unknown;
+      try {
+        payload = JSON.parse(responseText) as unknown;
+      } catch {
+        payload = null;
+      }
+      const body = responseText.toLocaleLowerCase();
       authenticationFailure = body.includes("authentication") || body.includes("api key");
+      providerDiagnostic = {
+        ...providerErrorDetails(payload),
+        ...(!payload && safeProviderMessage(responseText)
+          ? { providerMessage: safeProviderMessage(responseText) }
+          : {}),
+      };
     } catch {
       // Status still determines whether the outcome is definitive or ambiguous.
     }
-    if (authenticationFailure) throw new RazorpayOrderError("authentication");
-    throw new RazorpayOrderError(response.status >= 500 ? "network" : "definitive");
+    const diagnostic = { ...responseContext, ...providerDiagnostic };
+    if (authenticationFailure) throw new RazorpayOrderError("authentication", diagnostic);
+    throw new RazorpayOrderError(response.status >= 500 ? "network" : "definitive", diagnostic);
   }
   try {
-    return (await response.json()) as unknown;
+    const payload: unknown = await response.json();
+    commerceDebug("razorpay-success-response-body", { url: url.toString(), payload });
+    return payload;
   } catch (error) {
-    throw new RazorpayOrderError("malformed_response", { cause: error });
+    throw new RazorpayOrderError("malformed_response", { ...responseContext, stage: "parsing", ...safeCause(error) }, { cause: error });
   }
 }
 
 function normalizeOrder(payload: unknown, expected: CreateOrderInput): RazorpayOrder {
-  if (!payload || typeof payload !== "object") throw new RazorpayOrderError("malformed_response");
+  if (!payload || typeof payload !== "object") throw new RazorpayOrderError("malformed_response", { stage: "parsing", responseShape: typeof payload });
   const value = payload as Record<string, unknown>;
   if (
     typeof value.id !== "string" || !value.id.startsWith("order_") ||
@@ -73,7 +169,7 @@ function normalizeOrder(payload: unknown, expected: CreateOrderInput): RazorpayO
     value.receipt !== expected.receipt ||
     !["created", "attempted", "paid"].includes(String(value.status))
   ) {
-    throw new RazorpayOrderError("malformed_response");
+    throw new RazorpayOrderError("malformed_response", { stage: "parsing", responseShape: `object:${Object.keys(value).sort().join(",")}` });
   }
   return {
     id: value.id,
