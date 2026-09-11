@@ -172,7 +172,7 @@
   padding-bottom: clamp(4rem, 7vw, 7rem);
   background-image:
     linear-gradient(90deg, rgb(255 255 255 / 0.98) 0%, rgb(255 255 255 / 0.9) 36%, transparent 68%),
-    url("/images/silk-botanique-fusion/hair-fusion.gif");
+    url("/images/silk-botanique-fusion/hair-fusion-hq.webp");
   background-position: bottom right;
   background-repeat: no-repeat;
   background-size: cover;
@@ -402,7 +402,7 @@
     min-height: 48rem;
     background-image:
       linear-gradient(0deg, rgb(255 255 255 / 0.96) 0%, rgb(255 255 255 / 0.8) 38%, transparent 72%),
-      url("/images/silk-botanique-fusion/hair-fusion.gif");
+      url("/images/silk-botanique-fusion/hair-fusion-hq.webp");
     background-position: 64% bottom;
   }
 

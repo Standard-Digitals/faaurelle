@@ -45,7 +45,7 @@ export function SilkBotaniqueHero() {
 
     let isVisible = true;
     const syncPlayback = () => {
-      if (document.hidden || !isVisible) {
+      if (document.hidden || !isVisible || video.ended) {
         video.pause();
         return;
       }
@@ -96,7 +96,6 @@ export function SilkBotaniqueHero() {
           ref={videoRef}
           className={styles.heroVideo}
           autoPlay
-          loop
           muted
           playsInline
           preload="metadata"
