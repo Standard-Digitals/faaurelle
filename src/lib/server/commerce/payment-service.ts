@@ -48,7 +48,7 @@ export async function reconcileRazorpayPayment(
   assertProviderFacts(order, payment, expectedPaymentId);
   const target = attemptState(payment);
 
-  const persist = () => database.$transaction(async (tx) => {
+  const persist = (): Promise<DurablePaymentResult> => database.$transaction(async (tx) => {
     const persisted = await tx.payment.upsert({
       where: { razorpayPaymentId: payment.id },
       create: {

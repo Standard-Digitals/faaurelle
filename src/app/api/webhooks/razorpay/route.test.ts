@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/server/razorpay/signatures", () => ({ verifyRazorpayWebhookSignature: mocks.verifySignature }));
+vi.mock("@/lib/server/commerce/debug", () => ({ commerceDebug: vi.fn() }));
 vi.mock("@/lib/server/commerce/razorpay-webhook", () => ({
   processRazorpayWebhook: mocks.processWebhook,
   WebhookProcessingError: class WebhookProcessingError extends Error {

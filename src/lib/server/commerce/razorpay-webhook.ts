@@ -192,7 +192,7 @@ export async function processRazorpayWebhook(
     if (reconciliation.status === "captured" && signal.eventType === FULFILMENT_EVENT) {
       processingStage = "fulfilment";
       const fulfilment = await (dependencies.fulfil ?? fulfilPaidOrder)(order.id);
-      if (fulfilment.retryable) {
+      if (fulfilment.status === "pending") {
         logWebhook(diagnosticId, processingStage, eventId, signal, {
           outcome: "retryable_failure",
           internalOrderId: order.id,

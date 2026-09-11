@@ -68,10 +68,10 @@ function logFulfilment(orderId: string, stage: string, error: unknown) {
     console.error("[commerce:delhivery-fulfilment]", {
       diagnosticId,
       orderId,
+      ...error.diagnostic,
       stage,
       kind: error.kind,
       ambiguous: error.ambiguous,
-      ...error.diagnostic,
     });
     return;
   }
