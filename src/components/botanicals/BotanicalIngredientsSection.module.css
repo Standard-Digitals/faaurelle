@@ -1,7 +1,7 @@
 .section {
   width: min(100%, var(--size-content-max));
   margin-inline: auto;
-  padding: clamp(7rem, 11vw, 12rem) var(--space-layout-x);
+  padding: var(--page-section-padding, clamp(7rem, 11vw, 12rem)) var(--space-layout-x);
   background: #fff;
   color: #17130f;
   font-family: var(--font-roboto-family);
@@ -9,7 +9,7 @@
 
 .header {
   max-width: 58rem;
-  margin: 0 auto clamp(4rem, 7vw, 7rem);
+  margin: 0 auto var(--page-section-padding, clamp(4rem, 7vw, 7rem));
   text-align: center;
 }
 

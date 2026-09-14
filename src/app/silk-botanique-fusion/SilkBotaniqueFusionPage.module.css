@@ -1,4 +1,5 @@
 .page {
+  --page-section-padding: clamp(2.5rem, 4vw, 4rem);
   padding-top: var(--site-header-total-height);
   overflow: hidden;
   background: #fff;
@@ -32,7 +33,7 @@
   display: grid;
   grid-template-columns: minmax(0, 0.88fr) minmax(25rem, 1fr);
   align-items: center;
-  min-height: min(54rem, calc(100svh - var(--site-header-total-height)));
+  min-height: 0;
   background: radial-gradient(circle at 78% 48%, rgb(196 144 56 / 0.12), transparent 28rem);
 }
 
@@ -40,7 +41,7 @@
   position: relative;
   z-index: 1;
   max-width: 44rem;
-  padding-block: clamp(5rem, 9vw, 9rem);
+  padding-block: var(--page-section-padding);
 }
 
 .eyebrow {
@@ -154,7 +155,7 @@
   display: flex;
   align-items: center;
   min-height: clamp(44rem, 58vw, 64rem);
-  padding-block: clamp(4rem, 7vw, 7rem);
+  padding-block: var(--page-section-padding);
   padding-inline: clamp(1.25rem, 13vw, 13rem);
   background-color: #fff;
 }
@@ -239,7 +240,7 @@
   gap: clamp(2rem, 5vw, 5rem);
   width: min(100%, var(--size-content-max));
   margin-inline: auto;
-  padding: clamp(3rem, 6vw, 6rem) var(--space-layout-x);
+  padding: var(--page-section-padding) var(--space-layout-x);
   background: #fff;
 }
 
@@ -310,7 +311,7 @@
   gap: clamp(2rem, 4vw, 4.5rem);
   width: min(100%, var(--size-content-max));
   margin-inline: auto;
-  padding: clamp(3rem, 5vw, 6rem) var(--space-layout-x);
+  padding: var(--page-section-padding) var(--space-layout-x);
   background: #fff;
 }
 
@@ -551,7 +552,7 @@
   .hero {
     grid-template-columns: 1fr;
     min-height: 0;
-    padding-top: 3rem;
+    padding-top: var(--page-section-padding);
   }
 
   .heroCopy {
@@ -564,7 +565,7 @@
 
   .heroVisual {
     min-height: 0;
-    padding-bottom: 4rem;
+    padding-bottom: var(--page-section-padding);
   }
 
   .principles {
@@ -591,8 +592,8 @@
   .science {
     align-items: flex-end;
     min-height: 48rem;
-    padding-top: 14rem;
-    padding-bottom: 2rem;
+    padding-top: var(--page-section-padding);
+    padding-bottom: var(--page-section-padding);
     background-position: 60% center;
   }
 

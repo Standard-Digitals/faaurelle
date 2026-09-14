@@ -5,7 +5,7 @@
   --tracking-cta: 0.14em;
 
   position: relative;
-  min-height: 100svh;
+  min-height: var(--showcase-min-height, 100svh);
   overflow: hidden;
   background: var(--color-background);
   color: var(--color-foreground);
@@ -18,9 +18,9 @@
   grid-template-columns: minmax(0, 56%) minmax(0, 44%);
   align-items: center;
   width: min(100%, var(--size-content-max));
-  min-height: 100svh;
+  min-height: var(--showcase-min-height, 100svh);
   margin: 0 auto;
-  padding: clamp(5rem, 9vh, 8rem) var(--space-layout-x);
+  padding: var(--showcase-section-padding, clamp(5rem, 9vh, 8rem)) var(--space-layout-x);
 }
 
 .galleryColumn {
