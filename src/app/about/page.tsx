@@ -8,7 +8,6 @@ import { SiteFooter } from "@/components/closing/SiteFooter";
 import { TrustDetailsSection } from "@/components/closing/TrustDetailsSection";
 import { SiteHeader } from "@/components/header/SiteHeader";
 import { AboutHero } from "./AboutHero";
-import { DifferenceCarousel } from "./DifferenceCarousel";
 import styles from "./AboutPage.module.css";
 
 export const metadata: Metadata = {
@@ -65,50 +64,6 @@ const benefits: Array<{ label: string; icon: ReactNode }> = [
   },
 ];
 
-const shinePrinciples: Array<{ title: string; description: string; icon: ReactNode }> = [
-  {
-    title: "Refines hair surface",
-    description: "Smooths and aligns the cuticle layer.",
-    icon: (
-      <>
-        <path d="M4 8.5c3 0 3-2 6-2s3 2 6 2 3-2 4-2" />
-        <path d="M4 12c3 0 3-2 6-2s3 2 6 2 3-2 4-2" />
-        <path d="M4 15.5c3 0 3-2 6-2s3 2 6 2 3-2 4-2" />
-      </>
-    ),
-  },
-  {
-    title: "Enhances light reflection",
-    description: "Helps hair reflect light evenly for exceptional brilliance.",
-    icon: (
-      <>
-        <path d="m12 2 1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7L12 2Z" />
-        <path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z" />
-      </>
-    ),
-  },
-  {
-    title: "Locks in softness",
-    description: "Supports smoothness and a silky-touch finish.",
-    icon: (
-      <>
-        <path d="M12 21s-7-4.2-7-10.2A4.1 4.1 0 0 1 12 8a4.1 4.1 0 0 1 7 2.8C19 16.8 12 21 12 21Z" />
-        <path d="M8.5 12.3c1.6.2 2.6-.5 3.5-1.8" />
-      </>
-    ),
-  },
-  {
-    title: "Defends against humidity",
-    description: "Helps tame frizz and flyaways throughout the day.",
-    icon: (
-      <>
-        <path d="M12 3 5.5 6v5.2c0 4.3 2.6 7.7 6.5 9.8 3.9-2.1 6.5-5.5 6.5-9.8V6L12 3Z" />
-        <path d="M12 8.2c-1.5 2-2.3 3.2-2.3 4.4a2.3 2.3 0 0 0 4.6 0c0-1.2-.8-2.4-2.3-4.4Z" />
-      </>
-    ),
-  },
-];
-
 const botanicals = [
   {
     name: "Argan oil",
@@ -125,33 +80,6 @@ const botanicals = [
     description: "Enhances silky shine",
     image: "/images/ingredients/camellia-oil.png",
   },
-];
-
-const formulaDetails = [
-  {
-    title: "Key actives",
-    items: [
-      "Argan Oil — deeply nourishes and enhances softness",
-      "Jojoba Oil — supports smoothness and effortless manageability",
-      "Camellia Oil — boosts natural shine and silky texture",
-      "Vitamin E — provides antioxidant care for healthy-looking hair",
-    ],
-  },
-  {
-    title: "Free from",
-    items: ["Heavy greasy residue", "Sticky finish", "Hair-weighing feel"],
-  },
-  {
-    title: "Finish",
-    items: ["Mirror-like shine", "Silk-touch softness", "Weightless elegance", "Humidity defence"],
-  },
-];
-
-const moments = [
-  "Before special occasions & celebrations",
-  "After blow-drying or heat styling",
-  "Reviving dull, lifeless hair",
-  "Everyday luxury hair care ritual",
 ];
 
 export default function AboutPage() {
@@ -171,34 +99,39 @@ export default function AboutPage() {
         </section>
 
         <SectionDivider />
-        <section className={`${styles.section} ${styles.science}`}>
+        <section className={`${styles.section} ${styles.science}`} aria-labelledby="science-heading">
           <div className={styles.sectionCopy}>
-            <p className={styles.eyebrow}>The science of</p>
-            <h2>Shine</h2>
-            <p className={styles.lead}>
-              Beautiful hair reflects light evenly across its surface. When the cuticle becomes
-              rough, light scatters unevenly, causing hair to appear dull and lifeless.{" "}
-              <em>FA AURELLE</em> helps smooth the hair surface and enhance light reflection,
-              revealing exceptional shine, softness, and a luminous glass-like finish.
-            </p>
+            <h2 id="science-heading">The Science of Shine</h2>
+            <p>It starts at the cuticle.</p>
             <p>
-              <em>FA AURELLE</em> helps refine the hair surface and enhance light reflection,
-              creating a luminous, glass-like finish that makes hair appear smoother, healthier, and
-              more radiant.
+              Hair shine is a reflection of how light interacts with the hair surface. Damaged,
+              lifted, and uneven cuticles scatter light, making hair appear dull, rough, and lifeless.
+              <br />
+              When the cuticle surface is refined, smoother, and more aligned, light reflects more
+              evenly—creating the appearance of greater shine, softness, and smoothness.
+              <br />
+              FA AURELLE is designed to help refine the hair surface, transforming the look and feel
+              of rough, unruly strands into a smoother, more polished finish.
             </p>
-            <div className={styles.principles}>
-              {shinePrinciples.map(({ title, description, icon }) => (
-                <article key={title}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    {icon}
-                  </svg>
-                  <div>
-                    <h3>{title}</h3>
-                    <p>{description}</p>
-                  </div>
-                </article>
-              ))}
+            <div className={styles.cuticleComparison}>
+              <div>
+                <h3>Damaged cuticles</h3>
+                <p>Uneven surface → Scattered light → Dull appearance</p>
+              </div>
+              <div>
+                <h3>Refined cuticles</h3>
+                <p>Smoother surface → Even light reflection → Radiant shine</p>
+              </div>
             </div>
+          </div>
+          <div className={styles.scienceVisual}>
+            <Image
+              src="/images/about/science-of-shine.jpeg"
+              alt="Magnified hair strands comparing a rough, lifted cuticle on the left with a smooth, aligned cuticle on the right"
+              width={1279}
+              height={1600}
+              sizes="(max-width: 900px) 100vw, 48vw"
+            />
           </div>
         </section>
 
@@ -216,83 +149,81 @@ export default function AboutPage() {
         />
 
         <SectionDivider />
-        <section className={`${styles.section} ${styles.difference}`}>
-          <div className={styles.differenceCopy}>
-            <p className={styles.eyebrow}>The FA ÀURELLE difference</p>
-            <h2>
-              <span className={styles.headingLine}>Crafted for performance.</span>
-              <span className={styles.headingLine}>Designed for elegance.</span>
-            </h2>
-          </div>
-          <DifferenceCarousel />
-        </section>
-
-        <SectionDivider />
-        <section className={`${styles.section} ${styles.formula}`}>
-          <article className={styles.formulaColumn}>
-            <p className={styles.eyebrow}>{formulaDetails[0].title}</p>
-            <ul>
-              {formulaDetails[0].items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
+        <section className={`${styles.section} ${styles.precision}`} aria-labelledby="precision-title">
+          <div className={styles.precisionCopy}>
+            <h2 id="precision-title">Crafted with<br />precision</h2>
+            <p className={styles.precisionLead}>To deliver the perfect drop.<br />Every time.</p>
+            <p className={styles.precisionDescription}>
+              Thoughtfully engineered for controlled and effortless application.
+            </p>
+            <ul className={styles.precisionBenefits}>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3S5 11 5 15a7 7 0 0 0 14 0c0-4-7-12-7-12Zm-3 12a3 3 0 0 0 3 3" /></svg>
+                <span>Shine</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6c3-3 6 3 9 0s6 3 9 0M3 12c3-3 6 3 9 0s6 3 9 0M3 18c3-3 6 3 9 0s6 3 9 0" /></svg>
+                <span>Smooth</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C4 9 10 4 20 3c0 10-5 17-15 16Zm-1 3L16 8" /></svg>
+                <span>Nourish</span>
+              </li>
             </ul>
-          </article>
-          <div className={styles.formulaVisual}>
-            <Image
-              src="/images/about/difference.png"
-              alt="Golden botanical serum drop with camellia flower and argan nuts"
-              fill
-              sizes="(max-width: 900px) 100vw, 34vw"
-            />
           </div>
-          <div className={styles.formulaSide}>
-            {formulaDetails.slice(1).map((group) => (
-              <article key={group.title}>
-                <p className={styles.eyebrow}>{group.title}</p>
-                <ul>
-                  {group.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </article>
-            ))}
+          <div className={styles.precisionVisual}>
+            <Image
+              src="/images/about/crafted-with-precision-exploded-bottle.png"
+              alt="Exploded view of the FA ÀURELLE bottle, gold collar, pump head and internal dispensing mechanism"
+              fill
+              sizes="100vw"
+            />
           </div>
         </section>
 
         <SectionDivider />
-        <section className={`${styles.section} ${styles.ritual}`}>
-          <div className={styles.ritualVisual}>
+        <section className={`${styles.section} ${styles.philosophy}`} aria-labelledby="philosophy-heading">
+          <div className={styles.philosophyCopy}>
+            <h2 id="philosophy-heading">Our Philosophy</h2>
+            <p>Less Cover. More Care.</p>
+            <p>
+              At FA AURELLE, we believe truly beautiful hair doesn’t need to be hidden beneath
+              layers of product—it needs the right care to reveal its natural potential.
+            </p>
+            <p>
+              Our philosophy begins with understanding hair at its surface. When the hair cuticle
+              is smoother and more aligned, it can reflect light more evenly, creating the
+              appearance of greater shine, softness, and smoothness.
+            </p>
+            <p>That is why we focus on more than an instant glossy effect.</p>
+          </div>
+          <div className={styles.philosophyVisual}>
             <Image
-              src="/images/about/ritual.png"
-              alt="Long, glossy hair representing the FA ÀURELLE finish"
-              fill
-              sizes="(max-width: 800px) 100vw, 50vw"
+              src="/images/about/our-philosophy.jpeg"
+              alt="Long, smooth brunette hair with luminous highlights, viewed from behind"
+              width={1279}
+              height={1600}
+              sizes="(max-width: 900px) 100vw, 40vw"
             />
           </div>
-          <div className={styles.ritualCopy}>
-            <p className={styles.eyebrow}>How to use</p>
-            <h2>Made for every moment</h2>
-            <ol>
-              <li>
-                <span>01</span>
-                <p>Dispense a small amount into your palm.</p>
-              </li>
-              <li>
-                <span>02</span>
-                <p>Warm gently between your hands.</p>
-              </li>
-              <li>
-                <span>03</span>
-                <p>Smooth through mid-lengths and ends on dry or damp hair.</p>
-              </li>
-            </ol>
-            <div className={styles.moments}>
-              {moments.map((moment) => (
-                <p key={moment}>{moment}</p>
-              ))}
-            </div>
+          <div className={styles.philosophyCopy}>
+            <p>
+              We strive to create hair care that refines, nourishes, protects, and enhances—turning
+              everyday hair care into a sensorial ritual.
+            </p>
+            <p>
+              We believe luxury isn’t about excess. It’s about precision, purpose, and beautifully
+              considered details.
+            </p>
+            <p>
+              From our formulations to the experience of using them, every element of FA AURELLE
+              is created with one intention:
+            </p>
+            <p>To reveal the beauty that’s already there.</p>
           </div>
         </section>
+
+
       </main>
       <InnerCircleSection />
       <TrustDetailsSection />

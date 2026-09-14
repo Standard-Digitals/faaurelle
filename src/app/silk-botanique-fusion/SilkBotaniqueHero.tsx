@@ -1,14 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import { gsap } from "gsap";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import styles from "./SilkBotaniqueFusionPage.module.css";
 
 export function SilkBotaniqueHero() {
   const rootRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const visualRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -33,44 +33,6 @@ export function SilkBotaniqueHero() {
     return () => context.revert();
   }, []);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) {
-      video.pause();
-      return;
-    }
-
-    let isVisible = true;
-    const syncPlayback = () => {
-      if (document.hidden || !isVisible || video.ended) {
-        video.pause();
-        return;
-      }
-
-      void video.play().catch(() => undefined);
-    };
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isVisible = entry.isIntersecting;
-        syncPlayback();
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(video);
-    document.addEventListener("visibilitychange", syncPlayback);
-    syncPlayback();
-
-    return () => {
-      observer.disconnect();
-      document.removeEventListener("visibilitychange", syncPlayback);
-      video.pause();
-    };
-  }, []);
-
   return (
     <section ref={rootRef} className={styles.hero}>
       <div ref={copyRef} className={styles.heroCopy}>
@@ -92,18 +54,15 @@ export function SilkBotaniqueHero() {
         </p>
       </div>
       <div ref={visualRef} className={styles.heroVisual}>
-        <video
-          ref={videoRef}
-          className={styles.heroVideo}
-          autoPlay
-          muted
-          playsInline
-          preload="metadata"
-          poster="/images/silk-botanique-fusion/fusion-hero-poster.jpg"
-          aria-hidden="true"
-        >
-          <source src="/images/silk-botanique-fusion/fusion-hero-loop.mp4" type="video/mp4" />
-        </video>
+        <Image
+          className={styles.heroImage}
+          src="/images/silk-botanique-fusion/nature-science-luxurious-shine.jpeg"
+          alt="Silky hair strands with clear droplets"
+          width={487}
+          height={626}
+          priority
+          sizes="(max-width: 900px) 90vw, 40vw"
+        />
       </div>
     </section>
   );

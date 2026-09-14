@@ -45,6 +45,15 @@ const sciencePoints = [
   "Create a lightweight protective veil",
 ];
 
+const signatureBenefits = [
+  { label: "Visible shine", path: "m9 3 1.6 5.4L16 10l-5.4 1.6L9 17l-1.6-5.4L2 10l5.4-1.6L9 3Zm10 10 .9 3.1L23 17l-3.1.9L19 21l-.9-3.1L15 17l3.1-.9L19 13Z" },
+  { label: "Split end defense", path: "M12 3 5 6v5c0 4.5 2.8 7.8 7 10 4.2-2.2 7-5.5 7-10V6l-7-3Zm-3.5 9 2.5 2.5 4.5-5" },
+  { label: "Smoother texture", path: "M3 6c3-3 6 3 9 0s6 3 9 0M3 12c3-3 6 3 9 0s6 3 9 0M3 18c3-3 6 3 9 0s6 3 9 0" },
+  { label: "Weightless elegance", path: "M6 3c-5 6 5 12 0 18M12 3c-5 6 5 12 0 18M18 3c-5 6 5 12 0 18" },
+  { label: "Deep nourishment", path: "M5 19C4 9 10 4 20 3c0 10-5 17-15 16Zm-1 3L16 8" },
+  { label: "Everyday luxury", path: "M12 3S5 11 5 15a7 7 0 0 0 14 0c0-4-7-12-7-12Zm-3.5 12a3.5 3.5 0 0 0 3.5 3.5" },
+];
+
 export default function SilkBotaniqueFusionPage() {
   return (
     <>
@@ -63,6 +72,15 @@ export default function SilkBotaniqueFusionPage() {
 
         <SectionDivider />
         <section className={styles.science}>
+          <div className={styles.scienceBackdrop} aria-hidden="true">
+            <Image
+              src="/images/silk-botanique-fusion/light-refined-high-performance.jpeg"
+              alt=""
+              width={1279}
+              height={1600}
+              sizes="100vw"
+            />
+          </div>
           <div className={styles.scienceCopy}>
             <p className={styles.eyebrow}>The science behind our fusion</p>
             <h2>
@@ -84,27 +102,79 @@ export default function SilkBotaniqueFusionPage() {
         </section>
 
         <SectionDivider />
-        <section className={styles.closing}>
-          <div className={styles.closingVisual}>
+        <section className={styles.smoothness} aria-labelledby="smoothness-title">
+          <div className={styles.smoothnessCopy}>
+            <h2 id="smoothness-title">The Art of Smoothness</h2>
+            <p className={styles.smoothnessIntro}>Where actives meet every strand.</p>
+            <p>
+              Silk Botanique Fusion brings targeted actives and botanical conditioning together
+              to help smooth the hair surface, reduce friction and enhance the way light reflects
+              from each strand.
+            </p>
+            <p>
+              As the formula spreads through the lengths, its conditioning agents help soften and
+              smooth the feel of the cuticle, while lightweight botanical care helps support a more
+              controlled, polished finish.
+            </p>
+            <dl>
+              <div>
+                <dt>Smooth the surface</dt>
+                <dd>Helps reduce the rough feel that can contribute to frizz and flyaways.</dd>
+              </div>
+              <div>
+                <dt>Reduce friction</dt>
+                <dd>Helps strands glide more smoothly against one another for a softer, more manageable feel.</dd>
+              </div>
+              <div>
+                <dt>Control frizz</dt>
+                <dd>Helps tame the appearance of unruly strands and humidity-related frizz.</dd>
+              </div>
+              <div>
+                <dt>Amplify shine</dt>
+                <dd>A smoother hair surface allows light to reflect more evenly, creating a naturally luminous-looking finish.</dd>
+              </div>
+            </dl>
+          </div>
+          <div className={styles.smoothnessVisual}>
             <Image
-              src="/images/silk-botanique-fusion/fusion-hero.png"
-              alt="Silk Botanique Fusion emblem"
-              width={819}
-              height={819}
-              sizes="(max-width: 800px) 70vw, 24vw"
+              src="/images/silk-botanique-fusion/art-of-smoothness.jpeg"
+              alt="Molecular structures over smooth, flowing brunette hair"
+              width={1200}
+              height={1268}
+              sizes="(max-width: 900px) 100vw, 48vw"
             />
           </div>
-          <div className={styles.closingCopy}>
-            <p className={styles.eyebrow}>The signature fusion</p>
-            <h2>Silk. Botanicals. Brilliance.</h2>
-            <p>Experience the perfect fusion of nature and science.</p>
-            <div className={styles.closingBenefits}>
-              <span>Mirror-Like Shine</span>
-              <span>Silk-Touch Softness</span>
-              <span>Frizz Control</span>
-              <span>Weightless Elegance</span>
-              <span>Humidity Defence</span>
-            </div>
+        </section>
+
+        <SectionDivider />
+        <section className={styles.signature} aria-labelledby="signature-title">
+          <div className={styles.signatureVisual}>
+            <Image
+              src="/images/silk-botanique-fusion/silk-botanicals-brilliance.jpeg"
+              alt="Clear molecular spheres surrounding a pale golden serum capsule"
+              width={1254}
+              height={1254}
+              sizes="(max-width: 900px) 100vw, 44vw"
+            />
+          </div>
+          <div className={styles.signatureCopy}>
+            <p className={styles.signatureEyebrow}>The signature fusion</p>
+            <h2 id="signature-title">Silk. Botanicals. Brilliance.</h2>
+            <p className={styles.signatureDescription}>
+              Engineered to deliver visible care and timeless shine.
+            </p>
+            <ul className={styles.signatureBenefits}>
+              {signatureBenefits.map(({ label, path }) => (
+                <li key={label}>
+                  <span className={styles.signatureIcon}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={path} />
+                    </svg>
+                  </span>
+                  <span>{label}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
       </main>

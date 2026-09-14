@@ -29,6 +29,13 @@ const silkKeys = [
   ["Vitamin E", "Provides antioxidant care for healthy-looking hair."],
 ];
 
+const moments = [
+  "Before special occasions & celebrations",
+  "After blow-drying or heat styling",
+  "Reviving dull, lifeless hair",
+  "Everyday luxury hair care ritual",
+];
+
 export default function ProductPage() {
   return (
     <>
@@ -44,6 +51,41 @@ export default function ProductPage() {
           </header>
 
           <SignatureBenefitsCarousel />
+        </section>
+
+        <SectionDivider />
+        <section className={styles.ritual}>
+          <div className={styles.ritualVisual}>
+            <Image
+              src="/images/transformations/made-for-every-moment.jpeg"
+              alt="A clear drop of hair serum dispensing from a black and gold pump"
+              fill
+              sizes="(max-width: 800px) 100vw, 50vw"
+            />
+          </div>
+          <div className={styles.ritualCopy}>
+            <p className={styles.eyebrow}>How to use</p>
+            <h2>Made for every moment</h2>
+            <ol>
+              <li>
+                <span>01</span>
+                <p>Dispense a small amount into your palm.</p>
+              </li>
+              <li>
+                <span>02</span>
+                <p>Warm gently between your hands.</p>
+              </li>
+              <li>
+                <span>03</span>
+                <p>Smooth through mid-lengths and ends on dry or damp hair.</p>
+              </li>
+            </ol>
+            <div className={styles.moments}>
+              {moments.map((moment) => (
+                <p key={moment}>{moment}</p>
+              ))}
+            </div>
+          </div>
         </section>
 
         <SectionDivider />

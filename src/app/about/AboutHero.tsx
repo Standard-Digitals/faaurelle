@@ -36,29 +36,42 @@ export function AboutHero() {
   }, []);
 
   return (
-    <section ref={rootRef} className={styles.hero}>
+    <section ref={rootRef} className={styles.hero} aria-labelledby="founder-story-heading">
       <div ref={copyRef} className={styles.heroCopy}>
-        <p className={styles.eyebrow}>About</p>
-        <h1>
-          <span className={styles.headingLine}>Where Nature Meets</span>
-          <span className={styles.headingLine}>Science For</span>
-          <span className={styles.headingLine}>Extraordinary Hair</span>
-        </h1>
-        <p className={styles.heroDescription}>
-          FA AURELLE is a luxurious hair elixir crafted to transform dull, frizzy hair into silky,
-          luminous strands with mirror-like shine and effortless elegance. Powered by Silk
-          Botanique Fusion™, it delivers a salon-finished look while preserving the natural
-          movement and beauty of the hair.
-        </p>
+        <h1 id="founder-story-heading">Our Founder Story</h1>
+        <div className={styles.heroDescription}>
+          <p>FA AURELLE began with a simple belief: beautiful hair should feel as good as it looks.</p>
+          <p>
+            For our founder, the idea started with something familiar—the daily struggle with hair
+            that looked dry, frizzy, or lacked the shine it once had. There were countless products
+            promising instant transformation, yet many seemed focused on covering the problem
+            rather than understanding the hair itself.
+          </p>
+          <p>That sparked a question:</p>
+          <p>What if shine wasn’t something we simply added, but something we could help reveal?</p>
+          <p>The journey behind FA AURELLE began with that thought.</p>
+          <p>
+            We looked beyond temporary gloss and explored the relationship between the hair surface,
+            smoothness, and the way light interacts with each strand. This led to a philosophy centred
+            around refining the hair surface, enhancing light reflection, and creating a beautifully
+            smooth finish.
+          </p>
+          <p>
+            FA AURELLE was created to bring that philosophy into an everyday ritual—combining
+            thoughtful formulation with a refined, luxurious experience.
+          </p>
+          <p>Because for us, hair care isn’t about chasing perfection.</p>
+          <p>It’s about helping your hair look smooth, radiant, soft, and beautifully you.</p>
+        </div>
       </div>
       <div ref={visualRef} className={styles.heroVisual}>
         <Image
-          src="/images/products/elixir-bottle-and-box.jpeg"
-          alt="FA ÀURELLE Hair Elixir with its presentation box"
-          width={1145}
-          height={1374}
+          src="/images/about/our-founder-story.jpeg"
+          alt="FA ÀURELLE founder holding the Hair Elixir"
+          width={799}
+          height={1280}
           priority
-          sizes="(max-width: 800px) 100vw, 52vw"
+          sizes="(max-width: 900px) 100vw, 34vw"
         />
       </div>
     </section>

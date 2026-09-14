@@ -28,10 +28,10 @@
   margin: 0 0 2rem;
   color: #17130f;
   font-family: var(--font-raleway-family);
-  font-size: clamp(2.45rem, 3.8vw, 4.3rem);
+  font-size: var(--about-heading-size, clamp(2.45rem, 3.8vw, 4.3rem));
   font-weight: 400;
-  letter-spacing: -0.055em;
-  line-height: 0.94;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
   text-wrap: balance;
 }
 
@@ -55,15 +55,15 @@
 }
 
 .grid article {
-  background: #f8f5ef;
+  background: #fff;
+  box-shadow: 0 0.75rem 2.5rem rgb(23 19 15 / 0.07);
 }
 
 .image {
   position: relative;
   min-height: clamp(21rem, 34vw, 34rem);
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 45%, rgb(255 255 255 / 0.98), rgb(247 242 232 / 0.76) 62%, rgb(230 216 190 / 0.38));
+  background: #fff;
 }
 
 .image img {
@@ -107,11 +107,11 @@
   }
 
   .eyebrow {
-    font-size: 0.76rem;
+    font-size: 1rem;
   }
 
   .header h2 {
-    font-size: clamp(2rem, 9vw, 3rem);
+    font-size: var(--about-heading-size, clamp(2rem, 9vw, 3rem));
   }
 
   .header h2 span {
