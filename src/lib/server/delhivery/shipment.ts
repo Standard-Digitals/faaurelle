@@ -1,5 +1,5 @@
 import "server-only";
-import { commerceDebug } from "@/lib/server/commerce/debug";
+import { commerceDebug, commerceDebugJson } from "@/lib/server/commerce/debug";
 import type { DelhiveryDiagnosticContext, DelhiveryErrorKind } from "./types";
 
 const CREATE_SHIPMENT_PATH = "/api/cmu/create.json";
@@ -114,14 +114,52 @@ function cleanProviderText(value: unknown, maxLength = 240): string | undefined 
   return result ? result.slice(0, maxLength) : undefined;
 }
 
+function cleanProviderMessage(value: unknown): string | undefined {
+  if (Array.isArray(value)) {
+    const messages = value
+      .map((item) => cleanProviderText(item))
+      .filter((item): item is string => Boolean(item));
+    return messages.length > 0 ? messages.join("; ").slice(0, 500) : undefined;
+  }
+  return cleanProviderText(value, 500);
+}
+
 function rejectionDiagnostic(root: Record<string, unknown> | null, first: Record<string, unknown> | null) {
-  const providerMessage = cleanProviderText(first?.remarks ?? first?.remark ?? root?.rmk ?? root?.remarks);
+  const providerMessage = cleanProviderMessage(first?.remarks ?? first?.remark ?? root?.rmk ?? root?.remarks);
   const providerStatus = cleanProviderText(first?.status, 80);
   const providerReference = cleanProviderText(first?.refnum ?? first?.reference, 80);
+  const providerErrorCode = cleanProviderText(first?.err_code ?? first?.error_code, 80);
   return {
     ...(providerMessage ? { providerMessage } : {}),
     ...(providerStatus ? { providerStatus } : {}),
     ...(providerReference ? { providerReference } : {}),
+    ...(providerErrorCode ? { providerErrorCode } : {}),
+  };
+}
+
+function shipmentResponseSummary(payload: unknown) {
+  const root = record(payload);
+  const packages = Array.isArray(root?.packages) ? root.packages : [];
+  return {
+    success: root?.success,
+    remark: cleanProviderMessage(root?.rmk ?? root?.remarks),
+    uploadWaybill: cleanProviderText(root?.upload_wbn, 80),
+    packageCount: root?.package_count,
+    prepaidCount: root?.prepaid_count,
+    packages: packages.map((item, index) => {
+      const shipment = record(item);
+      return {
+        index,
+        status: cleanProviderText(shipment?.status, 80),
+        serviceable: shipment?.serviceable,
+        waybill: cleanProviderText(shipment?.waybill, 80),
+        reference: cleanProviderText(shipment?.refnum ?? shipment?.reference, 80),
+        client: cleanProviderText(shipment?.client, 120),
+        paymentMode: cleanProviderText(shipment?.payment, 80),
+        errorCode: cleanProviderText(shipment?.err_code ?? shipment?.error_code, 80),
+        remarks: cleanProviderMessage(shipment?.remarks ?? shipment?.remark),
+      };
+    }),
   };
 }
 
@@ -221,7 +259,7 @@ export async function createDelhiveryShipment(
   } catch (error) {
     throw new DelhiveryShipmentError("malformed_response", true, { ...context, stage: "parsing" }, { cause: error });
   }
-  commerceDebug("delhivery-shipment-response-body", { payload });
+  commerceDebugJson("delhivery-shipment-response-body", shipmentResponseSummary(payload));
   const root = record(payload);
   const packages = root?.packages;
   const first = Array.isArray(packages) ? record(packages[0]) : null;

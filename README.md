@@ -57,3 +57,24 @@ Runtime assets live under `public/`:
 Editable Blender sources live under `assets/3d/hero/blend/`; the browser never
 loads `.blend` files. Asset-generation commands are documented in
 `docs/hero-generation/README.md`.
+
+Client/HQ name: Fa aurelle / the vamana & co.
+Pickup/Warehouse name: 1020 tower no 5 southcity apartments vip road zirakpur punjab 140603
+Pickup pincode: 140603
+Package weight (grams): 150 gms
+Dimensions L × W × H: 8cms x 8cms x 13 cms
+HSN code: 33059090
+seller GSTIN : 04AYUPB0073E1ZS
+
+9056347061
+
+Full name: Amanpreet Singh
+Email: amanpreet@gmail.com
+Mobile number: 9056347061
+
+Address line 1: Flat 304, Block B, Maya Garden City
+Address line 2: Chandigarh–Ambala Highway
+Location: Zirakpur
+State: Punjab
+Pincode: 160104
+Country: India

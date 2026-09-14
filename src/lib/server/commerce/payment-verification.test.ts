@@ -57,7 +57,11 @@ describe("Checkout payment verification", () => {
   it("uses the stored order ID for HMAC then reconciles fetched provider truth", async () => {
     const deps = dependencies();
     const { verifyCheckoutPayment } = await import("./payment-verification");
-    await expect(verifyCheckoutPayment(callback, deps as never)).resolves.toMatchObject({ success: true, payment: { status: "captured" } });
+    await expect(verifyCheckoutPayment(callback, deps as never)).resolves.toMatchObject({
+      success: true,
+      payment: { status: "captured" },
+      confirmationToken: callback.publicOrderToken,
+    });
     expect(deps.verifySignature).toHaveBeenCalledWith(order.razorpayOrderId, callback.razorpay_payment_id, callback.razorpay_signature);
     expect(deps.fetchPayment).toHaveBeenCalledWith(callback.razorpay_payment_id);
     expect(deps.reconcile).toHaveBeenCalledWith(expect.objectContaining({ id: order.id }), payment, expect.any(Date), callback.razorpay_payment_id);
@@ -72,6 +76,7 @@ describe("Checkout payment verification", () => {
       success: true,
       payment: { status: "captured" },
       fulfilment: { status: "pending" },
+      confirmationToken: callback.publicOrderToken,
     });
   });
 

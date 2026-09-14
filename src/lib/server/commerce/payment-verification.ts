@@ -19,7 +19,7 @@ export type PaymentVerificationInput = Readonly<{
 }>;
 
 export type PaymentVerificationResponse =
-  | { success: true; payment: DurablePaymentResult; fulfilment?: FulfilmentResult }
+  | { success: true; payment: DurablePaymentResult; fulfilment?: FulfilmentResult; confirmationToken?: string }
   | {
       success: false;
       kind: "invalid_request" | "not_found" | "conflict" | "invalid_signature" | "payment_not_found" | "integrity" | "provider_unavailable";
@@ -96,9 +96,14 @@ export async function verifyCheckoutPayment(
     if (payment.status !== "captured") return { success: true, payment };
     try {
       const fulfilment = await (dependencies.fulfil ?? fulfilPaidOrder)(order.id);
-      return { success: true, payment, fulfilment };
+      return { success: true, payment, fulfilment, confirmationToken: order.publicToken };
     } catch {
-      return { success: true, payment, fulfilment: { status: "pending", retryable: true } };
+      return {
+        success: true,
+        payment,
+        fulfilment: { status: "pending", retryable: true },
+        confirmationToken: order.publicToken,
+      };
     }
   } catch (error) {
     if (error instanceof PaymentIntegrityError) {

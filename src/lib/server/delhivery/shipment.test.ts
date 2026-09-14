@@ -89,16 +89,22 @@ describe("Delhivery shipment creation", () => {
     const fetchImpl = vi.fn().mockResolvedValue(Response.json({
       success: false,
       rmk: "Shipment creation failed",
-      packages: [{ status: "Fail", remarks: "Pickup location does not exist", refnum: input.reference }],
+      packages: [{
+        status: "Fail",
+        err_code: "ER0005",
+        remarks: ["Pickup location does not exist", "Confirm the staging warehouse"],
+        refnum: input.reference,
+      }],
     }));
     const { createDelhiveryShipment } = await import("./shipment");
     await expect(createDelhiveryShipment(input, { ...options, fetchImpl })).rejects.toMatchObject({
       kind: "definitive",
       ambiguous: false,
       diagnostic: {
-        providerMessage: "Pickup location does not exist",
+        providerMessage: "Pickup location does not exist; Confirm the staging warehouse",
         providerStatus: "Fail",
         providerReference: input.reference,
+        providerErrorCode: "ER0005",
       },
     });
   });

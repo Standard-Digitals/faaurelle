@@ -6,7 +6,8 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import { useRef, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { indiaStatesAndUnionTerritories } from "@/config/india";
 import indianCitiesByState from "@/data/indian-cities-by-state.json";
 import {
@@ -21,6 +22,13 @@ import {
 } from "@/lib/commerce/serviceability-ui";
 import { loadRazorpayCheckout } from "@/lib/commerce/razorpay-checkout";
 import type { RazorpaySuccessResponse } from "@/lib/commerce/razorpay-checkout";
+import {
+  CONFIRMATION_RECOVERY_KEY,
+  isPublicOrderToken,
+  parseConfirmationRecovery,
+  serializeConfirmationRecovery,
+  shouldAttemptConfirmationRecovery,
+} from "@/lib/commerce/confirmation-recovery";
 import { createCheckoutOrder, validateCheckoutDetails } from "./actions";
 import styles from "./checkout.module.css";
 
@@ -64,6 +72,7 @@ function errorProps(field: CheckoutFieldName, errors: CheckoutFieldErrors) {
 }
 
 export function CheckoutForm({ productCode }: { productCode: string }) {
+  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<CheckoutFieldErrors>({});
   const [checkoutKey] = useState(() => crypto.randomUUID());
@@ -80,6 +89,20 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
     .slice(0, 10);
   const busy = submissionState === "checking" || submissionState === "creating-order" || submissionState === "opening-payment" || submissionState === "verifying-payment";
 
+  useEffect(() => {
+    const recovery = parseConfirmationRecovery(
+      window.sessionStorage.getItem(CONFIRMATION_RECOVERY_KEY),
+    );
+    if (recovery && shouldAttemptConfirmationRecovery(recovery)) {
+      window.sessionStorage.setItem(
+        CONFIRMATION_RECOVERY_KEY,
+        serializeConfirmationRecovery(recovery.token, true),
+      );
+      const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+      router.replace(`${basePath}/order-confirmation/${encodeURIComponent(recovery.token)}`);
+    }
+  }, [router]);
+
   const verifyPayment = async (verification: PendingVerification) => {
     setSubmissionState("verifying-payment");
     setFormMessage("Verifying payment securely…");
@@ -95,13 +118,26 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
             success: true;
             payment: { status: "captured" | "processing" | "failed" };
             fulfilment?: { status: "created" | "pending" | "failed" | "ineligible" };
+            confirmationToken?: string;
           }
         | { success: false; retryable: boolean; message: string };
 
       if (!result.success) {
+        if (!result.retryable) {
+          window.sessionStorage.removeItem(CONFIRMATION_RECOVERY_KEY);
+        }
         setSubmissionState(result.retryable ? "verification-pending" : "verification-failed");
         setFormMessage(result.message);
       } else if (result.payment.status === "captured") {
+        if (result.confirmationToken && isPublicOrderToken(result.confirmationToken)) {
+          window.sessionStorage.setItem(
+            CONFIRMATION_RECOVERY_KEY,
+            serializeConfirmationRecovery(result.confirmationToken, true),
+          );
+          const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+          router.replace(`${basePath}/order-confirmation/${encodeURIComponent(result.confirmationToken)}`);
+          return;
+        }
         setSubmissionState("payment-captured");
         setPendingVerification(null);
         setFormMessage(
@@ -113,6 +149,7 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
         setSubmissionState("payment-processing");
         setFormMessage("Payment is authorized or still processing. It has not been marked paid yet.");
       } else {
+        window.sessionStorage.removeItem(CONFIRMATION_RECOVERY_KEY);
         setSubmissionState("payment-failed");
         setPendingVerification(null);
         setFormMessage("Razorpay reports that this payment attempt failed. The order has not been marked paid.");
@@ -221,6 +258,10 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
               publicOrderToken: orderResult.checkout.publicOrderToken,
               ...response,
             };
+            window.sessionStorage.setItem(
+              CONFIRMATION_RECOVERY_KEY,
+              serializeConfirmationRecovery(orderResult.checkout.publicOrderToken, false),
+            );
             setPendingVerification(verification);
             void verifyPayment(verification);
           },
