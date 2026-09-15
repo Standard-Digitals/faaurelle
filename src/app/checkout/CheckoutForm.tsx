@@ -29,7 +29,7 @@ import {
   serializeConfirmationRecovery,
   shouldAttemptConfirmationRecovery,
 } from "@/lib/commerce/confirmation-recovery";
-import { createCheckoutOrder, validateCheckoutDetails } from "./actions";
+import { createCheckoutOrder, validateCheckoutDetails, validateCheckoutCoupon } from "./actions";
 import styles from "./checkout.module.css";
 
 type SubmissionState =
@@ -71,7 +71,15 @@ function errorProps(field: CheckoutFieldName, errors: CheckoutFieldErrors) {
     : {};
 }
 
-export function CheckoutForm({ productCode }: { productCode: string }) {
+export type AppliedCoupon = Readonly<{ code: string; discountPaisa: number; totalPaisa: number }>;
+
+export function CheckoutForm({
+  productCode,
+  onCouponChange,
+}: {
+  productCode: string;
+  onCouponChange: (coupon: AppliedCoupon | null) => void;
+}) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<CheckoutFieldErrors>({});
@@ -83,11 +91,15 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
   const [locationQuery, setLocationQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
   const [selectedState, setSelectedState] = useState("");
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const [couponState, setCouponState] = useState<"idle" | "loading" | "accepted" | "rejected">("idle");
+  const [couponMessage, setCouponMessage] = useState("Optional. Enter a coupon code after adding your email and mobile number.");
   const normalizedLocationQuery = locationQuery.trim().toLocaleLowerCase();
   const locationSuggestions = indianCityOptions
     .filter((option) => option.label.toLocaleLowerCase().includes(normalizedLocationQuery))
     .slice(0, 10);
-  const busy = submissionState === "checking" || submissionState === "creating-order" || submissionState === "opening-payment" || submissionState === "verifying-payment";
+  const busy = couponState === "loading" || submissionState === "checking" || submissionState === "creating-order" || submissionState === "opening-payment" || submissionState === "verifying-payment";
 
   useEffect(() => {
     const recovery = parseConfirmationRecovery(
@@ -175,6 +187,13 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
     const fieldName = target.name;
     if (!checkoutFieldNames.includes(fieldName as CheckoutFieldName)) return;
 
+    if ((fieldName === "email" || fieldName === "mobileNumber") && appliedCoupon) {
+      setAppliedCoupon(null);
+      onCouponChange(null);
+      setCouponState("idle");
+      setCouponMessage("Contact details changed. Apply the coupon again to recheck eligibility.");
+    }
+
     setErrors((current) => {
       if (!current[fieldName as CheckoutFieldName]) return current;
       const next = { ...current };
@@ -190,6 +209,40 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
       );
       setFormMessage("Enter your delivery details to check availability.");
     }
+  };
+
+  const applyCoupon = async () => {
+    if (!formRef.current || couponState === "loading") return;
+    setCouponState("loading");
+    setCouponMessage("Checking coupon eligibility…");
+    const fields = Object.fromEntries(new FormData(formRef.current).entries());
+    try {
+      const result = await validateCheckoutCoupon(productCode, couponInput, fields);
+      if (!result.success) {
+        setAppliedCoupon(null);
+        onCouponChange(null);
+        setCouponState("rejected");
+        setCouponMessage(result.message);
+        return;
+      }
+      const next = { code: result.code, discountPaisa: result.discountPaisa, totalPaisa: result.totalPaisa };
+      setCouponInput(result.code);
+      setAppliedCoupon(next);
+      onCouponChange(next);
+      setCouponState("accepted");
+      setCouponMessage(`${result.code} applied. Your discount is ready for final server verification.`);
+    } catch {
+      setCouponState("rejected");
+      setCouponMessage("We couldn’t check this coupon right now. Please try again.");
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponInput("");
+    setAppliedCoupon(null);
+    onCouponChange(null);
+    setCouponState("idle");
+    setCouponMessage("Coupon removed. You can enter another code.");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -221,6 +274,7 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
           productCode,
           quantity: 1,
           details: payload,
+          couponCode: appliedCoupon?.code ?? null,
         });
         if (!orderResult.success) {
           if (orderResult.kind === "validation") {
@@ -445,6 +499,44 @@ export function CheckoutForm({ productCode }: { productCode: string }) {
             <input id="countryDisplay" type="text" value="India" readOnly aria-readonly="true" />
           </div>
         </div>
+      </fieldset>
+
+      <fieldset disabled={busy || submissionState === "payment-captured"}>
+        <legend>Coupon</legend>
+        <p className={styles.sectionIntro}>Apply one eligible code to receive 20% off the product subtotal.</p>
+        <div className={styles.couponRow}>
+          <div className={styles.field}>
+            <label htmlFor="couponCode">Coupon code <span className={styles.optional}>(optional)</span></label>
+            <input
+              id="couponCode"
+              name="couponCode"
+              type="text"
+              autoComplete="off"
+              maxLength={32}
+              value={couponInput}
+              placeholder="Enter coupon code"
+              aria-invalid={couponState === "rejected"}
+              aria-describedby="coupon-message"
+              onChange={(event) => {
+                setCouponInput(event.target.value.toUpperCase());
+                if (appliedCoupon) {
+                  setAppliedCoupon(null);
+                  onCouponChange(null);
+                }
+                setCouponState("idle");
+                setCouponMessage("Apply the code to check eligibility.");
+              }}
+            />
+          </div>
+          {appliedCoupon ? (
+            <button className={styles.couponSecondary} type="button" onClick={removeCoupon}>Remove</button>
+          ) : (
+            <button className={styles.couponApply} type="button" disabled={!couponInput.trim() || couponState === "loading"} onClick={() => void applyCoupon()}>
+              {couponState === "loading" ? "Checking…" : "Apply"}
+            </button>
+          )}
+        </div>
+        <p id="coupon-message" className={styles.couponMessage} data-state={couponState} role="status" aria-live="polite">{couponMessage}</p>
       </fieldset>
 
       <div className={styles.formFooter}>

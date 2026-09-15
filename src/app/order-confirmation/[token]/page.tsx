@@ -109,6 +109,12 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
               <div><dt>Unit price</dt><dd>{formatInr(order.unitAmountPaisa)}</dd></div>
               <div><dt>Quantity</dt><dd>{order.quantity}</dd></div>
               <div><dt>Subtotal</dt><dd>{formatInr(order.subtotalPaisa)}</dd></div>
+              {order.couponCode && order.discountPaisa > 0 ? (
+                <>
+                  <div><dt>Coupon</dt><dd>{order.couponCode}</dd></div>
+                  <div><dt>Discount</dt><dd>−{formatInr(order.discountPaisa)}</dd></div>
+                </>
+              ) : null}
               <div><dt>Shipping</dt><dd>{order.shippingPaisa === 0 ? "Free" : formatInr(order.shippingPaisa)}</dd></div>
               <div><dt>Additional checkout tax</dt><dd>{formatInr(order.taxPaisa)}</dd></div>
               <div className={styles.total}><dt>Total paid</dt><dd>{formatInr(order.totalPaisa)}</dd></div>

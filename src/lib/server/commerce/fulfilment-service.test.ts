@@ -117,6 +117,16 @@ describe("paid-order fulfilment", () => {
     expect(createShipment).toHaveBeenCalledWith(expect.objectContaining({ product: expect.objectContaining({ totalAmountRupees: "999.00" }) }));
   });
 
+  it("declares the stored discounted total without recalculating coupon eligibility", async () => {
+    const fake = fakeStore({ totalPaisa: 167_920 });
+    const createShipment = vi.fn().mockResolvedValue({ waybill: "1122345678722" });
+    const { fulfilPaidOrder } = await import("./fulfilment-service");
+    await fulfilPaidOrder(order.id, { store: fake.store as never, createShipment });
+    expect(createShipment).toHaveBeenCalledWith(expect.objectContaining({
+      product: expect.objectContaining({ totalAmountRupees: "1679.20" }),
+    }));
+  });
+
   it("allows only one provider create across concurrent triggers", async () => {
     const fake = fakeStore();
     let release!: () => void;

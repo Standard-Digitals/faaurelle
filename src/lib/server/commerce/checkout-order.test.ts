@@ -41,11 +41,12 @@ function dependencies(orders: ReturnType<typeof fakeOrders>["store"]) {
   return {
     orders,
     checkServiceability: vi.fn().mockResolvedValue({ postalCode: "400064", prepaidServiceable: true }),
-    createProviderOrder: vi.fn().mockResolvedValue({ id: "order_test", amount: 209_900, currency: "INR", receipt: "fa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", status: "created" }),
+    createProviderOrder: vi.fn(async (input: { amount: number; currency: "INR"; receipt: string }) => ({ id: "order_test", ...input, status: "created" })),
     findProviderOrder: vi.fn().mockResolvedValue(null),
     publicKey: () => "rzp_test_example",
     randomId: () => "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
     randomToken: () => "opaque-public-token-generated-on-server",
+    randomCustomerReference: () => "FA-0123456789ABCDEF0123",
   };
 }
 
@@ -58,7 +59,57 @@ describe("payable checkout orchestration", () => {
     expect(result).toMatchObject({ success: true, checkout: { amount: 209_900, publicOrderToken: "opaque-public-token-generated-on-server" } });
     expect(fake.store.create).toHaveBeenCalledTimes(1);
     expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 209_900, currency: "INR" }));
-    expect([...fake.rows.values()][0]).toMatchObject({ unitAmountPaisa: 209_900, shippingPaisa: 0, taxPaisa: 0, totalPaisa: 209_900, quantity: 1 });
+    expect([...fake.rows.values()][0]).toMatchObject({
+      customerReference: "FA-0123456789ABCDEF0123",
+      unitAmountPaisa: 209_900,
+      shippingPaisa: 0,
+      taxPaisa: 0,
+      totalPaisa: 209_900,
+      quantity: 1,
+    });
+  });
+
+  it("stores the coupon snapshot and sends the discounted total to Razorpay", async () => {
+    const fake = fakeOrders();
+    const deps = {
+      ...dependencies(fake.store),
+      validateCoupon: vi.fn().mockResolvedValue({ success: true, coupon: { code: "SIMRAN20", discountPercent: 20 } }),
+    };
+    const { createPayableCheckout } = await import("./checkout-order");
+    const result = await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: " simran20 " }, deps as never);
+    expect(result).toMatchObject({ success: true, checkout: { amount: 167_920 } });
+    expect([...fake.rows.values()][0]).toMatchObject({
+      couponCode: "SIMRAN20",
+      subtotalPaisa: 209_900,
+      discountPaisa: 41_980,
+      totalPaisa: 167_920,
+    });
+    expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 167_920 }));
+  });
+
+  it("treats coupon changes and removal as incompatible checkout material", async () => {
+    const fake = fakeOrders();
+    const deps = {
+      ...dependencies(fake.store),
+      validateCoupon: vi.fn().mockResolvedValue({ success: true, coupon: { code: "NEW20", discountPercent: 20 } }),
+    };
+    const { createPayableCheckout } = await import("./checkout-order");
+    await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: "NEW20" }, deps as never);
+    await expect(createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: null }, deps as never))
+      .resolves.toMatchObject({ success: false, kind: "conflict" });
+  });
+
+  it("blocks a previously redeemed coupon before creating either order", async () => {
+    const fake = fakeOrders();
+    const deps = {
+      ...dependencies(fake.store),
+      validateCoupon: vi.fn().mockResolvedValue({ success: false, reason: "used" }),
+    };
+    const { createPayableCheckout } = await import("./checkout-order");
+    await expect(createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: "SIMRAN20" }, deps as never))
+      .resolves.toEqual({ success: false, kind: "coupon_used", message: "Coupon already used." });
+    expect(fake.store.create).not.toHaveBeenCalled();
+    expect(deps.createProviderOrder).not.toHaveBeenCalled();
   });
 
   it("reuses the same internal and persisted Razorpay order on duplicate submission", async () => {

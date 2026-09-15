@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { validateCheckoutPayload } from "./checkout-validation";
+import { normalizeCheckoutIdentity, validateCheckoutPayload } from "./checkout-validation";
 
 vi.mock("server-only", () => ({}));
 
@@ -82,5 +82,18 @@ describe("checkout validation", () => {
       expect(result.data).not.toHaveProperty("amount");
       expect(result.data).not.toHaveProperty("totalPaisa");
     }
+  });
+});
+
+describe("coupon identity normalization", () => {
+  it("normalizes email and Indian phone without requiring address fields", () => {
+    expect(normalizeCheckoutIdentity({ email: "  AANYA@Example.COM ", mobileNumber: "09876 543210" })).toEqual({
+      success: true,
+      data: { email: "aanya@example.com", phone: "+919876543210" },
+    });
+  });
+
+  it("rejects invalid identity before coupon validation", () => {
+    expect(normalizeCheckoutIdentity({ email: "invalid", mobileNumber: "123" })).toMatchObject({ success: false });
   });
 });

@@ -15,7 +15,12 @@ export class PaymentIntegrityError extends Error {
   }
 }
 
-type PaymentTransaction = Pick<typeof prisma, "payment" | "order">;
+type PaymentTransaction = Pick<typeof prisma, "payment" | "order"> & {
+  couponRedemption: {
+    createMany(args: { data: Record<string, unknown>[]; skipDuplicates: true }): Promise<{ count: number }>;
+    findUnique(args: { where: { orderId: string }; select: { id: true } }): Promise<{ id: string } | null>;
+  };
+};
 type PaymentDatabase = {
   $transaction<T>(operation: (transaction: PaymentTransaction) => Promise<T>): Promise<T>;
 };
@@ -47,6 +52,7 @@ export async function reconcileRazorpayPayment(
 ): Promise<DurablePaymentResult> {
   assertProviderFacts(order, payment, expectedPaymentId);
   const target = attemptState(payment);
+  const couponOrder = order as Order & { couponCode?: string | null; customerEmail: string; customerPhone: string };
 
   const persist = (): Promise<DurablePaymentResult> => database.$transaction(async (tx) => {
     const persisted = await tx.payment.upsert({
@@ -83,6 +89,37 @@ export async function reconcileRazorpayPayment(
         where: { id: order.id, paymentStatus: { not: "CAPTURED" } },
         data: { status: "PAID", paymentStatus: "CAPTURED", paidAt: signatureVerifiedAt },
       });
+
+      let couponRedemption: "redeemed" | "conflict" | undefined;
+      if (couponOrder.couponCode) {
+        await tx.couponRedemption.createMany({
+          data: [{
+            couponCode: couponOrder.couponCode,
+            normalizedEmail: couponOrder.customerEmail,
+            normalizedPhone: couponOrder.customerPhone,
+            orderId: order.id,
+            redeemedAt: signatureVerifiedAt,
+          }],
+          skipDuplicates: true,
+        });
+        const ownRedemption = await tx.couponRedemption.findUnique({
+          where: { orderId: order.id },
+          select: { id: true },
+        });
+        couponRedemption = ownRedemption ? "redeemed" : "conflict";
+        if (couponRedemption === "conflict") {
+          console.error("[commerce:coupon-redemption-conflict]", {
+            orderId: order.id,
+            couponCode: couponOrder.couponCode,
+          });
+        }
+      }
+
+      const currentOrder = await tx.order.findUniqueOrThrow({ where: { id: order.id } });
+      return {
+        status: "captured",
+        ...(currentOrder.paidAt ? { paidAt: currentOrder.paidAt.toISOString() } : {}),
+      };
     } else if (target === "AUTHORIZED") {
       await tx.payment.updateMany({
         where: { razorpayPaymentId: payment.id, status: { in: ["CREATED", "AUTHORIZED"] } },

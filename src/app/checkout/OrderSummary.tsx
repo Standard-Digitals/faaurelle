@@ -9,6 +9,8 @@ export type CheckoutSummary = Readonly<{
   quantity: 1;
   unitAmountPaisa: number;
   subtotalPaisa: number;
+  couponCode?: string;
+  discountPaisa: number;
   shippingPaisa: 0;
   taxPaisa: 0;
   totalPaisa: number;
@@ -37,6 +39,12 @@ export function OrderSummary({ summary }: { summary: CheckoutSummary }) {
 
       <dl className={styles.totals}>
         <div><dt>Subtotal</dt><dd>{formatInr(summary.subtotalPaisa)}</dd></div>
+        {summary.couponCode && summary.discountPaisa > 0 ? (
+          <>
+            <div><dt>Coupon</dt><dd>{summary.couponCode}</dd></div>
+            <div><dt>Discount</dt><dd>−{formatInr(summary.discountPaisa)}</dd></div>
+          </>
+        ) : null}
         <div><dt>Shipping</dt><dd>Free</dd></div>
         <div><dt>Total</dt><dd>{formatInr(summary.totalPaisa)}</dd></div>
       </dl>

@@ -12,6 +12,8 @@ import {
   getRazorpayPublicKey,
 } from "@/lib/server/razorpay/client";
 import { RazorpayOrderError, type RazorpayOrder } from "@/lib/server/razorpay/types";
+import { createCustomerOrderReference } from "./customer-order-reference";
+import { validateCouponEligibility } from "./coupons";
 
 const CHECKOUT_KEY = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -55,11 +57,12 @@ export type CreateCheckoutInput = Readonly<{
   productCode: string;
   quantity: 1;
   details: unknown;
+  couponCode?: string | null;
 }>;
 
 export type CreateCheckoutResponse =
   | { success: false; kind: "validation"; errors: CheckoutFieldErrors; formError?: string }
-  | { success: false; kind: "conflict" | "unserviceable" | "service_unavailable" | "payment_unavailable" | "payment_pending"; message: string }
+  | { success: false; kind: "conflict" | "coupon_invalid" | "coupon_used" | "unserviceable" | "service_unavailable" | "payment_unavailable" | "payment_pending"; message: string }
   | {
       success: true;
       checkout: {
@@ -98,6 +101,8 @@ type Dependencies = Readonly<{
   publicKey?: () => string;
   randomId?: () => string;
   randomToken?: () => string;
+  randomCustomerReference?: () => string;
+  validateCoupon?: typeof validateCouponEligibility;
 }>;
 
 function receiptFor(orderId: string) {
@@ -134,6 +139,20 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
   const validation = validateCheckoutPayload(input.details);
   if (!validation.success) return { success: false, kind: "validation", errors: validation.errors };
 
+  let coupon: { code: string; discountPercent: number } | null = null;
+  if (input.couponCode) {
+    const eligibility = await (dependencies.validateCoupon ?? validateCouponEligibility)(input.couponCode, {
+      email: validation.data.email,
+      phone: validation.data.mobileNumber,
+    });
+    if (!eligibility.success) {
+      return eligibility.reason === "used"
+        ? { success: false, kind: "coupon_used", message: "Coupon already used." }
+        : { success: false, kind: "coupon_invalid", message: "This coupon is invalid or has expired." };
+    }
+    coupon = eligibility.coupon;
+  }
+
   const checkServiceability = dependencies.checkServiceability ?? checkDelhiveryPrepaidServiceability;
   let serviceability;
   try {
@@ -153,11 +172,12 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
     return { success: false, kind: "payment_unavailable", message: "Test payment is not configured." };
   }
 
-  const pricing = calculateV1Pricing(product);
+  const pricing = calculateV1Pricing(product, coupon?.discountPercent ?? 0);
   const details = validation.data;
   const snapshot = {
     productCode: product.code, productName: product.name,
     ...pricing,
+    couponCode: coupon?.code ?? null,
     customerName: details.fullName, customerEmail: details.email, customerPhone: details.mobileNumber,
     addressLine1: details.addressLine1, addressLine2: details.addressLine2,
     city: details.city, state: details.state, postalCode: details.pincode, countryCode: details.countryCode,
@@ -175,6 +195,7 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
         data: {
           id: (dependencies.randomId ?? randomUUID)(),
           publicToken: (dependencies.randomToken ?? (() => randomBytes(32).toString("base64url")))(),
+          customerReference: (dependencies.randomCustomerReference ?? createCustomerOrderReference)(),
           checkoutKey: input.checkoutKey,
           ...snapshot,
           status: "CHECKOUT_CREATED",

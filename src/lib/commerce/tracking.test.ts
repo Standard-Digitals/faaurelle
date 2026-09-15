@@ -1,20 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { validateWaybill, WAYBILL_MAX_LENGTH } from "./tracking";
+import {
+  validateTrackingReference,
+} from "./tracking";
 
-describe("waybill validation", () => {
-  it("rejects an empty value", () => {
-    expect(validateWaybill("   ")).toMatchObject({ success: false });
+describe("tracking reference classification", () => {
+  it("normalizes a complete Aurelle order reference", () => {
+    expect(validateTrackingReference(" fa-0123456789abcdef0123 ")).toEqual({
+      success: true,
+      reference: "FA-0123456789ABCDEF0123",
+    });
   });
 
-  it("trims a single numeric waybill", () => {
-    expect(validateWaybill("  1122345678722  ")).toEqual({ success: true, waybill: "1122345678722" });
-  });
-
-  it.each(["1122,3344", "1122 3344", "awb-1122", "https://example.com/1122"])("rejects malformed or multiple identifiers: %s", (value) => {
-    expect(validateWaybill(value)).toMatchObject({ success: false });
-  });
-
-  it("rejects an excessively long value", () => {
-    expect(validateWaybill("1".repeat(WAYBILL_MAX_LENGTH + 1))).toMatchObject({ success: false });
+  it.each([
+    "FA-0123",
+    "FA-OPAQUE_PUBLI",
+    "FA-0123456789ABCDEFGH12",
+    "FA-0123456789ABCDEF0123-extra",
+    "1122,3344",
+    "1122345678722",
+    "https://example.com/order",
+    "1".repeat(65),
+  ])("rejects malformed, multiple, URL, or oversized input: %s", (value) => {
+    expect(validateTrackingReference(value)).toMatchObject({ success: false });
   });
 });

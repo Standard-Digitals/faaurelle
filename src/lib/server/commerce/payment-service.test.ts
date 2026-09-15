@@ -24,6 +24,7 @@ const providerPayment = {
 function fakeDatabase() {
   let payment: Record<string, unknown> | null = null;
   const currentOrder = { ...order };
+  const redemptions: Record<string, Record<string, unknown>> = {};
   const tx = {
     payment: {
       upsert: vi.fn(async ({ create, update }: { create: Record<string, unknown>; update: Record<string, unknown> }) => {
@@ -48,12 +49,27 @@ function fakeDatabase() {
       }),
       findUniqueOrThrow: vi.fn(async () => currentOrder),
     },
+    couponRedemption: {
+      createMany: vi.fn(async ({ data }: { data: Record<string, unknown>[] }) => {
+        const candidate = data[0];
+        const conflict = Object.values(redemptions).some((row) =>
+          row.orderId === candidate.orderId ||
+          (row.couponCode === candidate.couponCode && row.normalizedEmail === candidate.normalizedEmail) ||
+          (row.couponCode === candidate.couponCode && row.normalizedPhone === candidate.normalizedPhone));
+        if (conflict) return { count: 0 };
+        redemptions[String(candidate.orderId)] = candidate;
+        return { count: 1 };
+      }),
+      findUnique: vi.fn(async ({ where }: { where: { orderId: string } }) =>
+        redemptions[where.orderId] ? { id: "redemption-row" } : null),
+    },
   };
   return {
     tx,
     database: { $transaction: vi.fn(async (operation: (value: typeof tx) => Promise<unknown>) => operation(tx)) },
     payment: () => payment,
     order: currentOrder,
+    redemptions,
   };
 }
 
@@ -76,6 +92,43 @@ describe("durable payment reconciliation", () => {
     expect(fake.order).toMatchObject({ status: "PAID", paymentStatus: "CAPTURED", paidAt });
   });
 
+  it("creates one successful coupon redemption and stays idempotent on duplicate capture", async () => {
+    const fake = fakeDatabase();
+    const discountedOrder = {
+      ...order,
+      totalPaisa: 167_920,
+      couponCode: "SIMRAN20",
+      customerEmail: "aanya@example.com",
+      customerPhone: "+919876543210",
+    };
+    const discountedPayment = { ...providerPayment, amount: 167_920 };
+    const { reconcileRazorpayPayment } = await import("./payment-service");
+    await expect(reconcileRazorpayPayment(discountedOrder as never, discountedPayment, new Date(), discountedPayment.id, fake.database as never))
+      .resolves.toMatchObject({ status: "captured" });
+    await expect(reconcileRazorpayPayment(discountedOrder as never, discountedPayment, new Date(), discountedPayment.id, fake.database as never))
+      .resolves.toMatchObject({ status: "captured" });
+    expect(Object.keys(fake.redemptions)).toHaveLength(1);
+  });
+
+  it("keeps the second provider payment captured when coupon redemption conflicts", async () => {
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const fake = fakeDatabase();
+    fake.redemptions.existing = {
+      orderId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      couponCode: "SIMRAN20",
+      normalizedEmail: "aanya@example.com",
+      normalizedPhone: "+919000000000",
+    };
+    const discountedOrder = { ...order, totalPaisa: 167_920, couponCode: "SIMRAN20", customerEmail: "aanya@example.com", customerPhone: "+919876543210" };
+    const discountedPayment = { ...providerPayment, amount: 167_920 };
+    const { reconcileRazorpayPayment } = await import("./payment-service");
+    await expect(reconcileRazorpayPayment(discountedOrder as never, discountedPayment, new Date(), discountedPayment.id, fake.database as never))
+      .resolves.toMatchObject({ status: "captured" });
+    expect(fake.order).toMatchObject({ status: "PAID", paymentStatus: "CAPTURED" });
+    expect(errorLog).toHaveBeenCalledWith("[commerce:coupon-redemption-conflict]", expect.objectContaining({ couponCode: "SIMRAN20" }));
+    errorLog.mockRestore();
+  });
+
   it("keeps paidAt stable and does not regress captured state", async () => {
     const fake = fakeDatabase();
     const { reconcileRazorpayPayment } = await import("./payment-service");
@@ -93,6 +146,7 @@ describe("durable payment reconciliation", () => {
     expect(result.status).toBe(status === "failed" ? "failed" : "processing");
     expect(fake.order.status).toBe("AWAITING_PAYMENT");
     expect(fake.order.paidAt).toBeNull();
+    expect(fake.tx.couponRedemption.createMany).not.toHaveBeenCalled();
   });
 
   it.each([

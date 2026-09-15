@@ -5,6 +5,7 @@ vi.mock("server-only", () => ({}));
 const token = "opaque_public_token_12345678901234567890";
 const capturedOrder = {
   publicToken: token,
+  customerReference: "FA-0123456789ABCDEF0123",
   productName: "Hair Elixir Oil-in-Serum",
   unitAmountPaisa: 209_900,
   quantity: 1,
@@ -34,11 +35,13 @@ describe("Order confirmation query", () => {
     const { getOrderConfirmation } = await import("./order-confirmation");
 
     await expect(getOrderConfirmation(token, { findOrder })).resolves.toEqual({
-      displayReference: "FA-OPAQUE_PUBLI",
+      displayReference: "FA-0123456789ABCDEF0123",
       productName: "Hair Elixir Oil-in-Serum",
       unitAmountPaisa: 209_900,
       quantity: 1,
       subtotalPaisa: 209_900,
+      couponCode: null,
+      discountPaisa: 0,
       shippingPaisa: 0,
       taxPaisa: 0,
       totalPaisa: 209_900,
@@ -48,6 +51,22 @@ describe("Order confirmation query", () => {
       paidAt: "2026-09-11T08:52:44.000Z",
       fulfilment: "created",
       waybill: "1122345678722",
+    });
+  });
+
+  it("returns the persisted discounted commercial breakdown", async () => {
+    const findOrder = vi.fn().mockResolvedValue({
+      ...capturedOrder,
+      couponCode: "SIMRAN20",
+      discountPaisa: 41_980,
+      totalPaisa: 167_920,
+    });
+    const { getOrderConfirmation } = await import("./order-confirmation");
+    await expect(getOrderConfirmation(token, { findOrder })).resolves.toMatchObject({
+      couponCode: "SIMRAN20",
+      subtotalPaisa: 209_900,
+      discountPaisa: 41_980,
+      totalPaisa: 167_920,
     });
   });
 
@@ -108,5 +127,14 @@ describe("Order confirmation query", () => {
     await expect(getOrderConfirmation(token, { findOrder })).resolves.toMatchObject({ totalPaisa: 99_900, fulfilment: "preparing" });
     await expect(getOrderConfirmation(token, { findOrder })).resolves.toMatchObject({ totalPaisa: 99_900, fulfilment: "created" });
     expect(findOrder).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns the same durable customer reference used by Track Order", async () => {
+    const findOrder = vi.fn().mockResolvedValue(capturedOrder);
+    const { getOrderConfirmation } = await import("./order-confirmation");
+
+    await expect(getOrderConfirmation(token, { findOrder })).resolves.toMatchObject({
+      displayReference: "FA-0123456789ABCDEF0123",
+    });
   });
 });

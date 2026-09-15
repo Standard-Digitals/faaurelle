@@ -1,15 +1,18 @@
 import "server-only";
 
+import { CUSTOMER_ORDER_REFERENCE_PATTERN } from "@/lib/commerce/tracking";
 import { prisma } from "@/lib/server/db/prisma";
 
 const PUBLIC_TOKEN = /^[A-Za-z0-9_-]{32,128}$/;
 
 type ConfirmationRecord = Readonly<{
-  publicToken: string;
+  customerReference: string;
   productName: string;
   unitAmountPaisa: number;
   quantity: number;
   subtotalPaisa: number;
+  couponCode?: string | null;
+  discountPaisa?: number;
   shippingPaisa: number;
   taxPaisa: number;
   totalPaisa: number;
@@ -35,6 +38,8 @@ export type OrderConfirmation = Readonly<{
   unitAmountPaisa: number;
   quantity: number;
   subtotalPaisa: number;
+  couponCode: string | null;
+  discountPaisa: number;
   shippingPaisa: number;
   taxPaisa: number;
   totalPaisa: number;
@@ -49,10 +54,6 @@ export type OrderConfirmation = Readonly<{
 type Dependencies = Readonly<{
   findOrder?: (token: string) => Promise<ConfirmationRecord | null>;
 }>;
-
-function displayReference(publicToken: string) {
-  return `FA-${publicToken.slice(0, 12).toUpperCase()}`;
-}
 
 function fulfilmentState(order: ConfirmationRecord): OrderConfirmation["fulfilment"] {
   if (
@@ -69,9 +70,12 @@ function fulfilmentState(order: ConfirmationRecord): OrderConfirmation["fulfilme
 }
 
 function hasValidMoneySnapshot(order: ConfirmationRecord) {
+  const discountPaisa = order.discountPaisa ?? 0;
+  const couponCode = order.couponCode ?? null;
   const amounts = [
     order.unitAmountPaisa,
     order.subtotalPaisa,
+    discountPaisa,
     order.shippingPaisa,
     order.taxPaisa,
     order.totalPaisa,
@@ -82,7 +86,10 @@ function hasValidMoneySnapshot(order: ConfirmationRecord) {
     order.quantity > 0 &&
     amounts.every((amount) => Number.isSafeInteger(amount) && amount >= 0) &&
     order.subtotalPaisa === order.unitAmountPaisa * order.quantity &&
-    order.totalPaisa === order.subtotalPaisa + order.shippingPaisa + order.taxPaisa
+    discountPaisa <= order.subtotalPaisa &&
+    order.totalPaisa === order.subtotalPaisa - discountPaisa + order.shippingPaisa + order.taxPaisa &&
+    ((couponCode === null && discountPaisa === 0) ||
+      (typeof couponCode === "string" && discountPaisa > 0))
   );
 }
 
@@ -90,11 +97,13 @@ async function findPersistedOrder(token: string): Promise<ConfirmationRecord | n
   return prisma.order.findUnique({
     where: { publicToken: token },
     select: {
-      publicToken: true,
+      customerReference: true,
       productName: true,
       unitAmountPaisa: true,
       quantity: true,
       subtotalPaisa: true,
+      couponCode: true,
+      discountPaisa: true,
       shippingPaisa: true,
       taxPaisa: true,
       totalPaisa: true,
@@ -129,16 +138,19 @@ export async function getOrderConfirmation(
     !order ||
     order.status !== "PAID" ||
     order.paymentStatus !== "CAPTURED" ||
+    !CUSTOMER_ORDER_REFERENCE_PATTERN.test(order.customerReference) ||
     !hasValidMoneySnapshot(order)
   ) return null;
 
   const destinationCountry = order.countryCode === "IN" ? "India" : order.countryCode;
   return {
-    displayReference: displayReference(order.publicToken),
+    displayReference: order.customerReference,
     productName: order.productName,
     unitAmountPaisa: order.unitAmountPaisa,
     quantity: order.quantity,
     subtotalPaisa: order.subtotalPaisa,
+    couponCode: order.couponCode ?? null,
+    discountPaisa: order.discountPaisa ?? 0,
     shippingPaisa: order.shippingPaisa,
     taxPaisa: order.taxPaisa,
     totalPaisa: order.totalPaisa,

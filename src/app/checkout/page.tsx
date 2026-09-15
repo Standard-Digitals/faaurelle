@@ -4,8 +4,8 @@ import { SiteHeader } from "@/components/header/SiteHeader";
 import { getAuthoritativeProduct } from "@/lib/server/commerce/products";
 import { calculateV1Pricing } from "@/lib/server/commerce/pricing";
 import { product } from "@/config/product";
-import { CheckoutForm } from "./CheckoutForm";
-import { OrderSummary, type CheckoutSummary } from "./OrderSummary";
+import type { CheckoutSummary } from "./OrderSummary";
+import { CheckoutExperience } from "./CheckoutExperience";
 import styles from "./checkout.module.css";
 
 /*
@@ -53,10 +53,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
           <p>Share your contact and delivery details. We’ll check prepaid delivery availability before payment becomes available.</p>
         </header>
 
-        <div className={styles.checkoutLayout}>
-          <CheckoutForm productCode={authoritativeProduct.code} />
-          <OrderSummary summary={summary} />
-        </div>
+        <CheckoutExperience productCode={authoritativeProduct.code} summary={summary} />
       </main>
     </>
   );

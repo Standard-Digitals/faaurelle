@@ -46,6 +46,28 @@ OTP: 1234, if prompted
 Never enter a real card while testing. Confirm that Razorpay Checkout displays
 the **Test Mode** indicator before continuing.
 
+## Track Order
+
+Track Order is a read-only customer lookup using only the Aurelle order reference.
+A reference such as `FA-0123456789ABCDEF0123` is normalized and matched exactly
+against the unique `Order.customerReference`. The stored Delhivery waybill remains
+private and is used only by the server to retrieve carrier updates. The public UI
+and API neither accept nor return a waybill.
+
+Customer references are generated server-side from random bytes, stored in
+uppercase, and enforced as unique by PostgreSQL. Historical orders receive a
+reference through the explicit Phase 9 migration; no request-time backfill is
+performed. The full opaque `Order.publicToken` remains the confirmation URL
+credential and is never used as the human-entered tracking value.
+
+If an order is paid but its carrier tracking identifier is not ready, Track Order returns
+a customer-safe preparation state and does not call Delhivery. Unknown references
+receive a generic not-found response. If the shipment has not appeared in
+Delhivery tracking yet, the known order receives a separate carrier-pending state.
+Tracking never creates shipments or mutates
+Order, Payment, or Shipment state, and its response excludes customer contact,
+address, payment-provider, and internal database identifiers.
+
 ## Active hero assets
 
 Runtime assets live under `public/`:
@@ -78,3 +100,5 @@ Location: Zirakpur
 State: Punjab
 Pincode: 160104
 Country: India
+
+FA-E080F5F69E52E1CC13B1

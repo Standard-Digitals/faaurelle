@@ -236,6 +236,52 @@
   line-height: 1.4;
 }
 
+.couponRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.couponApply,
+.couponSecondary {
+  min-height: 3.35rem;
+  padding: 0.8rem 1.3rem;
+  border: 1px solid #17130f;
+  border-radius: 0.15rem;
+  background: #17130f;
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.couponSecondary {
+  background: #fff;
+  color: #17130f;
+}
+
+.couponApply:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.couponMessage {
+  margin: 0.75rem 0 0;
+  color: #655d54;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.couponMessage[data-state="accepted"] {
+  color: #356040;
+}
+
+.couponMessage[data-state="rejected"] {
+  color: #8a2929;
+}
+
 .formFooter {
   display: flex;
   align-items: center;
@@ -404,6 +450,10 @@
   }
 
   .fieldGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .couponRow {
     grid-template-columns: minmax(0, 1fr);
   }
 

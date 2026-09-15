@@ -54,7 +54,7 @@ function normalizeText(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
 
-function normalizeMobile(value: string): string | null {
+export function normalizeIndianMobile(value: string): string | null {
   if (value.length > limits.mobileNumber) return null;
 
   let digits = value.replace(/\D/g, "");
@@ -64,12 +64,23 @@ function normalizeMobile(value: string): string | null {
   return /^[6-9]\d{9}$/.test(digits) ? `+91${digits}` : null;
 }
 
+export function normalizeCheckoutIdentity(payload: unknown):
+  | { success: true; data: { email: string; phone: string } }
+  | { success: false; message: string } {
+  const email = normalizeText(inputValue(payload, "email")).toLowerCase();
+  const phone = normalizeIndianMobile(inputValue(payload, "mobileNumber"));
+  if (!email || email.length > limits.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !phone) {
+    return { success: false, message: "Enter a valid email address and Indian mobile number before applying a coupon." };
+  }
+  return { success: true, data: { email, phone } };
+}
+
 export function validateCheckoutPayload(payload: unknown): CheckoutValidationResult {
   const errors: CheckoutFieldErrors = {};
   const fullName = normalizeText(inputValue(payload, "fullName"));
   const email = normalizeText(inputValue(payload, "email")).toLowerCase();
   const mobileInput = inputValue(payload, "mobileNumber");
-  const mobileNumber = normalizeMobile(mobileInput);
+  const mobileNumber = normalizeIndianMobile(mobileInput);
   const addressLine1 = normalizeText(inputValue(payload, "addressLine1"));
   const addressLine2 = normalizeText(inputValue(payload, "addressLine2"));
   const city = normalizeText(inputValue(payload, "city"));

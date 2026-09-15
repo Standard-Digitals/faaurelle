@@ -67,12 +67,15 @@ enum WebhookProcessingState {
 model Order {
   id                String           @id @default(uuid()) @db.Uuid
   publicToken       String           @unique
+  customerReference String           @unique
   checkoutKey       String           @unique
   productCode       String
   productName       String
   unitAmountPaisa   Int
   quantity          Int
   subtotalPaisa     Int
+  couponCode        String?
+  discountPaisa     Int              @default(0)
   shippingPaisa     Int
   taxPaisa          Int
   totalPaisa        Int
@@ -95,9 +98,24 @@ model Order {
   updatedAt         DateTime         @updatedAt
   payments          Payment[]
   shipment          Shipment?
+  couponRedemption  CouponRedemption?
 
   @@index([customerEmail])
   @@index([createdAt])
+}
+
+model CouponRedemption {
+  id              String   @id @default(uuid()) @db.Uuid
+  couponCode      String
+  normalizedEmail String
+  normalizedPhone String
+  orderId         String   @unique @db.Uuid
+  redeemedAt      DateTime @default(now())
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([couponCode, normalizedEmail])
+  @@unique([couponCode, normalizedPhone])
+  @@index([redeemedAt])
 }
 
 model Payment {
