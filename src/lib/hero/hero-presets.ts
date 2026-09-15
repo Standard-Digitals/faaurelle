@@ -80,9 +80,9 @@ export const heroResponsivePresets: Record<HeroResponsivePresetName, HeroRespons
       target: [1.38, 0.9, 0],
       fov: 33,
     },
-    openingPosition: [0.95, -0.35, 0],
+    openingPosition: [1.2, 0.05, 0],
     openingRotation: [-0.24, 0.25, -0.65],
-    openingScale: 0.65,
+    openingScale: 0.46,
 
     introCamera: {
       label: "Desktop opening front",

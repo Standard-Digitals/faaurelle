@@ -34,13 +34,15 @@
   grid-template-columns: minmax(0, 0.88fr) minmax(25rem, 1fr);
   align-items: center;
   min-height: 0;
-  background: radial-gradient(circle at 78% 48%, rgb(196 144 56 / 0.12), transparent 28rem);
+  overflow: hidden;
+  background: #fff;
 }
 
 .heroCopy {
   position: relative;
   z-index: 1;
-  max-width: 44rem;
+  max-width: 38rem;
+  align-self: end;
   padding-block: var(--page-section-padding);
 }
 
@@ -70,6 +72,8 @@
 .hero h1 {
   margin-bottom: 2rem;
   font-size: clamp(2.55rem, 3.8vw, 4.5rem);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
 }
 
 .heroCopy > p:not(.eyebrow) {
@@ -81,23 +85,20 @@
 }
 
 .heroCopy .lead {
-  padding-top: 1.6rem;
-  border-top: 1px solid rgb(189 140 53 / 0.5);
+  padding-top: 0;
   color: #17130f;
 }
 
 .heroVisual {
   position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 32rem;
+  align-self: stretch;
+  min-height: clamp(34rem, 48vw, 48rem);
 }
 
 .heroImage {
-  display: block;
-  width: min(100%, 30.4375rem);
-  height: auto;
-  margin-block: 2rem;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(1.25rem 0.8rem 1.4rem rgb(45 34 24 / 0.16));
 }
 
 .principles {
@@ -552,11 +553,11 @@
   .hero {
     grid-template-columns: 1fr;
     min-height: 0;
-    padding-top: var(--page-section-padding);
+    padding-top: 0;
   }
 
   .heroCopy {
-    padding-block: 2rem 1rem;
+    padding-block: var(--page-section-padding);
   }
 
   .hero h1 {
@@ -564,8 +565,8 @@
   }
 
   .heroVisual {
-    min-height: 0;
-    padding-bottom: var(--page-section-padding);
+    min-height: clamp(28rem, 110vw, 40rem);
+    padding: 0;
   }
 
   .principles {

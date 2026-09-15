@@ -74,11 +74,12 @@ export default function SilkBotaniqueFusionPage() {
         <section className={styles.science}>
           <div className={styles.scienceBackdrop} aria-hidden="true">
             <Image
-              src="/images/silk-botanique-fusion/light-refined-high-performance.jpeg"
+              src="/images/silk-botanique-fusion/light-refined-high-performance.png"
               alt=""
               width={1279}
               height={1600}
               sizes="100vw"
+              unoptimized
             />
           </div>
           <div className={styles.scienceCopy}>

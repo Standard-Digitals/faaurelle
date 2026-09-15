@@ -92,7 +92,7 @@ export default function ProductPage() {
         <section className={styles.result} aria-labelledby="product-result-title">
           <div className={styles.resultVisual}>
             <Image
-              src="/images/hair-comparison/hair-after-shine-and-smooth.png"
+              src="/images/transformations/silky-radiant-effortlessly-you.png"
               alt="Smooth, glossy hair displaying the FA ÀURELLE finish"
               fill
               sizes="(max-width: 800px) 100vw, 52vw"
@@ -132,8 +132,8 @@ export default function ProductPage() {
           </div>
           <div className={styles.poweredVisual}>
             <Image
-              src="/images/about/difference.png"
-              alt="Silk Botanique Fusion botanical oils"
+              src="/images/transformations/powered-by-silk-botanique-fusion.jpeg"
+              alt="Golden serum capsule surrounding a molecular structure"
               fill
               sizes="(max-width: 900px) 82vw, 30vw"
             />

@@ -69,7 +69,7 @@
 .resultVisual {
   aspect-ratio: 3 / 2;
   overflow: hidden;
-  background: #f7f4ee;
+  background: #fff;
 }
 
 .resultVisual img {
@@ -417,20 +417,25 @@
   gap: clamp(3rem, 8vw, 9rem);
   width: min(100%, var(--size-content-max));
   margin-inline: auto;
-  padding: var(--product-section-padding) var(--space-layout-x);
-  background: #f7f4ee;
+  padding: 0 var(--space-layout-x);
+  background: #fff;
+}
+
+.ritualCopy {
+  padding-block: var(--product-section-padding);
 }
 
 .ritualVisual {
   position: relative;
-  width: min(100%, 25rem);
-  aspect-ratio: 4 / 5;
+  width: 100%;
+  min-height: 32rem;
+  align-self: stretch;
   justify-self: center;
   overflow: hidden;
 }
 
 .ritualVisual img {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .ritual h2 {
@@ -486,10 +491,13 @@
 @media (max-width: 900px) {
   .ritual {
     grid-template-columns: 1fr;
+    gap: 0;
   }
 
   .ritualVisual {
-    width: min(85%, 22rem);
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 4 / 5;
   }
 }
 

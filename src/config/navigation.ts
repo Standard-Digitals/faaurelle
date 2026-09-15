@@ -1,7 +1,7 @@
 export const primaryNavigationLinks = [
   { label: "Discover", href: "about" },
   { label: "Silk Botanique Fusion", href: "silk-botanique-fusion" },
-  { label: "Transformations", href: "product" },
+  { label: "The Product", href: "product" },
 ] as const;
 
 export const trackOrderLink = {

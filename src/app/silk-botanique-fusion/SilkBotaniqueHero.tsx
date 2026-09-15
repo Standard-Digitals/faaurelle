@@ -56,12 +56,11 @@ export function SilkBotaniqueHero() {
       <div ref={visualRef} className={styles.heroVisual}>
         <Image
           className={styles.heroImage}
-          src="/images/silk-botanique-fusion/nature-science-luxurious-shine.jpeg"
+          src="/images/silk-botanique-fusion/nature-science-luxurious-shine.png"
           alt="Silky hair strands with clear droplets"
-          width={487}
-          height={626}
+          fill
           priority
-          sizes="(max-width: 900px) 90vw, 40vw"
+          sizes="(max-width: 800px) 100vw, 50vw"
         />
       </div>
     </section>

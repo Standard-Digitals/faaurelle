@@ -126,57 +126,10 @@ export default function AboutPage() {
           </div>
           <div className={styles.scienceVisual}>
             <Image
-              src="/images/about/science-of-shine.jpeg"
+              src="/images/about/science-of-shine.png"
               alt="Magnified hair strands comparing a rough, lifted cuticle on the left with a smooth, aligned cuticle on the right"
-              width={1279}
-              height={1600}
-              sizes="(max-width: 900px) 100vw, 48vw"
-            />
-          </div>
-        </section>
-
-        <SectionDivider />
-        <BotanicalIngredientsSection
-          eyebrow="Silk Botanique Fusion"
-          heading={
-            <>
-              <span>Nature. Science.</span>
-              <span>Silk. Perfected.</span>
-            </>
-          }
-          description="An exclusive blend of botanical oils and advanced shine-enhancing actives that smooth the hair surface, enhance light reflection, and deliver unparalleled softness and brilliance."
-          ingredients={botanicals}
-        />
-
-        <SectionDivider />
-        <section className={`${styles.section} ${styles.precision}`} aria-labelledby="precision-title">
-          <div className={styles.precisionCopy}>
-            <h2 id="precision-title">Crafted with<br />precision</h2>
-            <p className={styles.precisionLead}>To deliver the perfect drop.<br />Every time.</p>
-            <p className={styles.precisionDescription}>
-              Thoughtfully engineered for controlled and effortless application.
-            </p>
-            <ul className={styles.precisionBenefits}>
-              <li>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3S5 11 5 15a7 7 0 0 0 14 0c0-4-7-12-7-12Zm-3 12a3 3 0 0 0 3 3" /></svg>
-                <span>Shine</span>
-              </li>
-              <li>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6c3-3 6 3 9 0s6 3 9 0M3 12c3-3 6 3 9 0s6 3 9 0M3 18c3-3 6 3 9 0s6 3 9 0" /></svg>
-                <span>Smooth</span>
-              </li>
-              <li>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C4 9 10 4 20 3c0 10-5 17-15 16Zm-1 3L16 8" /></svg>
-                <span>Nourish</span>
-              </li>
-            </ul>
-          </div>
-          <div className={styles.precisionVisual}>
-            <Image
-              src="/images/about/crafted-with-precision-exploded-bottle.png"
-              alt="Exploded view of the FA ÀURELLE bottle, gold collar, pump head and internal dispensing mechanism"
               fill
-              sizes="100vw"
+              sizes="(max-width: 900px) 100vw, 48vw"
             />
           </div>
         </section>
@@ -222,6 +175,59 @@ export default function AboutPage() {
             <p>To reveal the beauty that’s already there.</p>
           </div>
         </section>
+
+        <SectionDivider />
+        <BotanicalIngredientsSection
+          eyebrow="Silk Botanique Fusion"
+          heading={
+            <>
+              <span>Nature. Science.</span>
+              <span>Silk. Perfected.</span>
+            </>
+          }
+          description="An exclusive blend of botanical oils and advanced shine-enhancing actives that smooth the hair surface, enhance light reflection, and deliver unparalleled softness and brilliance."
+          ingredients={botanicals}
+        />
+
+        <SectionDivider />
+        <section className={`${styles.section} ${styles.precision}`} aria-labelledby="precision-title">
+          <div className={styles.precisionCopy}>
+            <h2 id="precision-title">Crafted with<br />precision</h2>
+            <p className={styles.precisionLead}>To deliver the perfect drop.<br />Every time.</p>
+            <p className={styles.precisionDescription}>
+              Thoughtfully engineered for controlled and effortless application.
+            </p>
+            <ul className={styles.precisionBenefits}>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3S5 11 5 15a7 7 0 0 0 14 0c0-4-7-12-7-12Zm-3 12a3 3 0 0 0 3 3" /></svg>
+                <span>Shine</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6c3-3 6 3 9 0s6 3 9 0M3 12c3-3 6 3 9 0s6 3 9 0M3 18c3-3 6 3 9 0s6 3 9 0" /></svg>
+                <span>Smooth</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C4 9 10 4 20 3c0 10-5 17-15 16Zm-1 3L16 8" /></svg>
+                <span>Nourish</span>
+              </li>
+            </ul>
+          </div>
+          <div className={styles.precisionVisual}>
+            <div className={styles.precisionAssembly}>
+              <div className={styles.precisionPump}>
+                <Image src="/images/about/crafted-with-precision-pump.png" alt="Separated black pump head and gold collar" fill sizes="(max-width: 800px) 28vw, 20vw" />
+              </div>
+              <div className={styles.precisionMechanism}>
+                <Image src="/images/about/crafted-with-precision-mechanism.png" alt="Internal dispensing spring and pump mechanism" fill sizes="(max-width: 800px) 35vw, 25vw" />
+              </div>
+              <div className={styles.precisionBottle}>
+                <Image src="/images/about/crafted-with-precision-bottle.png" alt="FA ÀURELLE Hair Elixir bottle" fill sizes="(max-width: 800px) 45vw, 34vw" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+
 
 
       </main>

@@ -1376,7 +1376,7 @@ h6 {
 .hero-shop-link:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 4px; }
 .hero-opening-benefits {
   position: absolute;
-  top: 52%;
+  top: 68%;
   right: calc(var(--space-layout-x) + 1.5rem);
   z-index: 20;
   width: min(23vw, 22rem);
@@ -1387,7 +1387,9 @@ h6 {
   gap: 0.5rem;
   padding-block: 0.75rem;
 }
-.hero-opening-benefit + .hero-opening-benefit { border-top: 1px solid #bd8c3538; }
+.hero-opening-benefit + .hero-opening-benefit {
+  border-top: 1px solid #bd8c3538;
+}
 .hero-opening-benefit-icon {
   display: grid;
   place-items: center;
