@@ -1,6 +1,6 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { getRazorpayKeySecret } from "./client";
+import { getRazorpayKeySecret, isSupportedRazorpayPaymentMode } from "./client";
 
 const PAYMENT_ID = /^pay_[A-Za-z0-9]{6,64}$/;
 const SIGNATURE = /^[a-f0-9]{64}$/i;
@@ -30,7 +30,7 @@ export function verifyRazorpayWebhookSignature(
   secret = process.env.RAZORPAY_WEBHOOK_SECRET,
 ): boolean {
   if (
-    process.env.RAZORPAY_PAYMENT_MODE !== "test" ||
+    !isSupportedRazorpayPaymentMode(process.env.RAZORPAY_PAYMENT_MODE) ||
     !secret?.trim()
   ) {
     return false;

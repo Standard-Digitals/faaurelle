@@ -147,7 +147,7 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
     });
     if (!eligibility.success) {
       return eligibility.reason === "used"
-        ? { success: false, kind: "coupon_used", message: "Coupon already used." }
+        ? { success: false, kind: "coupon_used", message: "Invalid coupon code. This coupon has already been used." }
         : { success: false, kind: "coupon_invalid", message: "This coupon is invalid or has expired." };
     }
     coupon = eligibility.coupon;

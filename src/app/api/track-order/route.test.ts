@@ -47,7 +47,10 @@ describe("track order endpoint", () => {
       success: true,
       state: "tracking",
       orderReference: "FA-0123456789ABCDEF0123",
-      tracking,
+      tracking: {
+        currentStatus: tracking.currentStatus,
+        scans: [],
+      },
     });
     expect(mocks.resolve).toHaveBeenCalledWith("FA-0123456789ABCDEF0123");
     expect(result.headers.get("cache-control")).toBe("no-store");

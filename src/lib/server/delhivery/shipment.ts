@@ -218,7 +218,12 @@ export async function createDelhiveryShipment(
     method: "POST",
     url: url.toString(),
     headers: { Accept: "application/json", Authorization: "Token <redacted>", "Content-Type": "application/x-www-form-urlencoded" },
-    payload: providerPayload,
+    shipmentReference: input.reference,
+    destinationPincode: input.recipient.pincode,
+    productSku: input.product.sku,
+    quantity: input.product.quantity,
+    totalAmountRupees: input.product.totalAmountRupees,
+    pickupName: input.pickup.name,
   });
   let response: Response;
   try {
@@ -247,7 +252,8 @@ export async function createDelhiveryShipment(
     url: url.toString(),
     status: response.status,
     statusText: response.statusText,
-    headers: Object.fromEntries(response.headers.entries()),
+    contentType: response.headers.get("content-type") ?? undefined,
+    contentLength: response.headers.get("content-length") ?? undefined,
   });
   if (response.status === 401 || response.status === 403) throw new DelhiveryShipmentError("authentication", false, context);
   if (!response.ok) {
@@ -315,7 +321,8 @@ export async function findDelhiveryShipmentByReference(
     url: url.toString(),
     status: response.status,
     statusText: response.statusText,
-    headers: Object.fromEntries(response.headers.entries()),
+    contentType: response.headers.get("content-type") ?? undefined,
+    contentLength: response.headers.get("content-length") ?? undefined,
   });
   if (response.status === 401 || response.status === 403) throw new DelhiveryShipmentError("authentication", false, context);
   if (!response.ok) throw new DelhiveryShipmentError("provider", true, context);
@@ -325,7 +332,9 @@ export async function findDelhiveryShipmentByReference(
   } catch (error) {
     throw new DelhiveryShipmentError("malformed_response", true, { ...context, stage: "parsing" }, { cause: error });
   }
-  commerceDebug("delhivery-reference-lookup-response-body", { payload });
+  commerceDebug("delhivery-reference-lookup-response", {
+    responseShape: Array.isArray(record(payload)?.ShipmentData) ? "shipment-data" : "unexpected",
+  });
   const shipments = record(payload)?.ShipmentData;
   if (!Array.isArray(shipments) || shipments.length === 0) return null;
   const shipment = record(record(shipments[0])?.Shipment);

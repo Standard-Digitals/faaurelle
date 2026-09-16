@@ -36,15 +36,8 @@ export async function POST(request: Request) {
   commerceDebug("razorpay-webhook-authenticated", {
     eventId,
     contentLength: new TextEncoder().encode(rawBody).byteLength,
-    headers: Object.fromEntries(
-      [...request.headers.entries()].map(([name, value]) => [
-        name,
-        ["x-razorpay-signature", "authorization", "cookie", "set-cookie"].includes(name)
-          ? "<redacted>"
-          : value,
-      ]),
-    ),
-    rawBody,
+    contentType: request.headers.get("content-type") ?? undefined,
+    userAgent: request.headers.get("user-agent") ?? undefined,
   });
 
   let payload: unknown;

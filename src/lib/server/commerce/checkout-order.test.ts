@@ -57,6 +57,8 @@ describe("payable checkout orchestration", () => {
     const { createPayableCheckout } = await import("./checkout-order");
     const result = await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details }, deps as never);
     expect(result).toMatchObject({ success: true, checkout: { amount: 209_900, publicOrderToken: "opaque-public-token-generated-on-server" } });
+    expect(result).not.toHaveProperty("checkout.keySecret");
+    expect(result).not.toHaveProperty("checkout.webhookSecret");
     expect(fake.store.create).toHaveBeenCalledTimes(1);
     expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 209_900, currency: "INR" }));
     expect([...fake.rows.values()][0]).toMatchObject({
@@ -107,7 +109,7 @@ describe("payable checkout orchestration", () => {
     };
     const { createPayableCheckout } = await import("./checkout-order");
     await expect(createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: "SIMRAN20" }, deps as never))
-      .resolves.toEqual({ success: false, kind: "coupon_used", message: "Coupon already used." });
+      .resolves.toEqual({ success: false, kind: "coupon_used", message: "Invalid coupon code. This coupon has already been used." });
     expect(fake.store.create).not.toHaveBeenCalled();
     expect(deps.createProviderOrder).not.toHaveBeenCalled();
   });

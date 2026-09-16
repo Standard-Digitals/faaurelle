@@ -46,7 +46,15 @@ describe("Razorpay webhook signature verification", () => {
     }
   });
 
-  it.each(["live", "TEST", "", "unsupported"])("fails closed for payment mode %j", async (paymentMode) => {
+  it.each(["test", "live"])("accepts valid webhook signatures in explicit %s mode", async (paymentMode) => {
+    process.env.RAZORPAY_PAYMENT_MODE = paymentMode;
+    const { verifyRazorpayWebhookSignature } = await import("./signatures");
+    const rawBody = '{"event":"payment.captured","payload":{}}';
+    const signature = createHmac("sha256", "webhook-secret").update(rawBody).digest("hex");
+    expect(verifyRazorpayWebhookSignature(rawBody, signature, "webhook-secret")).toBe(true);
+  });
+
+  it.each(["TEST", "", "unsupported"])("fails closed for payment mode %j", async (paymentMode) => {
     process.env.RAZORPAY_PAYMENT_MODE = paymentMode;
     const { verifyRazorpayWebhookSignature } = await import("./signatures");
     expect(verifyRazorpayWebhookSignature("{}", "a".repeat(64), "webhook-secret")).toBe(false);

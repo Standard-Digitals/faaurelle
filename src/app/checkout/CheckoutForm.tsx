@@ -30,6 +30,10 @@ import {
   shouldAttemptConfirmationRecovery,
 } from "@/lib/commerce/confirmation-recovery";
 import { createCheckoutOrder, validateCheckoutDetails, validateCheckoutCoupon } from "./actions";
+import {
+  CheckoutProgressDialog,
+  type CheckoutProgressOperation,
+} from "./CheckoutProgressDialog";
 import styles from "./checkout.module.css";
 
 type SubmissionState =
@@ -95,11 +99,21 @@ export function CheckoutForm({
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [couponState, setCouponState] = useState<"idle" | "loading" | "accepted" | "rejected">("idle");
   const [couponMessage, setCouponMessage] = useState("Optional. Enter a coupon code after adding your email and mobile number.");
+  const [progressDialogOpen, setProgressDialogOpen] = useState(false);
+  const [takingLonger, setTakingLonger] = useState(false);
   const normalizedLocationQuery = locationQuery.trim().toLocaleLowerCase();
   const locationSuggestions = indianCityOptions
     .filter((option) => option.label.toLocaleLowerCase().includes(normalizedLocationQuery))
     .slice(0, 10);
   const busy = couponState === "loading" || submissionState === "checking" || submissionState === "creating-order" || submissionState === "opening-payment" || submissionState === "verifying-payment";
+  const progressOperation: CheckoutProgressOperation | null =
+    submissionState === "checking"
+      ? "delivery"
+      : submissionState === "creating-order" || submissionState === "opening-payment"
+        ? "payment"
+        : submissionState === "verifying-payment"
+          ? "verification"
+          : null;
 
   useEffect(() => {
     const recovery = parseConfirmationRecovery(
@@ -115,7 +129,15 @@ export function CheckoutForm({
     }
   }, [router]);
 
+  useEffect(() => {
+    if (!progressOperation || !progressDialogOpen) return;
+    const longerWaitTimer = window.setTimeout(() => setTakingLonger(true), 10_000);
+    return () => window.clearTimeout(longerWaitTimer);
+  }, [progressDialogOpen, progressOperation]);
+
   const verifyPayment = async (verification: PendingVerification) => {
+    setTakingLonger(false);
+    setProgressDialogOpen(true);
     setSubmissionState("verifying-payment");
     setFormMessage("Verifying payment securely…");
     try {
@@ -233,7 +255,7 @@ export function CheckoutForm({
       setCouponMessage(`${result.code} applied. Your discount is ready for final server verification.`);
     } catch {
       setCouponState("rejected");
-      setCouponMessage("We couldn’t check this coupon right now. Please try again.");
+      setCouponMessage("This coupon code is invalid or has already been used.");
     }
   };
 
@@ -266,8 +288,10 @@ export function CheckoutForm({
     }
 
     if (serviceabilityState === "serviceable") {
+      setTakingLonger(false);
+      setProgressDialogOpen(true);
       setSubmissionState("creating-order");
-      setFormMessage("Creating your secure test payment order…");
+      setFormMessage("Creating your secure payment order…");
       try {
         const orderResult = await createCheckoutOrder({
           checkoutKey,
@@ -289,7 +313,7 @@ export function CheckoutForm({
         }
 
         setSubmissionState("opening-payment");
-        setFormMessage("Opening Razorpay Test Mode…");
+        setFormMessage("Opening secure Razorpay Checkout…");
         try {
           await loadRazorpayCheckout();
         } catch {
@@ -330,14 +354,17 @@ export function CheckoutForm({
           setSubmissionState("payment-failed");
           setFormMessage("The payment attempt failed. No payment has been confirmed; you can try again.");
         });
+        setProgressDialogOpen(false);
         checkout.open();
       } catch {
         setSubmissionState("error");
-        setFormMessage("We couldn’t finish setting up the test payment. Please try again.");
+        setFormMessage("We couldn’t finish setting up the payment. Please try again.");
       }
       return;
     }
 
+    setTakingLonger(false);
+    setProgressDialogOpen(true);
     setSubmissionState("checking");
     setServiceabilityState("checking");
     setFormMessage("Checking prepaid delivery availability…");
@@ -359,7 +386,7 @@ export function CheckoutForm({
         setFormMessage("We couldn’t verify delivery availability right now. Please try again.");
       } else if (serverResult.serviceability.prepaidServiceable) {
         setServiceabilityState("serviceable");
-        setFormMessage("Prepaid delivery is available. Continue to create a Razorpay Test Mode payment order.");
+        setFormMessage("Prepaid delivery is available. Continue to secure payment.");
       } else {
         setServiceabilityState("unserviceable");
         setFormMessage("Prepaid delivery is currently unavailable to this pincode.");
@@ -372,7 +399,8 @@ export function CheckoutForm({
   };
 
   return (
-    <form ref={formRef} className={styles.form} onSubmit={handleSubmit} onChange={handleFieldChange} noValidate>
+    <>
+      <form ref={formRef} className={styles.form} onSubmit={handleSubmit} onChange={handleFieldChange} noValidate>
       <fieldset disabled={busy || submissionState === "payment-captured"}>
         <legend>Contact details</legend>
         <p className={styles.sectionIntro}>We’ll use these details for delivery updates when ordering becomes available.</p>
@@ -542,10 +570,19 @@ export function CheckoutForm({
       <div className={styles.formFooter}>
         <p className={styles.formStatus} data-state={submissionState === "error" || submissionState === "script-unavailable" || submissionState === "payment-failed" || submissionState === "verification-failed" ? "error" : serviceabilityState} role="status" aria-live="polite">{formMessage}</p>
         <button type="submit" disabled={busy || submissionState === "payment-captured" || submissionState === "verification-failed"}>
-          {submissionState === "checking" ? "Checking availability…" : submissionState === "creating-order" ? "Creating test order…" : submissionState === "opening-payment" ? "Opening Razorpay…" : submissionState === "verifying-payment" ? "Verifying payment…" : submissionState === "verification-pending" || submissionState === "payment-processing" ? "Retry verification" : submissionState === "payment-captured" ? "Payment received" : serviceabilityState === "serviceable" ? "Continue to test payment" : serviceabilityState === "unavailable" ? "Try delivery check again" : "Check delivery availability"}
+          {submissionState === "checking" ? "Checking availability…" : submissionState === "creating-order" ? "Creating payment order…" : submissionState === "opening-payment" ? "Opening Razorpay…" : submissionState === "verifying-payment" ? "Verifying payment…" : submissionState === "verification-pending" || submissionState === "payment-processing" ? "Retry verification" : submissionState === "payment-captured" ? "Payment received" : serviceabilityState === "serviceable" ? "Continue to payment" : serviceabilityState === "unavailable" ? "Try delivery check again" : "Check delivery availability"}
           <span aria-hidden="true">→</span>
         </button>
       </div>
-    </form>
+      </form>
+
+      <CheckoutProgressDialog
+        open={progressDialogOpen}
+        operation={progressOperation}
+        openingCheckout={submissionState === "opening-payment"}
+        takingLonger={takingLonger}
+        onClose={() => setProgressDialogOpen(false)}
+      />
+    </>
   );
 }

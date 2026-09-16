@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("server-only", () => ({}));
 
 describe("customer order reference generation", () => {
   it("creates a normalized reference from server-side random bytes", async () => {

@@ -334,6 +334,187 @@
   opacity: 0.62;
 }
 
+.progressBackdrop {
+  position: fixed;
+  z-index: 140;
+  inset: 0;
+  background: rgb(23 19 15 / 0.46);
+  animation: progress-backdrop-in 180ms ease-out both;
+}
+
+.progressDialogPositioner {
+  position: fixed;
+  z-index: 141;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.progressDialog {
+  position: relative;
+  width: min(100%, 31rem);
+  padding: clamp(1.6rem, 5vw, 2.4rem);
+  border: 1px solid rgb(23 19 15 / 0.14);
+  border-radius: 0.2rem;
+  outline: 0;
+  background: #fff;
+  box-shadow: 0 1.75rem 5rem rgb(23 19 15 / 0.24);
+  animation: progress-dialog-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.progressClose {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #534b43;
+  font: inherit;
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.progressClose:focus-visible {
+  outline: 2px solid #8d621f;
+  outline-offset: 2px;
+}
+
+.progressTitle {
+  margin: 0;
+  padding-right: 2.5rem;
+  font-family: var(--font-raleway-family);
+  font-size: clamp(1.35rem, 4.6vw, 2.25rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  white-space: nowrap;
+}
+
+.progressIntro {
+  max-width: 36ch;
+  margin: 0.9rem 0 0;
+  color: #655d54;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.progressSteps {
+  display: grid;
+  gap: 0;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progressSteps li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  min-height: 3rem;
+  color: #6f665d;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.progressSteps li:not(:last-child)::after {
+  position: absolute;
+  top: calc(50% + 0.85rem);
+  bottom: calc(-50% + 0.85rem);
+  left: calc(0.875rem - 0.5px);
+  width: 1px;
+  background: rgb(23 19 15 / 0.16);
+  content: "";
+}
+
+.progressSteps li[data-status="complete"],
+.progressSteps li[data-status="active"] {
+  color: #17130f;
+}
+
+.progressMarker {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid rgb(23 19 15 / 0.24);
+  border-radius: 50%;
+  background: #fff;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.progressSteps li[data-status="complete"] .progressMarker {
+  border-color: #356040;
+  background: #356040;
+}
+
+.progressSteps li[data-status="active"] .progressMarker {
+  border-color: #8d621f;
+}
+
+.progressSpinner {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 2px solid rgb(141 98 31 / 0.25);
+  border-top-color: #8d621f;
+  border-radius: 50%;
+  animation: progress-spin 760ms linear infinite;
+}
+
+.progressNote {
+  margin: 1.5rem 0 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(23 19 15 / 0.13);
+  color: #655d54;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes progress-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progress-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes progress-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.7rem) scale(0.985);
+  }
+}
+
 .summary {
   position: sticky;
   top: calc(var(--site-header-total-height) + 2rem);
@@ -427,6 +608,11 @@
     color: #17130f;
     transform: translateY(-2px);
   }
+
+  .progressClose:hover {
+    background: #f1ece3;
+    color: #17130f;
+  }
 }
 
 @media (max-width: 1000px) {
@@ -475,10 +661,28 @@
   }
 }
 
+@media (max-width: 420px) {
+  .progressDialog {
+    padding-top: 4.25rem;
+  }
+
+  .progressTitle {
+    padding-right: 0;
+    font-size: 1.2rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .field :is(input, select),
   .phoneInput,
   .formFooter button {
     transition: none;
+  }
+
+
+  .progressBackdrop,
+  .progressDialog,
+  .progressSpinner {
+    animation: none;
   }
 }

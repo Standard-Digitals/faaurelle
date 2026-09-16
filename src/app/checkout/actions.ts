@@ -46,7 +46,9 @@ export async function validateCheckoutCoupon(
   if (!eligibility.success) {
     return {
       success: false,
-      message: eligibility.reason === "used" ? "Coupon already used." : "This coupon is invalid or has expired.",
+      message: eligibility.reason === "used"
+        ? "Invalid coupon code. This coupon has already been used."
+        : "This coupon is invalid or has expired.",
     };
   }
   const pricing = calculateV1Pricing(product, eligibility.coupon.discountPercent);

@@ -15,12 +15,16 @@ type RazorpayClientOptions = Readonly<{
 
 type CreateOrderInput = Readonly<{ amount: number; currency: "INR"; receipt: string }>;
 
+export function isSupportedRazorpayPaymentMode(value: unknown): value is "test" | "live" {
+  return value === "test" || value === "live";
+}
+
 function credentials(options: RazorpayClientOptions) {
   const keyId = options.keyId ?? process.env.RAZORPAY_KEY_ID;
   const keySecret = options.keySecret ?? process.env.RAZORPAY_KEY_SECRET;
   const paymentMode = options.paymentMode ?? process.env.RAZORPAY_PAYMENT_MODE;
   if (
-    paymentMode !== "test" ||
+    !isSupportedRazorpayPaymentMode(paymentMode) ||
     !keyId?.trim() ||
     !keySecret?.trim()
   ) {
@@ -31,7 +35,7 @@ function credentials(options: RazorpayClientOptions) {
         ...(!keyId?.trim() ? ["RAZORPAY_KEY_ID"] : []),
         ...(!keySecret?.trim() ? ["RAZORPAY_KEY_SECRET"] : []),
       ],
-      paymentModeSupported: paymentMode === "test",
+      paymentModeSupported: isSupportedRazorpayPaymentMode(paymentMode),
     });
   }
   return {
@@ -82,6 +86,23 @@ function providerErrorDetails(payload: unknown) {
   };
 }
 
+function providerResponseSummary(payload: unknown) {
+  if (!payload || typeof payload !== "object") return { responseShape: typeof payload };
+  const value = payload as Record<string, unknown>;
+  const summary: Record<string, string | number | boolean> = {};
+  const safeKeys = [
+    "id", "entity", "amount", "amount_due", "amount_paid", "currency", "status",
+    "order_id", "receipt", "captured", "attempts", "created_at",
+  ] as const;
+  for (const key of safeKeys) {
+    const item = value[key];
+    if (typeof item === "string" || typeof item === "number" || typeof item === "boolean") {
+      summary[key] = item;
+    }
+  }
+  return summary;
+}
+
 async function request(url: URL, init: RequestInit, options: RazorpayClientOptions) {
   const { authorization } = credentials(options);
   commerceDebug("razorpay-request", {
@@ -121,7 +142,9 @@ async function request(url: URL, init: RequestInit, options: RazorpayClientOptio
     url: url.toString(),
     status: response.status,
     statusText: response.statusText,
-    headers: Object.fromEntries(response.headers.entries()),
+    contentType: response.headers.get("content-type") ?? undefined,
+    contentLength: response.headers.get("content-length") ?? undefined,
+    providerRequestId: responseContext.providerRequestId,
   });
   if (response.status === 401 || response.status === 403) throw new RazorpayOrderError("authentication", responseContext);
   if (!response.ok) {
@@ -129,7 +152,6 @@ async function request(url: URL, init: RequestInit, options: RazorpayClientOptio
     let providerDiagnostic = {};
     try {
       const responseText = await response.text();
-      commerceDebug("razorpay-error-response-body", { url: url.toString(), body: responseText });
       let payload: unknown;
       try {
         payload = JSON.parse(responseText) as unknown;
@@ -144,6 +166,7 @@ async function request(url: URL, init: RequestInit, options: RazorpayClientOptio
           ? { providerMessage: safeProviderMessage(responseText) }
           : {}),
       };
+      commerceDebug("razorpay-error-response", { url: url.toString(), ...providerDiagnostic });
     } catch {
       // Status still determines whether the outcome is definitive or ambiguous.
     }
@@ -153,7 +176,7 @@ async function request(url: URL, init: RequestInit, options: RazorpayClientOptio
   }
   try {
     const payload: unknown = await response.json();
-    commerceDebug("razorpay-success-response-body", { url: url.toString(), payload });
+    commerceDebug("razorpay-success-response", { url: url.toString(), ...providerResponseSummary(payload) });
     return payload;
   } catch (error) {
     throw new RazorpayOrderError("malformed_response", { ...responseContext, stage: "parsing", ...safeCause(error) }, { cause: error });

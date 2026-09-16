@@ -26,9 +26,10 @@ describe("Razorpay Orders client", () => {
     expect(String(fetchImpl.mock.calls[0][0])).toContain(`receipt=${input.receipt}`);
   });
 
-  it("rejects non-test configuration", async () => {
+  it("accepts explicit Live Mode without inferring it from key format", async () => {
     const { createRazorpayOrder } = await import("./client");
-    await expect(createRazorpayOrder(input, { ...config, paymentMode: "live" })).rejects.toMatchObject({ kind: "configuration" });
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify(providerOrder), { status: 200 }));
+    await expect(createRazorpayOrder(input, { ...config, paymentMode: "live", fetchImpl })).resolves.toEqual(providerOrder);
   });
 
   it("allows Test Mode when the application runtime is production", async () => {
@@ -42,7 +43,18 @@ describe("Razorpay Orders client", () => {
     }
   });
 
-  it.each(["live", "TEST", "", "unsupported"])("fails closed for payment mode %j", async (paymentMode) => {
+  it("allows explicit Live Mode in a production runtime", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      const fetchImpl = vi.fn().mockResolvedValue(new Response(JSON.stringify(providerOrder), { status: 200 }));
+      const { createRazorpayOrder } = await import("./client");
+      await expect(createRazorpayOrder(input, { ...config, paymentMode: "live", fetchImpl })).resolves.toEqual(providerOrder);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it.each(["TEST", "", "unsupported"])("fails closed for payment mode %j", async (paymentMode) => {
     const { createRazorpayOrder } = await import("./client");
     await expect(createRazorpayOrder(input, { ...config, paymentMode })).rejects.toMatchObject({ kind: "configuration" });
   });
