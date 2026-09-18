@@ -11,15 +11,15 @@ import {
 vi.mock("server-only", () => ({}));
 
 describe("V1 product pricing", () => {
-  it("defines the authoritative product price as 209900 paise", async () => {
+  it("defines the authoritative product price as 10000 paise", async () => {
     const { getAuthoritativeProduct } = await import("@/lib/server/commerce/products");
-    expect(getAuthoritativeProduct(product.code)?.unitAmountPaisa).toBe(209_900);
+    expect(getAuthoritativeProduct(product.code)?.unitAmountPaisa).toBe(10_000);
   });
 
   it("derives display formatting from the canonical numeric price", () => {
     expect(Object.isFrozen(product)).toBe(true);
     expect(productShowcase.price).toBe(formatInr(product.unitAmountPaisa));
-    expect(productShowcase.price).toBe("₹2,099");
+    expect(productShowcase.price).toBe("₹100");
   });
 });
 

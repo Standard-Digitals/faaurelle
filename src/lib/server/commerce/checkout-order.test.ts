@@ -56,17 +56,17 @@ describe("payable checkout orchestration", () => {
     const deps = dependencies(fake.store);
     const { createPayableCheckout } = await import("./checkout-order");
     const result = await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details }, deps as never);
-    expect(result).toMatchObject({ success: true, checkout: { amount: 209_900, publicOrderToken: "opaque-public-token-generated-on-server" } });
+    expect(result).toMatchObject({ success: true, checkout: { amount: 10_000, publicOrderToken: "opaque-public-token-generated-on-server" } });
     expect(result).not.toHaveProperty("checkout.keySecret");
     expect(result).not.toHaveProperty("checkout.webhookSecret");
     expect(fake.store.create).toHaveBeenCalledTimes(1);
-    expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 209_900, currency: "INR" }));
+    expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 10_000, currency: "INR" }));
     expect([...fake.rows.values()][0]).toMatchObject({
       customerReference: "FA-0123456789ABCDEF0123",
-      unitAmountPaisa: 209_900,
+      unitAmountPaisa: 10_000,
       shippingPaisa: 0,
       taxPaisa: 0,
-      totalPaisa: 209_900,
+      totalPaisa: 10_000,
       quantity: 1,
     });
   });
@@ -79,14 +79,14 @@ describe("payable checkout orchestration", () => {
     };
     const { createPayableCheckout } = await import("./checkout-order");
     const result = await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: " simran20 " }, deps as never);
-    expect(result).toMatchObject({ success: true, checkout: { amount: 167_920 } });
+    expect(result).toMatchObject({ success: true, checkout: { amount: 8_000 } });
     expect([...fake.rows.values()][0]).toMatchObject({
       couponCode: "SIMRAN20",
-      subtotalPaisa: 209_900,
-      discountPaisa: 41_980,
-      totalPaisa: 167_920,
+      subtotalPaisa: 10_000,
+      discountPaisa: 2_000,
+      totalPaisa: 8_000,
     });
-    expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 167_920 }));
+    expect(deps.createProviderOrder).toHaveBeenCalledWith(expect.objectContaining({ amount: 8_000 }));
   });
 
   it("treats coupon changes and removal as incompatible checkout material", async () => {

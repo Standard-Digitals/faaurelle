@@ -8,6 +8,6 @@ export const product = Object.freeze({
   altText: `${brand.displayName} Hair Elixir bottle shown from the front`,
   accessibilityLabel: `${brand.displayName} Hair Elixir`,
   supportingIdentity: "Weightless Texture · Silk Botanique Fusion",
-  unitAmountPaisa: 209_900,
+  unitAmountPaisa: 10_000,
   currency: "INR",
 } as const);
