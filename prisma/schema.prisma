@@ -94,6 +94,10 @@ model Order {
   fulfillmentStatus FulfillmentState @default(NOT_READY)
   razorpayOrderId   String?          @unique
   paidAt            DateTime?
+  confirmationEmailClaimedAt DateTime?
+  confirmationEmailSentAt    DateTime?
+  ownerOrderEmailSentAt      DateTime?
+  confirmationEmailLastError String?
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   payments          Payment[]

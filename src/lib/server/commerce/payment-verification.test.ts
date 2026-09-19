@@ -34,6 +34,7 @@ function dependencies() {
     fetchPayment: vi.fn().mockResolvedValue(payment),
     reconcile: vi.fn().mockResolvedValue({ status: "captured" }),
     fulfil: vi.fn().mockResolvedValue({ status: "created", waybill: "1122345678722", reused: false }),
+    notify: vi.fn().mockResolvedValue({ status: "sent" }),
   };
 }
 
@@ -66,6 +67,7 @@ describe("Checkout payment verification", () => {
     expect(deps.fetchPayment).toHaveBeenCalledWith(callback.razorpay_payment_id);
     expect(deps.reconcile).toHaveBeenCalledWith(expect.objectContaining({ id: order.id }), payment, expect.any(Date), callback.razorpay_payment_id);
     expect(deps.fulfil).toHaveBeenCalledWith(order.id);
+    expect(deps.notify).toHaveBeenCalledWith(order.id);
   });
 
   it("keeps captured payment successful when fulfilment remains pending", async () => {

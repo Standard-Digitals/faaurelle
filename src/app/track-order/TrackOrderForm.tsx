@@ -64,8 +64,11 @@ function TrackingResultView({ tracking, orderReference }: { tracking: CustomerTr
   );
 }
 
-export function TrackOrderForm() {
-  const [reference, setReference] = useState("");
+export function TrackOrderForm({ initialReference = "" }: { initialReference?: string }) {
+  const [reference, setReference] = useState(() => {
+    const validation = validateTrackingReference(initialReference);
+    return validation.success ? validation.reference : "";
+  });
   const [fieldError, setFieldError] = useState("");
   const [view, setView] = useState<ViewState>("initial");
   const [tracking, setTracking] = useState<CustomerTrackingResult | null>(null);

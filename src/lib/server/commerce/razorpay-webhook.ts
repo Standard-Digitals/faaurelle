@@ -4,7 +4,8 @@ import { prisma } from "@/lib/server/db/prisma";
 import { fetchRazorpayPayment } from "@/lib/server/razorpay/client";
 import { RazorpayOrderError } from "@/lib/server/razorpay/types";
 import { PaymentIntegrityError, reconcileRazorpayPayment } from "./payment-service";
-import { fulfilPaidOrder } from "./fulfilment-service";
+import { fulfilPaidOrder, type FulfilmentResult } from "./fulfilment-service";
+import { sendOrderCompletionEmail } from "./order-email";
 
 const SUPPORTED_EVENTS = new Set(["payment.captured", "payment.failed", "order.paid"]);
 const FULFILMENT_EVENT = "payment.captured";
@@ -36,6 +37,7 @@ type Dependencies = Readonly<{
   fetchPayment?: typeof fetchRazorpayPayment;
   reconcile?: typeof reconcileRazorpayPayment;
   fulfil?: typeof fulfilPaidOrder;
+  notify?: typeof sendOrderCompletionEmail;
   now?: () => Date;
 }>;
 
@@ -191,7 +193,20 @@ export async function processRazorpayWebhook(
     const reconciliation = await (dependencies.reconcile ?? reconcileRazorpayPayment)(order, payment, now, signal.paymentId);
     if (reconciliation.status === "captured" && signal.eventType === FULFILMENT_EVENT) {
       processingStage = "fulfilment";
-      const fulfilment = await (dependencies.fulfil ?? fulfilPaidOrder)(order.id);
+      let fulfilment: FulfilmentResult;
+      try {
+        fulfilment = await (dependencies.fulfil ?? fulfilPaidOrder)(order.id);
+      } finally {
+        try {
+          await (dependencies.notify ?? sendOrderCompletionEmail)(order.id);
+        } catch (error) {
+          logWebhook(diagnosticId, "order_email", eventId, signal, {
+            outcome: "notification_failed",
+            internalOrderId: order.id,
+            ...safeCause(error),
+          });
+        }
+      }
       if (fulfilment.status === "pending") {
         logWebhook(diagnosticId, processingStage, eventId, signal, {
           outcome: "retryable_failure",

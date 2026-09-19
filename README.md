@@ -58,6 +58,7 @@ Configure these variables in **Vercel Production**:
 ```text
 DATABASE_URL=<production-managed-postgresql-url>
 NEXT_PUBLIC_BASE_PATH=
+SITE_URL=https://www.faaurelle.com
 
 RAZORPAY_PAYMENT_MODE=live
 RAZORPAY_KEY_ID=<live-key-id>
@@ -77,6 +78,16 @@ SMTP_FROM=<authenticated-from-address>
 SUBSCRIPTION_TO_EMAIL=<subscription-recipient>
 CONTACT_TO_EMAIL=<contact-recipient>
 ```
+
+Captured orders send two separate branded messages: an order confirmation to
+the customer and a new-order notification to the owner. `SUBSCRIPTION_TO_EMAIL`
+is the owner recipient and falls back to `SMTP_FROM` when omitted. Both messages
+include the persisted order and pricing snapshot, delivery details,
+payment/fulfilment status, waybill when available, and a Track Order link
+prefilled with the private FA reference. The public deployed wordmark is used so
+the logo remains reachable by email clients even during local development.
+Each delivery is recorded durably on the Order so concurrent browser
+verification and Razorpay webhook processing do not send duplicates.
 
 `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_PORT` are
 local Docker variables and must not be configured in Vercel. Prisma and the

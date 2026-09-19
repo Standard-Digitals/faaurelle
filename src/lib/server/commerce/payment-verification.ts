@@ -5,6 +5,7 @@ import { verifyRazorpayCheckoutSignature } from "@/lib/server/razorpay/signature
 import { RazorpayOrderError } from "@/lib/server/razorpay/types";
 import { PaymentIntegrityError, reconcileRazorpayPayment, type DurablePaymentResult } from "./payment-service";
 import { fulfilPaidOrder, type FulfilmentResult } from "./fulfilment-service";
+import { sendOrderCompletionEmail } from "./order-email";
 
 const PUBLIC_TOKEN = /^[A-Za-z0-9_-]{32,128}$/;
 const PAYMENT_ID = /^pay_[A-Za-z0-9]{6,64}$/;
@@ -33,6 +34,7 @@ type Dependencies = Readonly<{
   fetchPayment?: typeof fetchRazorpayPayment;
   reconcile?: typeof reconcileRazorpayPayment;
   fulfil?: typeof fulfilPaidOrder;
+  notify?: typeof sendOrderCompletionEmail;
   now?: () => Date;
 }>;
 
@@ -94,17 +96,22 @@ export async function verifyCheckoutPayment(
       input.razorpay_payment_id,
     );
     if (payment.status !== "captured") return { success: true, payment };
+    let fulfilment: FulfilmentResult;
     try {
-      const fulfilment = await (dependencies.fulfil ?? fulfilPaidOrder)(order.id);
-      return { success: true, payment, fulfilment, confirmationToken: order.publicToken };
+      fulfilment = await (dependencies.fulfil ?? fulfilPaidOrder)(order.id);
     } catch {
-      return {
-        success: true,
-        payment,
-        fulfilment: { status: "pending", retryable: true },
-        confirmationToken: order.publicToken,
-      };
+      fulfilment = { status: "pending", retryable: true };
     }
+    try {
+      await (dependencies.notify ?? sendOrderCompletionEmail)(order.id);
+    } catch (error) {
+      console.error("[commerce:order-email-trigger]", {
+        orderId: order.id,
+        source: "payment_verification",
+        causeName: error instanceof Error ? error.name : typeof error,
+      });
+    }
+    return { success: true, payment, fulfilment, confirmationToken: order.publicToken };
   } catch (error) {
     if (error instanceof PaymentIntegrityError) {
       return { success: false, kind: "integrity", retryable: false, message: "The provider payment does not match this order." };

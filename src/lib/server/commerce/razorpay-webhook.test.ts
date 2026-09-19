@@ -48,6 +48,7 @@ function dependencies(events: ReturnType<typeof fakeEvents>["store"]) {
     fetchPayment: vi.fn().mockResolvedValue({ id: "pay_Payment123", orderId: "order_Order123", amount: 99_900, currency: "INR", status: "captured", captured: true, createdAt: new Date() }),
     reconcile: vi.fn().mockResolvedValue({ status: "captured" }),
     fulfil: vi.fn().mockResolvedValue({ status: "created", waybill: "1122345678722", reused: false }),
+    notify: vi.fn().mockResolvedValue({ status: "sent" }),
     now: () => new Date("2026-09-09T12:00:00Z"),
   };
 }
@@ -61,6 +62,7 @@ describe("Razorpay webhook processing", () => {
     expect(deps.fetchPayment).toHaveBeenCalledWith("pay_Payment123");
     expect(deps.reconcile).toHaveBeenCalledTimes(1);
     expect(deps.fulfil).toHaveBeenCalledTimes(event === "payment.captured" ? 1 : 0);
+    expect(deps.notify).toHaveBeenCalledTimes(event === "payment.captured" ? 1 : 0);
   });
 
   it("deduplicates an already processed event", async () => {

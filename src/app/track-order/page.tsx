@@ -18,7 +18,13 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function TrackOrderPage() {
+export default async function TrackOrderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reference?: string | string[] }>;
+}) {
+  const requestedReference = (await searchParams).reference;
+  const initialReference = typeof requestedReference === "string" ? requestedReference : "";
   return (
     <>
       <SiteHeader />
@@ -32,7 +38,7 @@ export default function TrackOrderPage() {
               shipment and retrieve its latest carrier updates.
             </p>
           </header>
-          <TrackOrderForm />
+          <TrackOrderForm initialReference={initialReference} />
         </section>
       </main>
       <SiteFooter />
