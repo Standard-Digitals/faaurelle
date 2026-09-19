@@ -28,6 +28,7 @@
   grid-template-rows: auto;
   min-width: 0;
   padding-right: clamp(2rem, 5vw, 6rem);
+  animation: showcase-gallery-enter 1.15s cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
 }
 
 .galleryStage {
@@ -97,6 +98,29 @@
   max-width: 36rem;
   padding-left: clamp(1.5rem, 3vw, 4rem);
   border-left: 1px solid rgb(189 140 53 / 0.13);
+  animation: showcase-content-enter 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes showcase-content-enter {
+  from {
+    opacity: 0;
+    transform: translateX(calc(100vw + 100%));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes showcase-gallery-enter {
+  from {
+    opacity: 0;
+    transform: translateX(calc(-100vw - 100%));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .eyebrow {
@@ -216,7 +240,7 @@
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
   margin-top: 1.2rem;
 }
@@ -241,21 +265,10 @@
     transform 220ms ease;
 }
 
-.addToCartButton {
-  color: #6e665e;
-  background: transparent;
-  border: 1px solid rgb(23 19 15 / 0.25);
-}
-
 .buyNowButton {
   border: 1px solid #17130f;
   background: #17130f;
   color: #fff;
-}
-
-.actions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.62;
 }
 
 .actions :is(button, a):focus-visible {
@@ -369,6 +382,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .galleryColumn,
+  .productContent {
+    animation: none;
+  }
+
   .productFigure,
   .productContent > * {
     will-change: auto;

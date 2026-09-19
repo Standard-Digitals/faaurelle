@@ -58,13 +58,13 @@ export async function POST(request: Request) {
   const root = payload && typeof payload === "object" && !Array.isArray(payload) ? payload as Record<string, unknown> : {};
   const keys = Object.keys(root);
   if (keys.length !== 1 || keys[0] !== "reference") {
-    return response({ success: false, error: "invalid", message: "Submit one Aurelle order reference only." }, 400);
+    return response({ success: false, error: "invalid", message: "Submit one FA order reference only." }, 400);
   }
   const validation = validateTrackingReference(root.reference);
   if (!validation.success) return response({ success: false, error: "invalid", message: validation.message }, 400);
 
   try {
-    const result = await resolveOrderTracking(validation.reference);
+    const result = await resolveOrderTracking(validation.reference, validation.kind);
     if (result.state === "not_found") {
       return response({ success: false, error: "not_found" }, 404);
     }

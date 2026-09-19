@@ -30,7 +30,6 @@ export const productShowcase = {
     "Silk-Touch Softness",
   ],
   actions: {
-    addToCart: "Add to cart",
     buyNow: "Buy now",
   },
 } as const;

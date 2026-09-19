@@ -150,10 +150,10 @@ export function TrackOrderForm({ initialReference = "" }: { initialReference?: s
           <span aria-hidden="true">FA</span>
           <div>
             <h2>Find your shipment</h2>
-            <p>Use the FA reference shown on your Aurelle order confirmation.</p>
+            <p>Use the FA reference shown on your order confirmation.</p>
           </div>
         </div>
-        <label htmlFor="tracking-reference">Aurelle order reference</label>
+        <label htmlFor="tracking-reference">FA order reference</label>
         <div className={styles.inputRow}>
           <input
             ref={inputRef}
@@ -162,7 +162,7 @@ export function TrackOrderForm({ initialReference = "" }: { initialReference?: s
             type="text"
             inputMode="text"
             autoComplete="off"
-            maxLength={23}
+            maxLength={70}
             value={reference}
             aria-invalid={Boolean(fieldError)}
             aria-describedby={fieldError ? "tracking-reference-error" : "tracking-reference-help"}
@@ -178,7 +178,7 @@ export function TrackOrderForm({ initialReference = "" }: { initialReference?: s
             {view === "loading" ? "Checking…" : "Track order"}
           </button>
         </div>
-        <p id="tracking-reference-help" className={styles.fieldHelp}>Enter one complete reference only. Do not paste a URL.</p>
+        <p id="tracking-reference-help" className={styles.fieldHelp}>Enter the complete FA reference from your order confirmation.</p>
         {fieldError ? <p id="tracking-reference-error" className={styles.fieldError}>{fieldError}</p> : null}
       </form>
 

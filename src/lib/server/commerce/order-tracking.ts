@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { CustomerTrackingResult } from "@/lib/commerce/tracking";
+import type { CustomerTrackingResult, TrackingReferenceKind } from "@/lib/commerce/tracking";
 import { prisma } from "@/lib/server/db/prisma";
 import { DelhiveryTrackingError, trackDelhiveryWaybill } from "@/lib/server/delhivery/tracking";
 
@@ -20,13 +20,22 @@ export type ResolvedOrderTracking =
   | Readonly<{ state: "not_found" }>;
 
 type Dependencies = Readonly<{
-  findOrder?: (customerReference: string) => Promise<TrackingOrderRecord | null>;
+  findOrder?: (reference: string, kind: TrackingReferenceKind) => Promise<TrackingOrderRecord | null>;
   trackWaybill?: typeof trackDelhiveryWaybill;
 }>;
 
-async function findPersistedOrder(customerReference: string): Promise<TrackingOrderRecord | null> {
-  return prisma.order.findUnique({
-    where: { customerReference },
+async function findPersistedOrder(reference: string, kind: TrackingReferenceKind): Promise<TrackingOrderRecord | null> {
+  const insensitiveReference = { equals: reference, mode: "insensitive" as const };
+  return prisma.order.findFirst({
+    where: kind === "internal"
+      ? { customerReference: insensitiveReference }
+      : kind === "delhivery_order"
+        ? { shipment: { is: { delhiveryOrderReference: insensitiveReference } } }
+        : kind === "delhivery_waybill"
+          ? { shipment: { is: { delhiveryWaybill: reference } } }
+        : kind === "razorpay_order"
+          ? { razorpayOrderId: insensitiveReference }
+          : { payments: { some: { razorpayPaymentId: insensitiveReference } } },
     select: {
       customerReference: true,
       status: true,
@@ -37,11 +46,12 @@ async function findPersistedOrder(customerReference: string): Promise<TrackingOr
 }
 
 export async function resolveOrderTracking(
-  customerReference: string,
+  reference: string,
+  kind: TrackingReferenceKind,
   dependencies: Dependencies = {},
 ): Promise<ResolvedOrderTracking> {
   const trackWaybill = dependencies.trackWaybill ?? trackDelhiveryWaybill;
-  const order = await (dependencies.findOrder ?? findPersistedOrder)(customerReference);
+  const order = await (dependencies.findOrder ?? findPersistedOrder)(reference, kind);
   if (!order || order.status !== "PAID" || order.paymentStatus !== "CAPTURED") {
     return { state: "not_found" };
   }

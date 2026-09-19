@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import gsap from "gsap";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./ProductShowcaseSection.module.css";
 import { productShowcase, productShowcaseImages } from "./product-showcase.data";
 import { product } from "@/config/product";
@@ -16,9 +15,7 @@ function Checkmark() {
 }
 
 export function ProductShowcaseSection() {
-  const sectionRef = useRef<HTMLElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const [activeImage, setActiveImage] = useState(0);
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -44,34 +41,9 @@ export function ProductShowcaseSection() {
     return () => window.clearInterval(timer);
   }, [activeImage, showImage]);
 
-  useLayoutEffect(() => {
-    const section = sectionRef.current;
-    const gallery = galleryRef.current;
-    const content = contentRef.current;
-
-    if (!section || !gallery || !content) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const context = gsap.context(() => {
-      const travel = () => window.innerWidth + Math.max(gallery.offsetWidth, content.offsetWidth);
-
-      gsap
-        .timeline({
-          defaults: { duration: 1.15, ease: "power4.out" },
-          onComplete: () =>
-            gsap.set([gallery, content], { clearProps: "transform,opacity,visibility" }),
-        })
-        .fromTo(content, { x: () => -travel(), autoAlpha: 0 }, { x: 0, autoAlpha: 1 }, 0)
-        .fromTo(gallery, { x: () => travel(), autoAlpha: 0 }, { x: 0, autoAlpha: 1 }, 0.08);
-    }, section);
-
-    return () => context.revert();
-  }, []);
-
   return (
     <section
       id="discover"
-      ref={sectionRef}
       className={styles.section}
       aria-labelledby="product-showcase-title"
     >
@@ -116,7 +88,7 @@ export function ProductShowcaseSection() {
           </div>
         </div>
 
-        <div ref={contentRef} className={styles.productContent}>
+        <div className={styles.productContent}>
           <p className={`${styles.eyebrow} type-eyebrow`} data-showcase-entrance>
             <span aria-hidden="true" />
             {productShowcase.eyebrow}
@@ -162,15 +134,6 @@ export function ProductShowcaseSection() {
           </div>
 
           <div className={styles.actions} data-showcase-entrance>
-            {/* Commerce actions remain presentational until cart and checkout infrastructure exists. */}
-            <button
-              type="button"
-              className={`${styles.addToCartButton} type-cta`}
-              disabled
-              title="Cart checkout is not available yet"
-            >
-              {productShowcase.actions.addToCart}
-            </button>
             <a
               className={`${styles.buyNowButton} type-cta`}
               href={`${basePath}/checkout?product=${encodeURIComponent(product.code)}`}

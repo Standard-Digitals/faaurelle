@@ -22,7 +22,7 @@ describe("track order endpoint", () => {
     expect(mocks.resolve).not.toHaveBeenCalled();
   });
 
-  it("accepts only an Aurelle reference and does not expose the carrier identifier", async () => {
+  it("accepts supported references and does not expose provider identifiers", async () => {
     const tracking = {
       waybill: "1122345678722",
       customerEmail: "private@example.com",
@@ -31,7 +31,6 @@ describe("track order endpoint", () => {
     };
     mocks.resolve.mockResolvedValue({ state: "tracking", tracking });
     const { POST } = await import("./route");
-    expect((await POST(request({ reference: "1122345678722" }))).status).toBe(400);
 
     mocks.resolve.mockResolvedValue({
       state: "tracking",
@@ -52,7 +51,7 @@ describe("track order endpoint", () => {
         scans: [],
       },
     });
-    expect(mocks.resolve).toHaveBeenCalledWith("FA-0123456789ABCDEF0123");
+    expect(mocks.resolve).toHaveBeenCalledWith("FA-0123456789ABCDEF0123", "internal");
     expect(result.headers.get("cache-control")).toBe("no-store");
   });
 
@@ -67,7 +66,26 @@ describe("track order endpoint", () => {
       state: "preparing",
       orderReference: "FA-0123456789ABCDEF0123",
     });
-    expect(mocks.resolve).toHaveBeenCalledWith("FA-0123456789ABCDEF0123");
+    expect(mocks.resolve).toHaveBeenCalledWith("FA-0123456789ABCDEF0123", "internal");
+  });
+
+  it.each([
+    ["FA_83E111BF6CA04DD8AC57455526B9D3E3", "fa_83e111bf6ca04dd8ac57455526b9d3e3", "delhivery_order"],
+    ["86313610000092", "86313610000092", "delhivery_waybill"],
+    ["ORDER_TDUZQL01OQDHMY", "order_tduzql01oqdhmy", "razorpay_order"],
+    ["PAY_TDUAGJCHNRY90B", "pay_tduagjchnry90b", "razorpay_payment"],
+  ])("identifies provider reference %s but returns only the internal reference", async (input, normalized, kind) => {
+    mocks.resolve.mockResolvedValue({ state: "preparing", orderReference: "FA-0123456789ABCDEF0123" });
+    const { POST } = await import("./route");
+    const result = await POST(request({ reference: input }));
+
+    expect(result.status).toBe(200);
+    await expect(result.json()).resolves.toEqual({
+      success: true,
+      state: "preparing",
+      orderReference: "FA-0123456789ABCDEF0123",
+    });
+    expect(mocks.resolve).toHaveBeenCalledWith(normalized, kind);
   });
 
   it("returns carrier-pending for a known order whose waybill has no provider record yet", async () => {

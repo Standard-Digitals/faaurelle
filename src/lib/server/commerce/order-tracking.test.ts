@@ -27,7 +27,7 @@ describe("Aurelle order tracking resolution", () => {
     const deps = dependencies();
     const { resolveOrderTracking } = await import("./order-tracking");
 
-    await expect(resolveOrderTracking(reference, deps as never)).resolves.toEqual({
+    await expect(resolveOrderTracking(reference, "internal", deps as never)).resolves.toEqual({
       state: "tracking",
       orderReference: reference,
       tracking: {
@@ -35,7 +35,7 @@ describe("Aurelle order tracking resolution", () => {
         scans: [],
       },
     });
-    expect(deps.findOrder).toHaveBeenCalledWith(reference);
+    expect(deps.findOrder).toHaveBeenCalledWith(reference, "internal");
     expect(deps.trackWaybill).toHaveBeenCalledWith(tracking.waybill);
   });
 
@@ -53,7 +53,7 @@ describe("Aurelle order tracking resolution", () => {
     });
     const { resolveOrderTracking } = await import("./order-tracking");
 
-    await expect(resolveOrderTracking(reference, deps as never)).resolves.toEqual({
+    await expect(resolveOrderTracking(reference, "internal", deps as never)).resolves.toEqual({
       state: "preparing",
       orderReference: reference,
     });
@@ -67,8 +67,8 @@ describe("Aurelle order tracking resolution", () => {
     const deps = dependencies({ findOrder });
     const { resolveOrderTracking } = await import("./order-tracking");
 
-    await expect(resolveOrderTracking(reference, deps as never)).resolves.toEqual({ state: "not_found" });
-    await expect(resolveOrderTracking(reference, deps as never)).resolves.toEqual({ state: "not_found" });
+    await expect(resolveOrderTracking(reference, "internal", deps as never)).resolves.toEqual({ state: "not_found" });
+    await expect(resolveOrderTracking(reference, "internal", deps as never)).resolves.toEqual({ state: "not_found" });
     expect(deps.trackWaybill).not.toHaveBeenCalled();
   });
 
@@ -79,7 +79,7 @@ describe("Aurelle order tracking resolution", () => {
     });
     const { resolveOrderTracking } = await import("./order-tracking");
 
-    await expect(resolveOrderTracking(reference, deps as never)).resolves.toEqual({
+    await expect(resolveOrderTracking(reference, "internal", deps as never)).resolves.toEqual({
       state: "tracking_pending",
       orderReference: reference,
     });
@@ -88,7 +88,7 @@ describe("Aurelle order tracking resolution", () => {
   it("returns only tracking-safe fields and exposes no mutable store dependency", async () => {
     const deps = dependencies();
     const { resolveOrderTracking } = await import("./order-tracking");
-    const result = await resolveOrderTracking(reference, deps as never);
+    const result = await resolveOrderTracking(reference, "internal", deps as never);
     const serialized = JSON.stringify(result);
 
     expect(serialized).not.toContain("customerEmail");
