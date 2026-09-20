@@ -55,19 +55,10 @@ export const footerContent = {
     `${brand.displayName} ${product.formalName} is crafted to transform dull, frizzy hair into silky, luminous strands with exceptional glass-like radiance. Powered by Silk Botanique Fusion™, it delivers a salon-finished look while preserving the natural movement and beauty of the hair.`,
   exploreHeading: "Explore",
   customerCareHeading: customerCareLabels.heading,
-  newsletter: {
-    heading: "Stay connected",
-    body: "Receive considered ritual notes, private-release news, and updates.",
-    label: "Email address",
-    placeholder: "you@example.com",
-    cta: "Join",
-    submitLabel: "Submit email for newsletter updates",
-    placeholderStatus: "Newsletter subscription is not connected yet. Please check back soon.",
-  },
   socialLabel: "Social channels",
   socials: {
     instagram: "Instagram",
-    pinterest: "Pinterest",
+    instagramUrl: "https://www.instagram.com/faaurelle",
   },
   legalLine: "Considered hair rituals",
 } as const;

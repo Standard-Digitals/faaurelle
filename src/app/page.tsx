@@ -1,19 +1,11 @@
-import type { Metadata } from "next";
-import { SiteHeader } from "@/components/header/SiteHeader";
-import { ComingSoonExperience } from "./coming-soon/ComingSoonExperience";
+import { CinematicExperience } from "@/app/experience/CinematicExperience";
+import { HeroResourcePreloads } from "@/components/hero/HeroResourcePreloads";
 
-export const metadata: Metadata = {
-  title: "Elixir Is Near | FA ÀURELLE",
-  description: "Register your interest for the forthcoming FA ÀURELLE Hair Elixir.",
-};
-
-export default function Home() {
+export default function HomePage() {
   return (
     <>
-      <SiteHeader />
-      <main id="main-content">
-        <ComingSoonExperience />
-      </main>
+      <HeroResourcePreloads />
+      <CinematicExperience />
     </>
   );
 }

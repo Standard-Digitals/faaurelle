@@ -8,6 +8,7 @@ import { SectionDivider } from "@/components/layout/SectionDivider";
 import { ProductShowcaseSection } from "@/components/product-showcase/ProductShowcaseSection";
 import styles from "./ProductPage.module.css";
 import { SignatureBenefitsCarousel } from "./SignatureBenefitsCarousel";
+import { InstagramSection } from "@/components/instagram/InstagramSection";
 
 export const metadata: Metadata = {
   title: "Hair Elixir Oil-in-Serum",
@@ -87,6 +88,9 @@ export default function ProductPage() {
             </div>
           </div>
         </section>
+
+        <SectionDivider />
+        <InstagramSection />
 
         <SectionDivider />
         <section className={styles.result} aria-labelledby="product-result-title">

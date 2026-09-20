@@ -1,0 +1,95 @@
+.section {
+  background: #fff;
+  color: #17130f;
+  font-family: var(--font-roboto-family);
+}
+
+.inner {
+  max-width: var(--size-content-max);
+  margin: auto;
+  padding: var(--product-section-padding) var(--space-layout-x);
+}
+
+.header {
+  margin-bottom: clamp(1.5rem, 2.5vw, 2rem);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 1.1rem;
+  color: #a56e1c;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.header h2 {
+  margin: 0;
+  font-family: var(--font-raleway-family);
+  font-size: clamp(2.45rem, 3.8vw, 4.3rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+.grid {
+  --reel-gap: clamp(1rem, 2vw, 1.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--reel-gap);
+  max-width: 70rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.card { min-width: 0; flex: 0 0 calc((100% - 2 * var(--reel-gap)) / 3); }
+
+/* Center the entire group explicitly when fewer than three Reels exist. */
+.grid[data-count="1"] {
+  max-width: calc((70rem - 2 * var(--reel-gap)) / 3);
+}
+
+.grid[data-count="2"] {
+  max-width: calc((70rem - 2 * var(--reel-gap)) / 3 * 2 + var(--reel-gap));
+}
+
+.grid[data-count="1"] > .card { flex-basis: 100%; }
+.grid[data-count="2"] > .card { flex-basis: calc((100% - var(--reel-gap)) / 2); }
+
+/* Only size the outer embed; Instagram controls its content and calculated height. */
+.card :global(.instagram-media) {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+
+.embed {
+  padding: 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.embed a { color: #655d54; text-underline-offset: .25em; }
+.embed a:focus-visible { outline: 2px solid #bd8c35; outline-offset: 4px; }
+
+@media (max-width: 1100px) {
+  .grid { max-width: 46rem; }
+  .card { flex-basis: calc((100% - var(--reel-gap)) / 2); }
+}
+
+@media (max-width: 640px) {
+  .inner { padding-inline: 1.25rem; }
+  .card,
+  .grid[data-count="2"] > .card { flex-basis: 100%; }
+}
+
+@media (max-width: 540px) {
+  .header h2 { font-size: clamp(2rem, 9vw, 3rem); }
+}
