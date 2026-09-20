@@ -36,7 +36,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   const summary: CheckoutSummary = {
     productName: authoritativeProduct.name,
-    image: "/images/products/best-seller-hair-elixir.png",
+    image: "/images/products/hair-elixir-checkout.jpeg",
     imageAlt: product.altText,
     ...pricing,
   };

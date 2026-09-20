@@ -26,14 +26,22 @@ export function ProductShowcaseSection() {
     const next = (index + productShowcaseImages.length) % productShowcaseImages.length;
     slider.scrollTo({
       left: next * slider.clientWidth,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
     });
   }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       const gallery = galleryRef.current;
-      if (!gallery || document.hidden || gallery.matches(":hover") || gallery.contains(document.activeElement)) return;
+      if (
+        !gallery ||
+        document.hidden ||
+        gallery.matches(":hover") ||
+        gallery.contains(document.activeElement)
+      )
+        return;
       const bounds = gallery.getBoundingClientRect();
       if (bounds.bottom <= 0 || bounds.top >= window.innerHeight) return;
       showImage(activeImage + 1);
@@ -42,15 +50,20 @@ export function ProductShowcaseSection() {
   }, [activeImage, showImage]);
 
   return (
-    <section
-      id="discover"
-      className={styles.section}
-      aria-labelledby="product-showcase-title"
-    >
+    <section id="discover" className={styles.section} aria-labelledby="product-showcase-title">
       <div className={styles.composition}>
         <div ref={galleryRef} className={styles.galleryColumn}>
-          <div className={styles.galleryStage} role="region" aria-roledescription="carousel" aria-label="Hair Elixir photographs">
-            <div ref={sliderRef} className={styles.slider} tabIndex={0} aria-label="Product images. Use left and right arrow keys to browse."
+          <div
+            className={styles.galleryStage}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Hair Elixir photographs"
+          >
+            <div
+              ref={sliderRef}
+              className={styles.slider}
+              tabIndex={0}
+              aria-label="Product images. Use left and right arrow keys to browse."
               onScroll={(event) => {
                 const slider = event.currentTarget;
                 setActiveImage(Math.round(slider.scrollLeft / slider.clientWidth));
@@ -60,30 +73,58 @@ export function ProductShowcaseSection() {
                   event.preventDefault();
                   showImage(activeImage + (event.key === "ArrowRight" ? 1 : -1));
                 }
-              }}>
-            {productShowcaseImages.map((photo, index) => (
-            <figure key={photo.image} className={styles.productFigure} data-showcase-image role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${productShowcaseImages.length}`}>
-              <Image
-                src={`${basePath}${photo.image}`}
-                alt={photo.alt}
-                fill
-                sizes="(max-width: 767px) 82vw, (max-width: 1100px) 48vw, 42vw"
-                className={styles.productImage}
-              />
-            </figure>
-            ))}
+              }}
+            >
+              {productShowcaseImages.map((photo, index) => (
+                <figure
+                  key={photo.image}
+                  className={styles.productFigure}
+                  data-showcase-image
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${index + 1} of ${productShowcaseImages.length}`}
+                >
+                  <Image
+                    src={`${basePath}${photo.image}`}
+                    alt={photo.alt}
+                    fill
+                    sizes="(max-width: 767px) 82vw, (max-width: 1100px) 48vw, 42vw"
+                    className={styles.productImage}
+                  />
+                </figure>
+              ))}
             </div>
             <div className={styles.galleryControls}>
-              <button type="button" onClick={() => showImage(activeImage - 1)} aria-label="Previous image">←</button>
+              <button
+                type="button"
+                onClick={() => showImage(activeImage - 1)}
+                aria-label="Previous image"
+              >
+                ←
+              </button>
               <div className={styles.imageSelectors}>
                 {productShowcaseImages.map((photo, index) => (
-                  <button type="button" key={photo.image} onClick={() => showImage(index)} aria-label={`Show image ${index + 1}: ${photo.alt}`} aria-pressed={activeImage === index}>
+                  <button
+                    type="button"
+                    key={photo.image}
+                    onClick={() => showImage(index)}
+                    aria-label={`Show image ${index + 1}: ${photo.alt}`}
+                    aria-pressed={activeImage === index}
+                  >
                     <Image src={`${basePath}${photo.image}`} alt="" width={44} height={52} />
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={() => showImage(activeImage + 1)} aria-label="Next image">→</button>
-              <span className="sr-only" aria-live="off">Image {activeImage + 1} of {productShowcaseImages.length}</span>
+              <button
+                type="button"
+                onClick={() => showImage(activeImage + 1)}
+                aria-label="Next image"
+              >
+                →
+              </button>
+              <span className="sr-only" aria-live="off">
+                Image {activeImage + 1} of {productShowcaseImages.length}
+              </span>
             </div>
           </div>
         </div>
@@ -93,26 +134,12 @@ export function ProductShowcaseSection() {
             <span aria-hidden="true" />
             {productShowcase.eyebrow}
           </p>
-          <h2
-            id="product-showcase-title"
-            className="type-editorial-heading"
-            data-showcase-entrance
-          >
+          <h2 id="product-showcase-title" className="type-editorial-heading" data-showcase-entrance>
             {productShowcase.name}
           </h2>
           <p className={`${styles.tagline} type-body`} data-showcase-entrance>
             {productShowcase.tagline}
           </p>
-          <div
-            className={styles.rating}
-            aria-label={`Rated ${productShowcase.rating}`}
-            data-showcase-entrance
-          >
-            <span className={styles.stars} aria-hidden="true">
-              ★★★★★
-            </span>
-            <span>{productShowcase.rating}</span>
-          </div>
 
           <ul className={styles.benefits} data-showcase-entrance>
             {productShowcase.benefits.map((benefit) => (
