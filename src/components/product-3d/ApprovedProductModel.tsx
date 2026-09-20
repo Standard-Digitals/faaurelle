@@ -1,12 +1,7 @@
 "use client";
 
 import { useGLTF } from "@react-three/drei";
-import {
-  forwardRef,
-  useEffect,
-  useMemo,
-  type Ref,
-} from "react";
+import { forwardRef, useEffect, useMemo, type Ref } from "react";
 import * as THREE from "three";
 import { heroModelPath } from "@/lib/hero/hero-presets";
 
@@ -37,9 +32,7 @@ export type NewBottleParts = {
   secondaryShell: THREE.Object3D;
 };
 
-function resolveSemanticParts(
-  nodes: Map<string, THREE.Object3D>,
-): NewBottleParts {
+function resolveSemanticParts(nodes: Map<string, THREE.Object3D>): NewBottleParts {
   const missing = Object.entries(newBottleNodeNames).filter(([, nodeName]) => !nodes.has(nodeName));
   if (missing.length > 0) {
     throw new Error(
@@ -63,6 +56,25 @@ function setMeshShadows(node: THREE.Object3D, castShadow: boolean, receiveShadow
   });
 }
 
+function tuneLabelMaterials(node: THREE.Object3D) {
+  node.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) {
+      return;
+    }
+
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => {
+      if (
+        material instanceof THREE.MeshStandardMaterial ||
+        material instanceof THREE.MeshPhysicalMaterial
+      ) {
+        material.metalness = Math.min(material.metalness, 0.42);
+        material.roughness = Math.max(material.roughness, 0.78);
+      }
+    });
+  });
+}
+
 function setGroupRef(ref: Ref<THREE.Group>, node: THREE.Group | null) {
   if (typeof ref === "function") {
     ref(node);
@@ -82,19 +94,14 @@ export const CanonicalProductModel = forwardRef<
     onPrepared?: (parts: NewBottleParts | null) => void;
   }
 >(function CanonicalProductModel(
-  {
-    position,
-    rotation,
-    scale = 1,
-    visible = true,
-    shadows = true,
-    onPrepared,
-  },
+  { position, rotation, scale = 1, visible = true, shadows = true, onPrepared },
   forwardedRef,
 ) {
   const gltf = useGLTF(heroModelPath);
   const prepared = useMemo(() => {
     const model = gltf.scene.clone(true);
+    const exportArtifact = model.getObjectByName("Cube");
+    exportArtifact?.parent?.remove(exportArtifact);
     const authoredNodes = new Map<string, THREE.Object3D>();
     const ownedMaterials = new Set<THREE.Material>();
 
@@ -137,11 +144,13 @@ export const CanonicalProductModel = forwardRef<
     setMeshShadows(parts.innerTube, false, false);
     setMeshShadows(parts.pipe, false, false);
     setMeshShadows(parts.label, shadows, shadows);
+    tuneLabelMaterials(parts.label);
     setMeshShadows(parts.pump, shadows, shadows);
     setMeshShadows(parts.metal, shadows, shadows);
 
     model.updateMatrixWorld(true);
-    const bounds = new THREE.Box3().setFromObject(model);
+    const bounds = new THREE.Box3();
+    Object.values(parts).forEach((part) => bounds.expandByObject(part));
     if (bounds.isEmpty()) {
       throw new Error("New bottle has no measurable assembled bounds");
     }
@@ -155,13 +164,9 @@ export const CanonicalProductModel = forwardRef<
       throw new Error(`New bottle has an invalid assembled height: ${size.y}`);
     }
 
-    const labelCenter = new THREE.Box3()
-      .setFromObject(parts.label)
-      .getCenter(new THREE.Vector3());
+    const labelCenter = new THREE.Box3().setFromObject(parts.label).getCenter(new THREE.Vector3());
     if (labelCenter.z <= bottleCenter.z) {
-      throw new Error(
-        "New bottle front-direction contract failed: label must face assembled +Z",
-      );
+      throw new Error("New bottle front-direction contract failed: label must face assembled +Z");
     }
 
     const normalizationScale = canonicalProductHeight / size.y;

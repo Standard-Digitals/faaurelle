@@ -88,12 +88,9 @@ export function HeroProductModel({
     setPointLight(node);
   }, []);
 
-  const handleProductPrepared = useCallback(
-    (parts: NewBottleParts | null) => {
-      setProductParts(parts);
-    },
-    [],
-  );
+  const handleProductPrepared = useCallback((parts: NewBottleParts | null) => {
+    setProductParts(parts);
+  }, []);
 
   const handleEnvironmentReady = useCallback(() => {
     setEnvironmentReady(true);

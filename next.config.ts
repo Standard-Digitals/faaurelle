@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/models/hero/fa-aurelle-new-bottle-runtime-v7.glb",
+        source: "/models/hero/fa-aurelle-new-bottle-runtime-v11.glb",
         headers: [
           {
             key: "Cache-Control",

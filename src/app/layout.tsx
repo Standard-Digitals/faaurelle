@@ -43,6 +43,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
   return (
     <html lang="en">
       <body className={`${roboto.variable} ${raleway.variable}`}>
@@ -58,6 +60,20 @@ export default function RootLayout({
           fbq('init', '${META_PIXEL_ID}');
           fbq('track', 'PageView');`}
         </Script>
+        <link
+          rel="preload"
+          href={`${basePath}/models/hero/fa-aurelle-new-bottle-runtime-v11.glb`}
+          as="fetch"
+          type="model/gltf-binary"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href={`${basePath}/environments/hero/fa-aurelle-serum-studio-v1.hdr`}
+          as="fetch"
+          type="image/vnd.radiance"
+          crossOrigin="anonymous"
+        />
         <noscript>
           {/* Meta Pixel requires a literal tracking pixel when JavaScript is disabled. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
