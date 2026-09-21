@@ -5,6 +5,7 @@ import { brand } from "@/config/brand";
 import "./globals.css";
 
 const META_PIXEL_ID = "2169167907337885";
+const GOOGLE_TAG_ID = "G-2PWGFQG1SB";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -48,6 +49,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.variable} ${raleway.variable}`}>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-tag" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GOOGLE_TAG_ID}');`}
+        </Script>
         <Script id="meta-pixel" strategy="afterInteractive">
           {`!function(f,b,e,v,n,t,s)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
