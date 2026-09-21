@@ -75,7 +75,7 @@ export function HeroScene({
     >
       <div
         className={[
-          "pointer-events-none absolute inset-0 transition-opacity duration-500",
+          "pointer-events-none absolute inset-0 z-[1] transition-opacity duration-300",
           modelReady ? "opacity-0" : "opacity-100",
         ].join(" ")}
         aria-hidden={modelReady}
@@ -85,7 +85,7 @@ export function HeroScene({
       <Canvas
         aria-hidden="true"
         className={[
-          "transition-opacity duration-150",
+          "transition-opacity duration-300",
           modelReady ? "opacity-100" : "opacity-0",
         ].join(" ")}
         shadows

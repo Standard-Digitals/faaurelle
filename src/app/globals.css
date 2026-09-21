@@ -979,35 +979,6 @@ h6 {
       transform 70ms linear;
   }
 
-  [data-hero-mode="phonePortrait"] .hero-copy-intro {
-    top: max(calc(var(--site-header-total-height) + 0.75rem), 10vh);
-    right: auto;
-    left: 50%;
-    width: min(82vw, 22rem);
-    max-width: none;
-    text-align: left;
-    transform: translateX(-50%);
-  }
-
-  [data-hero-mode="phonePortrait"] .hero-copy-intro h1 {
-    max-width: 18ch;
-    margin-top: 0.8rem;
-    font-size: clamp(1.8rem, 8vw, 2.5rem);
-    line-height: 0.92;
-    letter-spacing: -0.045em;
-    text-wrap: balance;
-    text-align: left;
-  }
-
-  [data-hero-mode="phonePortrait"] .hero-copy-intro .hero-description {
-    max-width: 17rem;
-    margin: 1.15rem 0 0;
-    padding-left: 0.85rem;
-    font-size: 1rem;
-    line-height: 1.52;
-    text-align: left;
-  }
-
   .hero-botanical-heading p {
     margin-bottom: 0.45rem;
     letter-spacing: 0.24em;
@@ -1053,7 +1024,8 @@ h6 {
 
   .editorial-product-content > .editorial-product-benefits {
     margin-top: 3.75rem;
-    margin-left: calc((100% - 100vw) / 2);
+    width: 100vw;
+    margin-left: calc(-1 * max(var(--space-layout-x), var(--safe-area-left)));
   }
 
   .editorial-product-benefits ul {
@@ -1099,42 +1071,93 @@ h6 {
 }
 
 @media (max-width: 767px) and (orientation: portrait) {
+  .hero-copy-intro {
+    top: max(calc(var(--site-header-total-height) + 0.75rem), 10vh);
+    right: auto;
+    left: 50%;
+    width: min(82vw, 22rem);
+    max-width: none;
+    text-align: left;
+    transform: translateX(-50%);
+  }
+
+  .hero-copy-intro h1 {
+    max-width: 18ch;
+    margin-top: 0.8rem;
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+    text-align: left;
+  }
+
+  .hero-copy-intro .hero-description {
+    max-width: 17rem;
+    margin: 1.15rem 0 0;
+    padding-left: 0.85rem;
+    font-size: 1rem;
+    line-height: 1.52;
+    text-align: left;
+  }
+
+  .hero-content-layer {
+    overflow: visible;
+  }
+
   .silk-fusion-final-content {
     z-index: 5;
+    inset: calc(var(--site-header-total-height) + 4rem)
+      max(0.85rem, var(--safe-area-right)) max(1rem, var(--safe-area-bottom))
+      max(0.85rem, var(--safe-area-left));
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+    background: transparent;
+  }
+
+  .silk-fusion-final-content[data-revealed="true"] {
+    pointer-events: auto;
   }
 
   .silk-fusion-description,
   .silk-fusion-benefits {
-    left: max(0.85rem, var(--safe-area-left));
-    right: max(0.85rem, var(--safe-area-right));
-    width: auto;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    position: relative;
+    inset: auto;
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    background: #fff;
+  }
+
+  .silk-fusion-description::before,
+  .silk-fusion-benefits::before,
+  .silk-fusion-description::after,
+  .silk-fusion-benefits::after {
+    content: none;
   }
 
   .silk-fusion-description {
-    top: 48%;
-    max-height: 23%;
+    margin-top: auto;
   }
 
-  .silk-fusion-benefits {
-    top: 75%;
-    max-height: 23%;
+  .silk-fusion-benefits h3 {
+    font-family: var(--font-raleway-family);
   }
 }
 
 @media (max-width: 767px) and (max-height: 700px) and (orientation: portrait) {
-  [data-hero-mode="phonePortrait"] .hero-copy-intro {
+  .hero-copy-intro {
     top: max(calc(var(--site-header-total-height) + 0.4rem), 8vh);
   }
 
-  [data-hero-mode="phonePortrait"] .hero-copy-intro h1 {
+  .hero-copy-intro h1 {
     font-size: clamp(1.75rem, 7.5vw, 2.3rem);
   }
 
-  [data-hero-mode="phonePortrait"] .hero-copy-intro .hero-description {
+  .hero-copy-intro .hero-description {
     margin-top: 0.7rem;
     font-size: 1rem;
     line-height: 1.42;
@@ -1327,6 +1350,22 @@ h6 {
     opacity: 0.82;
   }
 }
+.hero-loading-bottle {
+  padding: max(5rem, var(--site-header-total-height)) 30vw 1rem;
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .hero-loading-bottle {
+    padding: 48svh 28vw 24svh;
+  }
+}
+
+@media (max-width: 899px) and (orientation: landscape) {
+  .hero-loading-bottle {
+    padding: var(--site-header-total-height) 35vw 1rem;
+  }
+}
+
 .hero-scene {
   --chapter-two-bottle-blur: 2.5px;
   --chapter-two-bottle-opacity: 0.95;

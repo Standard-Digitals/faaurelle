@@ -1,8 +1,14 @@
 "use client";
 
-import { Environment, Lightformer, OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import {
+  Environment,
+  Lightformer,
+  OrbitControls,
+  PerspectiveCamera,
+  useEnvironment,
+} from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useHeroTimeline } from "@/components/hero/HeroTimeline";
 import {
@@ -17,12 +23,38 @@ import {
 import { setHeroProductRoll } from "@/lib/hero/hero-timeline";
 import type { HeroExperienceMode } from "@/lib/responsive";
 
-function EnvironmentReadySignal({ onReady }: { onReady: () => void }) {
+function HeroEnvironment({ onReady }: { onReady: () => void }) {
+  // Resolve the HDR before mounting the environment capture portal.
+  useEnvironment({ files: heroEnvironmentPath });
   useEffect(() => {
     onReady();
   }, [onReady]);
 
-  return null;
+  return (
+    <Environment
+      files={heroEnvironmentPath}
+      background={false}
+      resolution={256}
+      environmentIntensity={0.65}
+    >
+      <Lightformer
+        form="rect"
+        color="#fff2dc"
+        intensity={2.2}
+        position={[5.5, 7, 4]}
+        scale={[3, 4, 1]}
+        onUpdate={(light) => light.lookAt(0, 1, 0)}
+      />
+      <Lightformer
+        form="rect"
+        color="#e8c99f"
+        intensity={1.35}
+        position={[3.5, 5, -5]}
+        scale={[2.5, 3.5, 1]}
+        onUpdate={(light) => light.lookAt(0, 1, 0)}
+      />
+    </Environment>
+  );
 }
 
 export function HeroProductModel({
@@ -52,11 +84,30 @@ export function HeroProductModel({
   const [pointLight, setPointLight] = useState<THREE.PointLight | null>(null);
   const [environmentReady, setEnvironmentReady] = useState(false);
 
+  const readyFrames = useRef(0);
+  const readyNotified = useRef(false);
+
   useEffect(() => {
     if (productParts && environmentReady) {
-      onReady();
+      invalidate();
     }
-  }, [environmentReady, onReady, productParts]);
+  }, [environmentReady, invalidate, productParts]);
+
+  useFrame(() => {
+    if (!productParts || !environmentReady || readyNotified.current) {
+      return;
+    }
+
+    // Allow one fully lit frame to render before revealing the canvas.
+    readyFrames.current += 1;
+    if (readyFrames.current < 2) {
+      invalidate();
+      return;
+    }
+
+    readyNotified.current = true;
+    onReady();
+  });
 
   const handleProductRef = useCallback((node: THREE.Group | null) => {
     if (node) {
@@ -108,7 +159,7 @@ export function HeroProductModel({
   );
 
   const { recordFrame } = useHeroTimeline({
-    enabled: timelineEnabled && Boolean(product && productParts && lightSweep),
+    enabled: timelineEnabled && environmentReady && Boolean(product && productParts && lightSweep),
     scrollRootClassName,
     experienceMode,
     debugEnabled: debugMode,
@@ -147,30 +198,7 @@ export function HeroProductModel({
         <CanonicalProductModel ref={handleProductRef} onPrepared={handleProductPrepared} />
       </Suspense>
       <Suspense fallback={null}>
-        <Environment
-          files={heroEnvironmentPath}
-          background={false}
-          resolution={256}
-          environmentIntensity={0.65}
-        >
-          <Lightformer
-            form="rect"
-            color="#fff2dc"
-            intensity={2.2}
-            position={[5.5, 7, 4]}
-            scale={[3, 4, 1]}
-            onUpdate={(light) => light.lookAt(0, 1, 0)}
-          />
-          <Lightformer
-            form="rect"
-            color="#e8c99f"
-            intensity={1.35}
-            position={[3.5, 5, -5]}
-            scale={[2.5, 3.5, 1]}
-            onUpdate={(light) => light.lookAt(0, 1, 0)}
-          />
-        </Environment>
-        <EnvironmentReadySignal onReady={handleEnvironmentReady} />
+        <HeroEnvironment onReady={handleEnvironmentReady} />
       </Suspense>
       {debugMode ? <OrbitControls makeDefault enableDamping target={[0, 1.3, 0]} /> : null}
     </>

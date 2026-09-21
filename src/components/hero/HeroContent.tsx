@@ -70,7 +70,7 @@ export function HeroContent({
     const heroTextExitProgress = smoothStepBetween(progress, heroTextExitRange);
 
     return (
-      <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden text-foreground">
+      <div className="hero-content-layer pointer-events-none absolute inset-0 z-10 overflow-hidden text-foreground">
         <div
           className="contents"
           aria-hidden={activeChapterIndex !== 1}
