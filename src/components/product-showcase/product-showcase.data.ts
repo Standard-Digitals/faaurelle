@@ -10,6 +10,9 @@ export const productShowcaseImages = [
   { image: "/images/products/hair-elixir-hero-dark-vanity.jpeg", alt: "FA ÀURELLE Hair Elixir bottle on a warmly lit dark vanity" },
   { image: "/images/products/hair-elixir-hero-serum-marble.jpeg", alt: "FA ÀURELLE Hair Elixir bottle arranged with serum on a marble surface" },
   { image: "/images/products/hair-elixir-hero-packaging.jpeg", alt: "FA ÀURELLE Hair Elixir bottle with its black-and-gold presentation packaging" },
+  { image: "/images/products/elixir-model.jpeg", alt: "Model holding FA ÀURELLE Hair Elixir" },
+  { image: "/images/products/elixir-bottle-and-box.jpeg", alt: "FA ÀURELLE Hair Elixir bottle beside its black-and-gold presentation box" },
+  { image: "/images/products/elixir-packaging.jpeg", alt: "FA ÀURELLE Hair Elixir presentation box on a warmly lit vanity" },
 ] as const;
 
 export const productShowcase = {

@@ -421,49 +421,59 @@ h6 {
 }
 
 :is(
-  [data-hero-preset="tablet"],
-  [data-hero-preset="mobilePortrait"],
-  [data-hero-preset="mobileLandscape"]
-) .hero-botanical-heading h2 {
+    [data-hero-preset="tablet"],
+    [data-hero-preset="mobilePortrait"],
+    [data-hero-preset="mobileLandscape"]
+  )
+  .hero-botanical-heading
+  h2 {
   white-space: normal;
   text-wrap: balance;
 }
 
 :is(
-  [data-hero-preset="tablet"],
-  [data-hero-preset="mobilePortrait"],
-  [data-hero-preset="mobileLandscape"]
-) .hero-botanical-ingredient figcaption small {
+    [data-hero-preset="tablet"],
+    [data-hero-preset="mobilePortrait"],
+    [data-hero-preset="mobileLandscape"]
+  )
+  .hero-botanical-ingredient
+  figcaption
+  small {
   text-wrap: balance;
 }
 
 :is(
-  [data-hero-preset="tablet"],
-  [data-hero-preset="mobilePortrait"],
-  [data-hero-preset="mobileLandscape"]
-) .hero-botanical-ingredient--bottom figcaption {
+    [data-hero-preset="tablet"],
+    [data-hero-preset="mobilePortrait"],
+    [data-hero-preset="mobileLandscape"]
+  )
+  .hero-botanical-ingredient--bottom
+  figcaption {
   max-width: var(--label-width);
   font-family: var(--font-roboto-family);
-  transform: translate(
-    calc(-50% + var(--label-offset-x)),
-    var(--label-offset-y)
-  );
+  transform: translate(calc(-50% + var(--label-offset-x)), var(--label-offset-y));
 }
 
 :is(
-  [data-hero-preset="tablet"],
-  [data-hero-preset="mobilePortrait"],
-  [data-hero-preset="mobileLandscape"]
-) .hero-botanical-ingredient--bottom figcaption span {
+    [data-hero-preset="tablet"],
+    [data-hero-preset="mobilePortrait"],
+    [data-hero-preset="mobileLandscape"]
+  )
+  .hero-botanical-ingredient--bottom
+  figcaption
+  span {
   font-family: var(--font-raleway-family);
   line-height: 1.1;
 }
 
 :is(
-  [data-hero-preset="tablet"],
-  [data-hero-preset="mobilePortrait"],
-  [data-hero-preset="mobileLandscape"]
-) .hero-botanical-ingredient--bottom figcaption small {
+    [data-hero-preset="tablet"],
+    [data-hero-preset="mobilePortrait"],
+    [data-hero-preset="mobileLandscape"]
+  )
+  .hero-botanical-ingredient--bottom
+  figcaption
+  small {
   margin-top: clamp(0.16rem, 0.4vh, 0.3rem);
   line-height: 1.15;
   letter-spacing: 0.06em;
@@ -633,6 +643,9 @@ h6 {
     width: min(56vw, 38rem);
   }
 
+  .editorial-product-content > .editorial-product-benefits {
+    width: 75vw;
+  }
 }
 
 .silk-fusion-chapter {
@@ -937,38 +950,6 @@ h6 {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @media (max-width: 767px) {
   :root {
     --site-header-height: 4.25rem;
@@ -1039,17 +1020,22 @@ h6 {
 
   .editorial-product-content {
     top: max(calc(var(--site-header-total-height) + 1.5rem), 12vh);
-    left: max(var(--space-layout-x), var(--safe-area-left));
-    width: min(64vw, 18rem);
+    left: 0;
+    width: 100%;
+    max-width: none;
+    padding-inline: max(var(--space-layout-x), var(--safe-area-left));
+    box-sizing: border-box;
     transform: none;
   }
 
   .editorial-product-heading h2 {
     font-size: clamp(1.25rem, 5.5vw, 2rem);
+    white-space: normal;
   }
 
   .editorial-product-description p {
-    max-width: 28ch;
+    width: 100%;
+    max-width: none;
     margin-top: 0.55rem;
     font-size: 1rem;
     line-height: 1.5;
@@ -1067,6 +1053,7 @@ h6 {
 
   .editorial-product-content > .editorial-product-benefits {
     margin-top: 3.75rem;
+    margin-left: calc((100% - 100vw) / 2);
   }
 
   .editorial-product-benefits ul {
@@ -1091,8 +1078,6 @@ h6 {
     height: 1.65rem;
   }
 
-
-
   .hero-static-fallback-molecule-merge {
     padding: 8rem 2.5rem 9rem;
   }
@@ -1111,24 +1096,33 @@ h6 {
   .silk-fusion-title-mask h2 {
     font-size: clamp(2.15rem, 10.8vw, 3.25rem);
   }
+}
 
+@media (max-width: 767px) and (orientation: portrait) {
+  .silk-fusion-final-content {
+    z-index: 5;
+  }
 
+  .silk-fusion-description,
+  .silk-fusion-benefits {
+    left: max(0.85rem, var(--safe-area-left));
+    right: max(0.85rem, var(--safe-area-right));
+    width: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
 
+  .silk-fusion-description {
+    top: 48%;
+    max-height: 23%;
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  .silk-fusion-benefits {
+    top: 75%;
+    max-height: 23%;
+  }
 }
 
 @media (max-width: 767px) and (max-height: 700px) and (orientation: portrait) {
@@ -1224,14 +1218,18 @@ h6 {
     top: 50%;
     left: max(var(--space-layout-x), var(--safe-area-left));
     width: min(38vw, 17rem);
+    padding-inline: 0;
+    box-sizing: content-box;
     transform: translateY(-50%);
   }
 
   [data-hero-mode="phoneLandscape"] .editorial-product-heading h2 {
     font-size: clamp(1.2rem, 3.4vw, 1.75rem);
+    white-space: nowrap;
   }
 
   [data-hero-mode="phoneLandscape"] .editorial-product-description p {
+    width: auto;
     max-width: 30ch;
     margin-top: 0.35rem;
     font-size: 1rem;
@@ -1249,7 +1247,9 @@ h6 {
   }
 
   [data-hero-mode="phoneLandscape"] .editorial-product-content > .editorial-product-benefits {
+    width: 75vw;
     margin-top: 0.65rem;
+    margin-left: 0;
   }
 
   [data-hero-mode="phoneLandscape"] .editorial-product-benefits ul {
@@ -1289,10 +1289,6 @@ h6 {
   .silk-fusion-title-mask h2 {
     font-size: clamp(1.75rem, 8.5vw, 2.45rem);
   }
-
-
-
-
 }
 
 @media (min-width: 768px) and (max-height: 600px) {
@@ -1304,17 +1300,6 @@ h6 {
   .silk-fusion-title-mask h2 {
     font-size: clamp(2rem, 5.4vw, 3.6rem);
   }
-
-
-
-
-
-
-
-
-
-
-
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1372,8 +1357,13 @@ h6 {
   color: var(--color-foreground);
   transition: background-color 160ms ease-out;
 }
-.hero-shop-link:hover { background: #f5efe5; }
-.hero-shop-link:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 4px; }
+.hero-shop-link:hover {
+  background: #f5efe5;
+}
+.hero-shop-link:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 4px;
+}
 .hero-opening-benefits {
   position: absolute;
   top: 68%;
@@ -1399,7 +1389,10 @@ h6 {
   border-radius: 50%;
   color: #a77b30;
 }
-.hero-opening-benefit-icon svg { width: 1.625rem; height: 1.625rem; }
+.hero-opening-benefit-icon svg {
+  width: 1.625rem;
+  height: 1.625rem;
+}
 .hero-opening-benefits-heading {
   margin: 0 0 0.25rem;
   font-family: var(--font-raleway-family);
@@ -1431,32 +1424,74 @@ h6 {
     width: auto;
     pointer-events: auto;
     transform: none !important;
-    background: #fffffff5;
+    padding: 0.9rem 0 0.1rem;
+    overflow: hidden;
+    background: linear-gradient(180deg, #fffffff0 0%, #fffffff8 24%, #fffffff8 100%);
   }
-  .hero-opening-benefits-heading { font-size: 1.4rem; }
+  .hero-opening-benefits-heading {
+    padding-inline: 0.1rem;
+    font-size: 1.4rem;
+  }
   .hero-opening-benefits-list {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
+    margin-inline: 0.1rem;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .hero-opening-benefits-list::-webkit-scrollbar {
+    display: none;
   }
   .hero-opening-benefit {
-    flex: 1 0 17rem;
+    flex: 0 0 min(26rem, calc(100vw - 4rem));
     gap: 0.75rem;
     padding: 1rem 0;
     scroll-snap-align: start;
   }
-  .hero-opening-benefit + .hero-opening-benefit { border-top: 0; }
-  .hero-opening-benefit h3 { font-size: 1.4rem; }
-  .hero-shop-link { margin-top: 1rem; padding: 0.65rem 1rem; }
+  .hero-opening-benefit + .hero-opening-benefit {
+    border-top: 0;
+  }
+  .hero-opening-benefit h3 {
+    font-size: 1.4rem;
+  }
+  .hero-shop-link {
+    margin-top: 1rem;
+    padding: 0.65rem 1rem;
+  }
 }
 @media (max-width: 767px) {
-  .hero-opening-benefit { flex-basis: 88%; }
+  .hero-opening-benefits {
+    bottom: max(0.75rem, var(--safe-area-bottom));
+    padding: 0.75rem 0 0;
+  }
+  .hero-opening-benefits-heading {
+    font-size: 1.35rem;
+  }
+  .hero-opening-benefit {
+    flex-basis: calc(100vw - 4.5rem);
+    padding-block: 0.8rem 0.95rem;
+  }
 }
 @media (max-height: 500px) and (orientation: landscape) {
-  .hero-opening-benefit { grid-template-columns: 2rem 1fr; padding-block: 0.5rem; }
-  .hero-opening-benefit-icon { width: 2rem; height: 2rem; }
-  .hero-opening-benefit-icon svg { width: 1.5rem; height: 1.5rem; }
-  .hero-opening-benefit h3 { margin-bottom: 0.25rem; font-size: 1.15rem; }
-  .hero-opening-benefit p { line-height: 1.3; }
+  .hero-opening-benefit {
+    grid-template-columns: 2rem 1fr;
+    padding-block: 0.5rem;
+  }
+  .hero-opening-benefit-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+  .hero-opening-benefit-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .hero-opening-benefit h3 {
+    margin-bottom: 0.25rem;
+    font-size: 1.15rem;
+  }
+  .hero-opening-benefit p {
+    line-height: 1.3;
+  }
 }
