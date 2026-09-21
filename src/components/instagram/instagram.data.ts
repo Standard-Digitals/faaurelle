@@ -7,10 +7,10 @@ export type UgcReel = Readonly<{
 export const ugcReels: readonly UgcReel[] = [
   {
     id: "aurelle-reel-01",
-    url: "https://www.instagram.com/reel/DdMPAJAte1s",
+    url: "https://www.instagram.com/reel/DdirunzhnPD/?stkn=a2NmeDlneHk0eWR0",
   },
   {
     id: "aurelle-reel-02",
-    url: "https://www.instagram.com/reel/DdMPAJAte1s",
+    url: "https://www.instagram.com/reel/Ddid99DpYHG/?stkn=MWV0Y2pyOWVlejdyYQ==",
   },
 ];
