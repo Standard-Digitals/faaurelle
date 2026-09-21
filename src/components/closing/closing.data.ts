@@ -19,8 +19,6 @@ export const innerCircleContent = {
     "Redeem Premium Experiences",
   ],
   cta: "Know more",
-  ctaTitle: "Inner Circle enrollment — coming soon",
-  placeholderStatus: "Inner Circle details are coming soon.",
 } as const;
 
 export const trustDetails = [

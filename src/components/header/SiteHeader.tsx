@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -21,16 +22,10 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const logoPath = `${basePath}/images/brand/fa-aurelle-wordmark.svg`;
 const homeAnchor = (href: string) => `${basePath}/${href}`;
 
-type IconName = "account" | "bag" | "close" | "menu" | "search";
+type IconName = "bag" | "close" | "menu";
 
 function Icon({ name }: { name: IconName }) {
   const paths: Record<IconName, ReactNode> = {
-    account: (
-      <>
-        <circle cx="12" cy="8" r="3.25" />
-        <path d="M5.75 19c.65-3.2 2.75-5 6.25-5s5.6 1.8 6.25 5" />
-      </>
-    ),
     bag: (
       <>
         <path d="M5.5 8.25h13l-.65 11H6.15l-.65-11Z" />
@@ -44,12 +39,6 @@ function Icon({ name }: { name: IconName }) {
         <path d="M4 16h16" />
       </>
     ),
-    search: (
-      <>
-        <circle cx="10.5" cy="10.5" r="5.75" />
-        <path d="m15 15 4.25 4.25" />
-      </>
-    ),
   };
 
   return (
@@ -59,24 +48,11 @@ function Icon({ name }: { name: IconName }) {
   );
 }
 
-function UtilityButton({
-  icon,
-  label,
-  className,
-}: {
-  icon: Extract<IconName, "account" | "bag" | "search">;
-  label: string;
-  className?: string;
-}) {
+function ProductLink({ onClick }: { onClick?: () => void }) {
   return (
-    <button
-      type="button"
-      className={className}
-      aria-label={label}
-      title={`${label} — coming soon`}
-    >
-      <Icon name={icon} />
-    </button>
+    <Link href="/product" aria-label="Shop the elixir" onClick={onClick}>
+      <Icon name="bag" />
+    </Link>
   );
 }
 
@@ -199,9 +175,7 @@ export function SiteHeader() {
             </nav>
 
             <div className={styles.utilities} aria-label={navigationAccessibility.utilities}>
-              <UtilityButton icon="search" label={navigationAccessibility.search} />
-              <UtilityButton icon="account" label={navigationAccessibility.account} className={styles.optionalUtility} />
-              <UtilityButton icon="bag" label={navigationAccessibility.shoppingBag} />
+              <ProductLink />
             </div>
           </div>
         </div>
@@ -257,9 +231,7 @@ export function SiteHeader() {
           </nav>
 
           <div className={styles.panelUtilities}>
-            <UtilityButton icon="search" label={navigationAccessibility.search} />
-            <UtilityButton icon="account" label={navigationAccessibility.account} />
-            <UtilityButton icon="bag" label={navigationAccessibility.shoppingBag} />
+            <ProductLink onClick={closeMenu} />
           </div>
         </div>
       </div>

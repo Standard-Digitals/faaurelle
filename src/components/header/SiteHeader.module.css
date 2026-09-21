@@ -85,10 +85,10 @@
   gap: 0.2rem;
 }
 
-.utilities button,
+.utilities a,
 .menuTrigger,
 .panelHeader button,
-.panelUtilities button {
+.panelUtilities a {
   display: inline-grid;
   place-items: center;
   width: 2.55rem;
@@ -239,12 +239,12 @@
   .secondaryNavigation a,
   .secondaryNavigation button,
   .logo,
-  .utilities button,
+  .utilities a,
   .menuTrigger,
   .panelHeader button,
   .panelNavigation a,
   .panelNavigation button,
-  .panelUtilities button
+  .panelUtilities a
 ):focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 3px;
@@ -254,8 +254,8 @@
   .primaryNavigation a:hover,
   .secondaryNavigation a:hover,
   .secondaryNavigation button:hover,
-  .utilities button:hover,
-  .panelUtilities button:hover {
+  .utilities a:hover,
+  .panelUtilities a:hover {
     color: var(--color-gold);
   }
 }

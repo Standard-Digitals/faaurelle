@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import styles from "./InnerCircleSection.module.css";
 import { innerCircleContent } from "./closing.data";
@@ -7,7 +8,6 @@ import { innerCircleContent } from "./closing.data";
 export function InnerCircleSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [entered, setEntered] = useState(false);
-  const [status, setStatus] = useState("");
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -51,20 +51,15 @@ export function InnerCircleSection() {
         </ul>
 
         <div className={styles.action}>
-          <button
-            type="button"
+          <Link
+            href="/about"
             className={`${styles.cta} type-cta`}
-            title={innerCircleContent.ctaTitle}
-            onClick={() => setStatus(innerCircleContent.placeholderStatus)}
           >
             <span>{innerCircleContent.cta}</span>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 12h13M13 7l5 5-5 5" />
             </svg>
-          </button>
-          <p className={styles.status} aria-live="polite">
-            {status}
-          </p>
+          </Link>
         </div>
       </div>
     </section>
