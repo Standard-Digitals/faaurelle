@@ -13,7 +13,9 @@ import {
 } from "@/lib/server/razorpay/client";
 import { RazorpayOrderError, type RazorpayOrder } from "@/lib/server/razorpay/types";
 import { createCustomerOrderReference } from "./customer-order-reference";
-import { validateCouponEligibility } from "./coupons";
+import { validateCouponEligibility, SINGLE_USE_REDEMPTION_IDENTITY } from "./coupons";
+import { fulfilPaidOrder } from "./fulfilment-service";
+import { sendOrderCompletionEmail } from "./order-email";
 
 const CHECKOUT_KEY = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -65,6 +67,7 @@ export type CreateCheckoutResponse =
   | { success: false; kind: "conflict" | "coupon_invalid" | "coupon_used" | "unserviceable" | "service_unavailable" | "payment_unavailable" | "payment_pending"; message: string }
   | {
       success: true;
+      free: false;
       checkout: {
         publicOrderToken: string;
         keyId: string;
@@ -75,6 +78,15 @@ export type CreateCheckoutResponse =
         description: string;
         prefill: { name: string; email: string; contact: string };
       };
+    }
+  | {
+      // A 100%-off coupon drives the total to ₹0, which Razorpay's order API
+      // rejects (it requires a minimum payable amount). Free checkouts skip the
+      // payment gateway entirely: the order is finalized as paid server-side and
+      // the client is sent straight to the confirmation page.
+      success: true;
+      free: true;
+      checkout: { publicOrderToken: string };
     };
 
 type OrderStore = {
@@ -93,6 +105,17 @@ type OrderStore = {
     data: { paymentStatus: "ORDER_CREATING" | "FAILED" };
   }): Promise<{ count: number }>;
 };
+type FreeCheckoutTransaction = {
+  order: { create(args: { data: Record<string, unknown> }): Promise<Order> };
+  couponRedemption: {
+    createMany(args: { data: Record<string, unknown>[]; skipDuplicates: true }): Promise<{ count: number }>;
+    findUnique(args: { where: { orderId: string }; select: { id: true } }): Promise<{ id: string } | null>;
+  };
+};
+type FreeCheckoutDatabase = { $transaction<T>(operation: (transaction: FreeCheckoutTransaction) => Promise<T>): Promise<T> };
+
+class CouponRaceError extends Error {}
+
 type Dependencies = Readonly<{
   orders?: OrderStore;
   checkServiceability?: typeof checkDelhiveryPrepaidServiceability;
@@ -103,6 +126,10 @@ type Dependencies = Readonly<{
   randomToken?: () => string;
   randomCustomerReference?: () => string;
   validateCoupon?: typeof validateCouponEligibility;
+  freeCheckoutDatabase?: FreeCheckoutDatabase;
+  fulfil?: typeof fulfilPaidOrder;
+  notify?: typeof sendOrderCompletionEmail;
+  now?: () => Date;
 }>;
 
 function receiptFor(orderId: string) {
@@ -117,6 +144,7 @@ function checkoutPayload(order: Order, keyId: string): CreateCheckoutResponse {
   if (!order.razorpayOrderId) throw new Error("Razorpay order is not persisted");
   return {
     success: true,
+    free: false,
     checkout: {
       publicOrderToken: order.publicToken,
       keyId,
@@ -130,6 +158,67 @@ function checkoutPayload(order: Order, keyId: string): CreateCheckoutResponse {
   };
 }
 
+async function createFreeCheckoutOrder(
+  input: CreateCheckoutInput,
+  snapshot: Record<string, unknown>,
+  coupon: { code: string; singleUse?: boolean },
+  dependencies: Dependencies,
+): Promise<CreateCheckoutResponse> {
+  const orders = dependencies.orders ?? (prisma.order as unknown as OrderStore);
+  let order = await orders.findUnique({ where: { checkoutKey: input.checkoutKey } });
+  if (order && !materialMatches(order, snapshot)) {
+    return { success: false, kind: "conflict", message: "This checkout attempt belongs to different details. Please start a new checkout." };
+  }
+
+  if (!order) {
+    const now = (dependencies.now ?? (() => new Date()))();
+    const database = dependencies.freeCheckoutDatabase ?? (prisma as unknown as FreeCheckoutDatabase);
+    try {
+      order = await database.$transaction(async (tx) => {
+        const createdOrder = await tx.order.create({
+          data: {
+            id: (dependencies.randomId ?? randomUUID)(),
+            publicToken: (dependencies.randomToken ?? (() => randomBytes(32).toString("base64url")))(),
+            customerReference: (dependencies.randomCustomerReference ?? createCustomerOrderReference)(),
+            checkoutKey: input.checkoutKey,
+            ...snapshot,
+            status: "PAID",
+            paymentStatus: "CAPTURED",
+            fulfillmentStatus: "NOT_READY",
+            paidAt: now,
+          },
+        });
+        const redemptionIdentity = coupon.singleUse
+          ? { normalizedEmail: SINGLE_USE_REDEMPTION_IDENTITY, normalizedPhone: SINGLE_USE_REDEMPTION_IDENTITY }
+          : { normalizedEmail: String(snapshot.customerEmail), normalizedPhone: String(snapshot.customerPhone) };
+        await tx.couponRedemption.createMany({
+          data: [{ couponCode: coupon.code, ...redemptionIdentity, orderId: createdOrder.id, redeemedAt: now }],
+          skipDuplicates: true,
+        });
+        const ownRedemption = await tx.couponRedemption.findUnique({ where: { orderId: createdOrder.id }, select: { id: true } });
+        if (!ownRedemption) throw new CouponRaceError();
+        return createdOrder;
+      });
+    } catch (error) {
+      if (error instanceof CouponRaceError) {
+        return { success: false, kind: "coupon_used", message: "Invalid coupon code. This coupon has already been used." };
+      }
+      const existing = await orders.findUnique({ where: { checkoutKey: input.checkoutKey } });
+      if (!existing) {
+        logCheckoutPreparationFailure("free_checkout_create", error);
+        throw error;
+      }
+      if (!materialMatches(existing, snapshot)) return { success: false, kind: "conflict", message: "This checkout attempt belongs to different details. Please start a new checkout." };
+      order = existing;
+    }
+  }
+
+  try { await (dependencies.fulfil ?? fulfilPaidOrder)(order.id); } catch { /* fulfilment retries on confirmation-page revisit */ }
+  try { await (dependencies.notify ?? sendOrderCompletionEmail)(order.id); } catch { /* order-email has its own claim/retry lease */ }
+
+  return { success: true, free: true, checkout: { publicOrderToken: order.publicToken } };
+}
+
 export async function createPayableCheckout(input: CreateCheckoutInput, dependencies: Dependencies = {}): Promise<CreateCheckoutResponse> {
   if (!input || typeof input !== "object" || !CHECKOUT_KEY.test(input.checkoutKey) || input.quantity !== V1_QUANTITY) {
     return { success: false, kind: "validation", errors: {}, formError: "Invalid checkout request." };
@@ -139,7 +228,7 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
   const validation = validateCheckoutPayload(input.details);
   if (!validation.success) return { success: false, kind: "validation", errors: validation.errors };
 
-  let coupon: { code: string; discountPercent: number } | null = null;
+  let coupon: { code: string; discountPercent: number; singleUse?: boolean } | null = null;
   if (input.couponCode) {
     const eligibility = await (dependencies.validateCoupon ?? validateCouponEligibility)(input.couponCode, {
       email: validation.data.email,
@@ -165,13 +254,6 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
     return { success: false, kind: "unserviceable", message: "Prepaid delivery is currently unavailable to this pincode." };
   }
 
-  const publicKey = dependencies.publicKey ?? getRazorpayPublicKey;
-  let keyId: string;
-  try { keyId = publicKey(); } catch (error) {
-    logCheckoutPreparationFailure("razorpay_configuration", error);
-    return { success: false, kind: "payment_unavailable", message: "Test payment is not configured." };
-  }
-
   const pricing = calculateV1Pricing(product, coupon?.discountPercent ?? 0);
   const details = validation.data;
   const snapshot = {
@@ -182,6 +264,19 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
     addressLine1: details.addressLine1, addressLine2: details.addressLine2,
     city: details.city, state: details.state, postalCode: details.pincode, countryCode: details.countryCode,
   };
+
+  if (pricing.totalPaisa === 0) {
+    if (!coupon) throw new Error("A zero-total checkout requires a coupon.");
+    return createFreeCheckoutOrder(input, snapshot, coupon, dependencies);
+  }
+
+  const publicKey = dependencies.publicKey ?? getRazorpayPublicKey;
+  let keyId: string;
+  try { keyId = publicKey(); } catch (error) {
+    logCheckoutPreparationFailure("razorpay_configuration", error);
+    return { success: false, kind: "payment_unavailable", message: "Test payment is not configured." };
+  }
+
   const orders = dependencies.orders ?? (prisma.order as unknown as OrderStore);
   let order = await orders.findUnique({ where: { checkoutKey: input.checkoutKey } });
   let ownsCreation = false;

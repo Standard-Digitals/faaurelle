@@ -2,6 +2,7 @@ import "server-only";
 import type { Order } from "@/generated/prisma/client";
 import { prisma } from "@/lib/server/db/prisma";
 import type { RazorpayPayment } from "@/lib/server/razorpay/types";
+import { getCouponDefinition, SINGLE_USE_REDEMPTION_IDENTITY } from "./coupons";
 
 export type DurablePaymentResult = Readonly<{
   status: "captured" | "processing" | "failed";
@@ -92,11 +93,13 @@ export async function reconcileRazorpayPayment(
 
       let couponRedemption: "redeemed" | "conflict" | undefined;
       if (couponOrder.couponCode) {
+        const redemptionIdentity = getCouponDefinition(couponOrder.couponCode)?.singleUse
+          ? { normalizedEmail: SINGLE_USE_REDEMPTION_IDENTITY, normalizedPhone: SINGLE_USE_REDEMPTION_IDENTITY }
+          : { normalizedEmail: couponOrder.customerEmail, normalizedPhone: couponOrder.customerPhone };
         await tx.couponRedemption.createMany({
           data: [{
             couponCode: couponOrder.couponCode,
-            normalizedEmail: couponOrder.customerEmail,
-            normalizedPhone: couponOrder.customerPhone,
+            ...redemptionIdentity,
             orderId: order.id,
             redeemedAt: signatureVerifiedAt,
           }],

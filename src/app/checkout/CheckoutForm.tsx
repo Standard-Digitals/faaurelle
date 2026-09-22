@@ -313,6 +313,18 @@ export function CheckoutForm({
           return;
         }
 
+        if (orderResult.free) {
+          window.sessionStorage.setItem(
+            CONFIRMATION_RECOVERY_KEY,
+            serializeConfirmationRecovery(orderResult.checkout.publicOrderToken, false),
+          );
+          setSubmissionState("payment-captured");
+          setFormMessage("Order confirmed. Redirecting…");
+          const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+          router.replace(`${basePath}/order-confirmation/${encodeURIComponent(orderResult.checkout.publicOrderToken)}`);
+          return;
+        }
+
         setSubmissionState("opening-payment");
         setFormMessage("Opening secure Razorpay Checkout…");
         trackAddPaymentInfo({
@@ -539,7 +551,7 @@ export function CheckoutForm({
 
       <fieldset disabled={busy || submissionState === "payment-captured"}>
         <legend>Coupon</legend>
-        <p className={styles.sectionIntro}>Apply one eligible code to receive 20% off the product subtotal.</p>
+        <p className={styles.sectionIntro}>Apply one eligible code to receive your discount.</p>
         <div className={styles.couponRow}>
           <div className={styles.field}>
             <label htmlFor="couponCode">Coupon code <span className={styles.optional}>(optional)</span></label>
