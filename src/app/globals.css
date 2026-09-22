@@ -1701,10 +1701,10 @@ h6 {
 }
 
 .hero-loading-indicator {
+  display: none; /* temporarily hidden for review */
   position: absolute;
   top: 55%;
   left: 50%;
-  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.85rem;
