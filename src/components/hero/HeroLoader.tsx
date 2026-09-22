@@ -1,14 +1,14 @@
-import { brand } from "@/config/brand";
 import Image from "next/image";
+import { brand } from "@/config/brand";
 import { heroStaticFallbackPath } from "@/lib/hero/hero-presets";
 
-export function HeroLoader() {
+export function HeroLoader({ loading = true }: { loading?: boolean }) {
   return (
     <div
       className="pointer-events-none relative h-full w-full"
-      role="status"
-      aria-live="polite"
-      aria-label={`Loading ${brand.accessibilityLabel} experience`}
+      role={loading ? "status" : undefined}
+      aria-live={loading ? "polite" : undefined}
+      aria-label={loading ? `Loading ${brand.accessibilityLabel} experience` : undefined}
     >
       <Image
         src={heroStaticFallbackPath}

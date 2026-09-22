@@ -1,7 +1,7 @@
 "use client";
 
 import { useGLTF } from "@react-three/drei";
-import { forwardRef, useEffect, useMemo, type Ref } from "react";
+import { forwardRef, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { heroModelPath } from "@/lib/hero/hero-presets";
 
@@ -73,14 +73,6 @@ function tuneLabelMaterials(node: THREE.Object3D) {
       }
     });
   });
-}
-
-function setGroupRef(ref: Ref<THREE.Group>, node: THREE.Group | null) {
-  if (typeof ref === "function") {
-    ref(node);
-  } else if (ref) {
-    ref.current = node;
-  }
 }
 
 export const CanonicalProductModel = forwardRef<
@@ -196,7 +188,7 @@ export const CanonicalProductModel = forwardRef<
   return (
     <group
       name="productRoot"
-      ref={(node) => setGroupRef(forwardedRef, node)}
+      ref={forwardedRef}
       position={position}
       rotation={rotation}
       scale={scale}

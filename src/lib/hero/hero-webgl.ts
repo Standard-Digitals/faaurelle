@@ -9,7 +9,11 @@ export function supportsHeroWebGL() {
 
   try {
     const canvas = document.createElement("canvas");
-    return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+    // The renderer requires WebGL 2; release the probe before creating the scene.
+    const context = canvas.getContext("webgl2");
+    const supported = Boolean(context);
+    context?.getExtension("WEBGL_lose_context")?.loseContext();
+    return supported;
   } catch {
     return false;
   }

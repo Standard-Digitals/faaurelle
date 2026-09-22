@@ -329,7 +329,7 @@
   .serumAsset,
   .internalLayer {
     top: 62%;
-    left: -18vw;
+    left: calc(50% - min(37.25vw, 239px) - 41vw);
     width: min(74.5vw, 478px);
     transform: translate3d(calc(var(--progress) * 41vw), -50%, 0)
       rotate(calc(-3deg + var(--progress) * 5deg));
@@ -408,5 +408,28 @@
   .serumUnit,
   .internalMolecule {
     animation: none !important;
+  }
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  :global(.molecule-merge-chapter[data-complete="true"]) .visual {
+    position: relative;
+    inset: auto;
+    order: 1;
+    flex: 0 0 auto;
+    width: 100%;
+    height: min(80vw, 28rem);
+  }
+
+  :global(.molecule-merge-chapter[data-complete="true"]) .serumAsset,
+  :global(.molecule-merge-chapter[data-complete="true"]) .internalLayer {
+    top: 50%;
+    left: 50%;
+    width: min(74.5vw, 478px);
+    transform: translate3d(-50%, -50%, 0) rotate(2deg);
+  }
+
+  :global(.molecule-merge-chapter[data-complete="true"]) .serumUnit {
+    transform-origin: 50% 50%;
   }
 }

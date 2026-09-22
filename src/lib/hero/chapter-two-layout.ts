@@ -194,7 +194,7 @@ const modeLayoutConfig: Record<HeroResponsivePresetName, ModeLayoutConfig> = {
     labelBenefitMax: 16,
     basePositions: [
       [25, 12],
-      [23, 68],
+      [50, 72],
       [75, 35],
     ],
     labelOrientations: ["bottom", "bottom", "bottom"],
@@ -372,7 +372,9 @@ export function resolveChapterTwoLayout(
     let x = clamp(bottleSafeX, minimumCenterX, maximumCenterX);
     const y = clamp(stagedY, headingClearanceY, maximumCenterY);
 
-    if (!isDesktop) {
+    // Portrait Jojoba sits in front of the bottle's lower center.
+    const isCenteredJojoba = presetName === "mobilePortrait" && index === 1;
+    if (!isDesktop && !isCenteredJojoba) {
       const imageHalfWidthPercent = (size / 2 / width) * 100;
       const imageHalfHeightPercent = (size / 2 / height) * 100;
       const gapPercent = (labelGap / width) * 100;

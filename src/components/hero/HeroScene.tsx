@@ -6,7 +6,6 @@ import * as THREE from "three";
 import { HeroDebugControls } from "@/components/hero/HeroDebugControls";
 import { HeroLoader } from "@/components/hero/HeroLoader";
 import { HeroProductModel } from "@/components/hero/HeroProductModel";
-import { HeroStaticFallback } from "@/components/hero/HeroStaticFallback";
 import type { HeroExperienceMode } from "@/lib/responsive";
 
 class HeroSceneErrorBoundary extends Component<
@@ -38,6 +37,7 @@ export function HeroScene({
   experienceMode,
   activeChapterIndex,
   scrollRootClassName,
+  onError,
   onProgress,
   onActiveChapterChange,
 }: {
@@ -45,26 +45,21 @@ export function HeroScene({
   experienceMode: HeroExperienceMode;
   activeChapterIndex: number;
   scrollRootClassName: string;
+  onError: () => void;
   onProgress: (progress: number) => void;
   onActiveChapterChange: (index: number) => void;
 }) {
   const [modelReady, setModelReady] = useState(false);
   const [debugState, setDebugState] = useState("Initializing scene");
-  const [loadError, setLoadError] = useState<string | null>(null);
 
   const handleReady = useCallback(() => {
     setModelReady(true);
-    setLoadError(null);
   }, []);
 
-  const handleError = useCallback((error: Error) => {
-    setLoadError(error.message);
+  const handleError = useCallback(() => {
     setModelReady(false);
-  }, []);
-
-  if (loadError) {
-    return <HeroStaticFallback reason="Static approved render" priority />;
-  }
+    onError();
+  }, [onError]);
 
   return (
     <div
@@ -82,38 +77,41 @@ export function HeroScene({
       >
         <HeroLoader />
       </div>
-      <Canvas
-        aria-hidden="true"
-        className={[
-          "transition-opacity duration-300",
-          modelReady ? "opacity-100" : "opacity-0",
-        ].join(" ")}
-        shadows
-        frameloop="demand"
-        dpr={[1, 1.65]}
-        gl={{
-          antialias: true,
-          alpha: false,
-          powerPreference: "high-performance",
-        }}
-        onCreated={({ gl, scene }) => {
-          gl.setClearColor("#ffffff", 1);
-          scene.background = new THREE.Color("#ffffff");
-        }}
-      >
-        <HeroSceneErrorBoundary onError={handleError}>
-          <HeroProductModel
-            debugMode={debugMode}
-            experienceMode={experienceMode}
-            scrollRootClassName={scrollRootClassName}
-            timelineEnabled
-            onReady={handleReady}
-            onProgress={onProgress}
-            onActiveChapterChange={onActiveChapterChange}
-            onDebug={setDebugState}
-          />
-        </HeroSceneErrorBoundary>
-      </Canvas>
+      <HeroSceneErrorBoundary onError={handleError}>
+        <Canvas
+          aria-hidden="true"
+          className={[
+            "transition-opacity duration-300",
+            modelReady ? "opacity-100" : "opacity-0",
+          ].join(" ")}
+          shadows
+          frameloop="demand"
+          dpr={[1, 1.65]}
+          gl={{
+            antialias: true,
+            alpha: false,
+            powerPreference: "high-performance",
+          }}
+          onCreated={({ gl, scene }) => {
+            gl.domElement.addEventListener("webglcontextlost", handleError, { once: true });
+            gl.setClearColor("#ffffff", 1);
+            scene.background = new THREE.Color("#ffffff");
+          }}
+        >
+          <HeroSceneErrorBoundary onError={handleError}>
+            <HeroProductModel
+              debugMode={debugMode}
+              experienceMode={experienceMode}
+              scrollRootClassName={scrollRootClassName}
+              timelineEnabled
+              onReady={handleReady}
+              onProgress={onProgress}
+              onActiveChapterChange={onActiveChapterChange}
+              onDebug={setDebugState}
+            />
+          </HeroSceneErrorBoundary>
+        </Canvas>
+      </HeroSceneErrorBoundary>
       {debugMode ? <HeroDebugControls debugState={debugState} /> : null}
     </div>
   );

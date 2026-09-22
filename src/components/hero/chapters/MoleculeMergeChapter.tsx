@@ -92,6 +92,7 @@ export function MoleculeMergeChapter({ progress }: { progress: number }) {
   return (
     <section
       className="silk-fusion-chapter molecule-merge-chapter absolute inset-0 z-[16]"
+      data-complete={progress >= viscousSerumSequenceEndProgress ? "true" : "false"}
       aria-labelledby="molecule-merge-title"
       aria-hidden={sceneProgress <= 0}
       style={{ opacity: sceneProgress }}
