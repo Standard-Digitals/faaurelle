@@ -201,31 +201,31 @@ describe("free checkout orchestration (100%-off coupons)", () => {
     const notify = vi.fn().mockResolvedValue(undefined);
     const deps = {
       ...dependencies(fake.store),
-      validateCoupon: vi.fn().mockResolvedValue({ success: true, coupon: { code: "INFLUENCER01", discountPercent: 100, singleUse: true } }),
+      validateCoupon: vi.fn().mockResolvedValue({ success: true, coupon: { code: "FABZJSU4QK", discountPercent: 100, singleUse: true } }),
       freeCheckoutDatabase: free.database,
       fulfil,
       notify,
       now: () => new Date("2026-01-01T00:00:00.000Z"),
     };
     const { createPayableCheckout } = await import("./checkout-order");
-    const result = await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: "INFLUENCER01" }, deps as never);
+    const result = await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: "FABZJSU4QK" }, deps as never);
     expect(result).toEqual({ success: true, free: true, checkout: { publicOrderToken: "opaque-public-token-generated-on-server" } });
     expect(deps.createProviderOrder).not.toHaveBeenCalled();
     expect(fake.store.create).not.toHaveBeenCalled();
-    expect(free.orders[0]).toMatchObject({ status: "PAID", paymentStatus: "CAPTURED", totalPaisa: 0, couponCode: "INFLUENCER01" });
-    expect(free.redemptions).toEqual([expect.objectContaining({ couponCode: "INFLUENCER01", normalizedEmail: "__single_use__", normalizedPhone: "__single_use__" })]);
+    expect(free.orders[0]).toMatchObject({ status: "PAID", paymentStatus: "CAPTURED", totalPaisa: 0, couponCode: "FABZJSU4QK" });
+    expect(free.redemptions).toEqual([expect.objectContaining({ couponCode: "FABZJSU4QK", normalizedEmail: "__single_use__", normalizedPhone: "__single_use__" })]);
     expect(fulfil).toHaveBeenCalledWith("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(notify).toHaveBeenCalledWith("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
   });
 
   it("rejects the second concurrent redemption of the same singleUse coupon", async () => {
     const free = fakeFreeCheckoutDatabase();
-    const coupon = { success: true as const, coupon: { code: "INFLUENCER02", discountPercent: 100, singleUse: true } };
+    const coupon = { success: true as const, coupon: { code: "FAFTXBUPCC", discountPercent: 100, singleUse: true } };
     const { createPayableCheckout } = await import("./checkout-order");
 
     const firstOrders = fakeOrders();
     const firstResult = await createPayableCheckout(
-      { checkoutKey: "12345678-1234-4123-8123-111111111111", productCode: "hair-elixir", quantity: 1, details, couponCode: "INFLUENCER02" },
+      { checkoutKey: "12345678-1234-4123-8123-111111111111", productCode: "hair-elixir", quantity: 1, details, couponCode: "FAFTXBUPCC" },
       {
         ...dependencies(firstOrders.store), validateCoupon: vi.fn().mockResolvedValue(coupon), freeCheckoutDatabase: free.database,
         fulfil: vi.fn().mockResolvedValue({ status: "created", waybill: "WB1", reused: false }), notify: vi.fn(),
@@ -236,7 +236,7 @@ describe("free checkout orchestration (100%-off coupons)", () => {
 
     const secondOrders = fakeOrders();
     const secondResult = await createPayableCheckout(
-      { checkoutKey: "12345678-1234-4123-8123-222222222222", productCode: "hair-elixir", quantity: 1, details: { ...details, email: "someoneelse@example.com", mobileNumber: "9123456789" }, couponCode: "INFLUENCER02" },
+      { checkoutKey: "12345678-1234-4123-8123-222222222222", productCode: "hair-elixir", quantity: 1, details: { ...details, email: "someoneelse@example.com", mobileNumber: "9123456789" }, couponCode: "FAFTXBUPCC" },
       {
         ...dependencies(secondOrders.store), validateCoupon: vi.fn().mockResolvedValue(coupon), freeCheckoutDatabase: free.database,
         fulfil: vi.fn(), notify: vi.fn(),

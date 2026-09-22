@@ -27,18 +27,18 @@ describe("authoritative coupons", () => {
   it("treats a singleUse coupon as globally exhausted regardless of identity", async () => {
     const { validateCouponEligibility } = await import("./coupons");
     const redemptions = { findFirst: vi.fn().mockResolvedValue({ id: "used" }) };
-    await expect(validateCouponEligibility("INFLUENCER01", { email: "anyone@example.com", phone: "+919000000000" }, { redemptions }))
+    await expect(validateCouponEligibility("FABZJSU4QK", { email: "anyone@example.com", phone: "+919000000000" }, { redemptions }))
       .resolves.toEqual({ success: false, reason: "used" });
     expect(redemptions.findFirst).toHaveBeenCalledWith(expect.objectContaining({
-      where: { couponCode: "INFLUENCER01" },
+      where: { couponCode: "FABZJSU4QK" },
     }));
   });
 
   it("resolves an unredeemed singleUse coupon to a 100% discount", async () => {
     const { validateCouponEligibility } = await import("./coupons");
     const redemptions = { findFirst: vi.fn().mockResolvedValue(null) };
-    await expect(validateCouponEligibility("influencer02", { email: "a@example.com", phone: "+919876543210" }, { redemptions }))
-      .resolves.toMatchObject({ success: true, coupon: { code: "INFLUENCER02", discountPercent: 100, singleUse: true } });
+    await expect(validateCouponEligibility("faftxbupcc", { email: "a@example.com", phone: "+919876543210" }, { redemptions }))
+      .resolves.toMatchObject({ success: true, coupon: { code: "FAFTXBUPCC", discountPercent: 100, singleUse: true } });
   });
 
   it("allows another coupon for the same user and the same coupon for another user", async () => {
