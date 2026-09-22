@@ -37,6 +37,8 @@ export function HeroScene({
   experienceMode,
   activeChapterIndex,
   scrollRootClassName,
+  onReady,
+  reducedMotion = false,
   onError,
   onProgress,
   onActiveChapterChange,
@@ -45,6 +47,8 @@ export function HeroScene({
   experienceMode: HeroExperienceMode;
   activeChapterIndex: number;
   scrollRootClassName: string;
+  onReady: () => void;
+  reducedMotion?: boolean;
   onError: () => void;
   onProgress: (progress: number) => void;
   onActiveChapterChange: (index: number) => void;
@@ -54,7 +58,8 @@ export function HeroScene({
 
   const handleReady = useCallback(() => {
     setModelReady(true);
-  }, []);
+    onReady();
+  }, [onReady]);
 
   const handleError = useCallback(() => {
     setModelReady(false);
@@ -68,15 +73,11 @@ export function HeroScene({
         activeChapterIndex === 1 ? "hero-scene--ingredients-focus" : "",
       ].join(" ")}
     >
-      <div
-        className={[
-          "pointer-events-none absolute inset-0 z-[1] transition-opacity duration-300",
-          modelReady ? "opacity-0" : "opacity-100",
-        ].join(" ")}
-        aria-hidden={modelReady}
-      >
-        <HeroLoader />
-      </div>
+      {!modelReady ? (
+        <div className="pointer-events-none absolute inset-0 z-[1]">
+          <HeroLoader />
+        </div>
+      ) : null}
       <HeroSceneErrorBoundary onError={handleError}>
         <Canvas
           aria-hidden="true"
@@ -103,7 +104,7 @@ export function HeroScene({
               debugMode={debugMode}
               experienceMode={experienceMode}
               scrollRootClassName={scrollRootClassName}
-              timelineEnabled
+              timelineEnabled={!reducedMotion}
               onReady={handleReady}
               onProgress={onProgress}
               onActiveChapterChange={onActiveChapterChange}

@@ -154,8 +154,9 @@
 
 @media (max-width: 767px) {
   .container {
-    --section-padding-y: clamp(1.5rem, 6svh, 3rem);
+    --section-padding-y: 3rem;
 
+    min-height: auto;
     padding-inline: 1rem;
   }
 

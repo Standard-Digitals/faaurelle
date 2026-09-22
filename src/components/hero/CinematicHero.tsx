@@ -29,6 +29,8 @@ export function CinematicHero({
   const experienceMode = useHeroExperienceMode();
   const responsivePresetName = useHeroResponsivePreset();
   const { checkedWebgl, webglReady } = useHeroWebGLStatus();
+  const [sceneReady, setSceneReady] = useState(false);
+  const handleSceneReady = useCallback(() => setSceneReady(true), []);
   const [sceneFailed, setSceneFailed] = useState(false);
   const handleSceneError = useCallback(() => setSceneFailed(true), []);
   const [debugMode, setDebugMode] = useState(mode === "review");
@@ -37,7 +39,7 @@ export function CinematicHero({
   const progressBucketRef = useRef(-1);
   const checkedHeroCapabilities = checkedWebgl && checkedReducedMotion;
   const showImageFallback =
-    checkedHeroCapabilities && (!webglReady || reducedMotion || sceneFailed);
+    checkedHeroCapabilities && (!webglReady || sceneFailed);
   const handleProgress = useCallback(
     (nextProgress: number) => {
       const bucket = Math.round(nextProgress * (isPhoneHeroMode(experienceMode) ? 120 : 1000));
@@ -64,9 +66,10 @@ export function CinematicHero({
       className={`${scrollRootClassName} relative bg-background`}
       data-hero-mode={experienceMode}
       data-hero-preset={responsivePresetName}
+      data-hero-loading={!sceneReady && !showImageFallback ? "true" : "false"}
       data-hero-renderer={showImageFallback ? "static" : "webgl"}
       style={{
-        minHeight: showImageFallback ? undefined : `${getHeroScrollHeightVh(experienceMode)}vh`,
+        minHeight: showImageFallback || reducedMotion ? undefined : `${getHeroScrollHeightVh(experienceMode)}vh`,
       }}
     >
       <span
@@ -88,6 +91,8 @@ export function CinematicHero({
             <HeroLoader loading={!showImageFallback} />
           ) : (
             <HeroScene
+              onReady={handleSceneReady}
+              reducedMotion={reducedMotion}
               onError={handleSceneError}
               debugMode={mode === "review" && debugMode}
               experienceMode={experienceMode}

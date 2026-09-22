@@ -68,6 +68,10 @@ function resolveChapterThreeEditorialPosition(
   viewportAspect: number,
   productHalfWidth: number,
 ): HeroVector3 {
+  // Portrait uses a centered composition, not the desktop edge-anchored crop.
+  if (presetName === "mobilePortrait") {
+    return [0, position[1], position[2]];
+  }
   if (productHalfWidth <= 0) {
     return position;
   }

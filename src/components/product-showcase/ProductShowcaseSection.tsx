@@ -111,7 +111,9 @@ export function ProductShowcaseSection() {
                     aria-label={`Show image ${index + 1}: ${photo.alt}`}
                     aria-pressed={activeImage === index}
                   >
-                    <Image src={`${basePath}${photo.image}`} alt="" width={44} height={52} />
+                    <span className={styles.thumbnailFrame}>
+                      <Image src={`${basePath}${photo.image}`} alt="" fill sizes="44px" />
+                    </span>
                   </button>
                 ))}
               </div>

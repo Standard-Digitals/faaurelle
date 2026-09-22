@@ -13,7 +13,7 @@ export function HeroResourcePreloads() {
   preload(heroEnvironmentPath, {
     as: "fetch",
     crossOrigin: "anonymous",
-    fetchPriority: "low",
+    fetchPriority: "high",
     type: "application/octet-stream",
   });
 

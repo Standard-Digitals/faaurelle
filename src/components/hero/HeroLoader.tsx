@@ -10,14 +10,19 @@ export function HeroLoader({ loading = true }: { loading?: boolean }) {
       aria-live={loading ? "polite" : undefined}
       aria-label={loading ? `Loading ${brand.accessibilityLabel} experience` : undefined}
     >
-      <Image
+      {loading ? (
+        <div className="hero-loading-indicator">
+          <span className="hero-loading-spinner" aria-hidden="true" />
+          <span>Preparing your elixir…</span>
+        </div>
+      ) : <Image
         src={heroStaticFallbackPath}
         alt=""
         fill
         priority
         sizes="(max-width: 767px) 70vw, 40vw"
         className="hero-loading-bottle object-contain"
-      />
+      />}
     </div>
   );
 }
