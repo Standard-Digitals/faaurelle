@@ -24,6 +24,11 @@ function track(eventName: string, params: StandardEventParams, eventId?: string)
   }
 }
 
+export function trackPageView() {
+  if (typeof window === "undefined" || typeof window.fbq !== "function") return;
+  window.fbq("track", "PageView");
+}
+
 export function trackViewContent(params: StandardEventParams) {
   track("ViewContent", params);
 }

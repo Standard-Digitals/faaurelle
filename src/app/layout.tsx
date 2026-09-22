@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Raleway, Roboto } from "next/font/google";
 import Script from "next/script";
 import { brand } from "@/config/brand";
+import { PixelRouteTracker } from "@/lib/analytics/PixelRouteTracker";
 import "./globals.css";
 
 const META_PIXEL_ID = "2169167907337885";
@@ -96,6 +98,9 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
+        <Suspense fallback={null}>
+          <PixelRouteTracker />
+        </Suspense>
         <div className="site-stage">{children}</div>
       </body>
     </html>
