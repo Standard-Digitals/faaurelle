@@ -9,6 +9,7 @@ import { ProductShowcaseSection } from "@/components/product-showcase/ProductSho
 import styles from "./ProductPage.module.css";
 import { SignatureBenefitsCarousel } from "./SignatureBenefitsCarousel";
 import { InstagramSection } from "@/components/instagram/InstagramSection";
+import { ViewContentTracker } from "./ViewContentTracker";
 
 export const metadata: Metadata = {
   title: "Hair Elixir Oil-in-Serum",
@@ -41,6 +42,7 @@ export default function ProductPage() {
   return (
     <>
       <SiteHeader />
+      <ViewContentTracker />
       <main id="main-content" className={styles.page}>
         <ProductShowcaseSection />
         <SectionDivider />

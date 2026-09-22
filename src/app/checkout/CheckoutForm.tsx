@@ -21,6 +21,7 @@ import {
   type CheckoutServiceabilityState,
 } from "@/lib/commerce/serviceability-ui";
 import { loadRazorpayCheckout } from "@/lib/commerce/razorpay-checkout";
+import { trackAddPaymentInfo } from "@/lib/analytics/meta-pixel";
 import type { RazorpaySuccessResponse } from "@/lib/commerce/razorpay-checkout";
 import {
   CONFIRMATION_RECOVERY_KEY,
@@ -314,6 +315,13 @@ export function CheckoutForm({
 
         setSubmissionState("opening-payment");
         setFormMessage("Opening secure Razorpay Checkout…");
+        trackAddPaymentInfo({
+          content_ids: [productCode],
+          content_name: orderResult.checkout.description,
+          content_type: "product",
+          currency: orderResult.checkout.currency,
+          value: orderResult.checkout.amount / 100,
+        });
         try {
           await loadRazorpayCheckout();
         } catch {

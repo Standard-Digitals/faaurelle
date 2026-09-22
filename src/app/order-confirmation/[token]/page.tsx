@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/closing/SiteFooter";
 import { SiteHeader } from "@/components/header/SiteHeader";
 import { formatInr } from "@/lib/commerce/money";
 import { getOrderConfirmation } from "@/lib/server/commerce/order-confirmation";
+import { product } from "@/config/product";
 import { ConfirmationArrival } from "./ConfirmationArrival";
 import styles from "./order-confirmation.module.css";
 
@@ -79,7 +80,17 @@ export default async function OrderConfirmationPage({ params }: PageProps) {
     <>
       <SiteHeader />
       <main id="main-content" className={styles.main}>
-        <ConfirmationArrival token={token} />
+        <ConfirmationArrival
+          token={token}
+          purchase={{
+            productCode: product.code,
+            productName: order.productName,
+            totalPaisa: order.totalPaisa,
+            currency: order.currency,
+            quantity: order.quantity,
+            reference: order.displayReference,
+          }}
+        />
         <section className={styles.hero} aria-labelledby="confirmation-title">
           <div className={styles.statusMark} aria-hidden="true">✓</div>
           <div>
