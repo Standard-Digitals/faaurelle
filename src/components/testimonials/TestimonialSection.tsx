@@ -221,7 +221,7 @@ export function TestimonialSection() {
           <div data-testimonial-product data-testimonial-entrance>
             <figure className={styles.productScene}>
               <Image
-                src={`${basePath}/images/products/best-seller-hair-elixir.png`}
+                src={`${basePath}/images/products/hair-elixir-checkout.jpeg`}
                 alt={product.altText}
                 fill
                 sizes="(max-width: 767px) calc(100vw - 2.5rem), (max-width: 1100px) 48vw, 42vw"
