@@ -2,7 +2,10 @@ import "server-only";
 import { DelhiveryServiceabilityError } from "./types";
 
 const SERVICEABILITY_PATH = "/c/api/pin-codes/json/";
-const REQUEST_TIMEOUT_MS = 30_000;
+// Vercel's Hobby plan hard-caps a function at 10s regardless of maxDuration.
+// A 30s fetch timeout here could single-handedly blow that budget and hang
+// the whole checkout request, so this needs real headroom under 10s.
+const REQUEST_TIMEOUT_MS = 6_000;
 
 type DelhiveryClientOptions = Readonly<{
   fetchImpl?: typeof fetch;
