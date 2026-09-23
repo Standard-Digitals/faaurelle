@@ -2,10 +2,10 @@ import "server-only";
 import { DelhiveryServiceabilityError } from "./types";
 
 const SERVICEABILITY_PATH = "/c/api/pin-codes/json/";
-// Vercel's Hobby plan hard-caps a function at 10s regardless of maxDuration.
-// Order creation calls this and then Razorpay (its own 4s timeout) in the
-// same request, so this budget has to leave room for that second call too.
-const REQUEST_TIMEOUT_MS = 4_000;
+// This project runs on Fluid compute, whose Hobby-plan function cap is 300s,
+// so this just needs to be well short of leaving the checkout UI hanging —
+// not raced against a hard platform wall.
+const REQUEST_TIMEOUT_MS = 10_000;
 
 type DelhiveryClientOptions = Readonly<{
   fetchImpl?: typeof fetch;

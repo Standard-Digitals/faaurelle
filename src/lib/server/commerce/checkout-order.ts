@@ -20,15 +20,27 @@ import { sendOrderCompletionEmail } from "./order-email";
 
 const CHECKOUT_KEY = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// Strips credentials out of any connection-string-shaped substring before a
+// driver error message is logged (Postgres errors sometimes echo the DSN).
+function redactConnectionStrings(value: string) {
+  return value.replace(/[a-z][a-z0-9+.-]*:\/\/[^@\s]+@/gi, "<redacted>@");
+}
+
 function safeCause(error: unknown) {
   if (!error || typeof error !== "object") return {};
-  const value = error as { name?: unknown; code?: unknown; cause?: unknown };
+  const value = error as { name?: unknown; code?: unknown; message?: unknown; meta?: unknown; cause?: unknown };
   const nested = value.cause && typeof value.cause === "object" ? value.cause as { code?: unknown } : undefined;
   return {
     ...(typeof value.name === "string" ? { causeName: value.name } : {}),
     ...(typeof value.code === "string"
       ? { causeCode: value.code }
       : typeof nested?.code === "string" ? { causeCode: nested.code } : {}),
+    ...(typeof value.message === "string"
+      ? { causeMessage: redactConnectionStrings(value.message).slice(0, 500) }
+      : {}),
+    ...(value.meta && typeof value.meta === "object"
+      ? { causeMeta: redactConnectionStrings(JSON.stringify(value.meta)).slice(0, 500) }
+      : {}),
   };
 }
 
@@ -236,9 +248,8 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
   if (!validation.success) return { success: false, kind: "validation", errors: validation.errors };
 
   // Coupon validation and the Delhivery re-check are independent of each
-  // other, so they run concurrently — kept sequential they'd stack their
-  // worst-case latencies on top of Razorpay's call later in this same
-  // request, risking Vercel's 10s function cap.
+  // other, so they run concurrently instead of stacking their latencies on
+  // top of Razorpay's call later in this same request.
   const checkServiceability = dependencies.checkServiceability ?? checkDelhiveryPrepaidServiceability;
   const [couponOutcome, serviceabilityOutcome] = await Promise.all([
     input.couponCode
