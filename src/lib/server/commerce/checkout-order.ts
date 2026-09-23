@@ -235,28 +235,39 @@ export async function createPayableCheckout(input: CreateCheckoutInput, dependen
   const validation = validateCheckoutPayload(input.details);
   if (!validation.success) return { success: false, kind: "validation", errors: validation.errors };
 
+  // Coupon validation and the Delhivery re-check are independent of each
+  // other, so they run concurrently — kept sequential they'd stack their
+  // worst-case latencies on top of Razorpay's call later in this same
+  // request, risking Vercel's 10s function cap.
+  const checkServiceability = dependencies.checkServiceability ?? checkDelhiveryPrepaidServiceability;
+  const [couponOutcome, serviceabilityOutcome] = await Promise.all([
+    input.couponCode
+      ? (dependencies.validateCoupon ?? validateCouponEligibility)(input.couponCode, {
+          email: validation.data.email,
+          phone: validation.data.mobileNumber,
+        })
+      : Promise.resolve(null),
+    checkServiceability(validation.data.pincode).then(
+      (result) => ({ success: true as const, result }),
+      (error) => ({ success: false as const, error }),
+    ),
+  ]);
+
   let coupon: { code: string; discountPercent: number; singleUse?: boolean } | null = null;
-  if (input.couponCode) {
-    const eligibility = await (dependencies.validateCoupon ?? validateCouponEligibility)(input.couponCode, {
-      email: validation.data.email,
-      phone: validation.data.mobileNumber,
-    });
-    if (!eligibility.success) {
-      return eligibility.reason === "used"
+  if (couponOutcome) {
+    if (!couponOutcome.success) {
+      return couponOutcome.reason === "used"
         ? { success: false, kind: "coupon_used", message: "Invalid coupon code. This coupon has already been used." }
         : { success: false, kind: "coupon_invalid", message: "This coupon is invalid or has expired." };
     }
-    coupon = eligibility.coupon;
+    coupon = couponOutcome.coupon;
   }
 
-  const checkServiceability = dependencies.checkServiceability ?? checkDelhiveryPrepaidServiceability;
-  let serviceability;
-  try {
-    serviceability = await checkServiceability(validation.data.pincode);
-  } catch (error) {
-    logCheckoutPreparationFailure("serviceability_recheck", error);
+  if (!serviceabilityOutcome.success) {
+    logCheckoutPreparationFailure("serviceability_recheck", serviceabilityOutcome.error);
     return { success: false, kind: "service_unavailable", message: "We couldn’t verify delivery availability right now. Please try again." };
   }
+  const serviceability = serviceabilityOutcome.result;
   if (!serviceability.prepaidServiceable) {
     return { success: false, kind: "unserviceable", message: "Prepaid delivery is currently unavailable to this pincode." };
   }

@@ -3,7 +3,9 @@ import { commerceDebug } from "@/lib/server/commerce/debug";
 import { RazorpayOrderError, type RazorpayOrder, type RazorpayPayment } from "./types";
 
 const ORDERS_URL = "https://api.razorpay.com/v1/orders";
-const TIMEOUT_MS = 5_000;
+// Kept under Vercel Hobby's 10s function cap alongside the Delhivery
+// serviceability re-check that runs earlier in the same order-creation request.
+const TIMEOUT_MS = 4_000;
 
 type RazorpayClientOptions = Readonly<{
   fetchImpl?: typeof fetch;
