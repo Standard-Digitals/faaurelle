@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import { randomBytes, randomUUID } from "node:crypto";
 import type { Order } from "@/generated/prisma/client";
 import { prisma } from "@/lib/server/db/prisma";
@@ -130,6 +131,9 @@ type Dependencies = Readonly<{
   fulfil?: typeof fulfilPaidOrder;
   notify?: typeof sendOrderCompletionEmail;
   now?: () => Date;
+  // Defers a task until after the response is sent, so a slow Delhivery/SMTP
+  // call can't blow the checkout request past Vercel's function timeout.
+  scheduleAfterResponse?: (task: () => Promise<void>) => void;
 }>;
 
 function receiptFor(orderId: string) {
@@ -213,8 +217,11 @@ async function createFreeCheckoutOrder(
     }
   }
 
-  try { await (dependencies.fulfil ?? fulfilPaidOrder)(order.id); } catch { /* fulfilment retries on confirmation-page revisit */ }
-  try { await (dependencies.notify ?? sendOrderCompletionEmail)(order.id); } catch { /* order-email has its own claim/retry lease */ }
+  const orderId = order.id;
+  (dependencies.scheduleAfterResponse ?? after)(async () => {
+    try { await (dependencies.fulfil ?? fulfilPaidOrder)(orderId); } catch { /* order-email/webhook paths can still retry fulfilment later */ }
+    try { await (dependencies.notify ?? sendOrderCompletionEmail)(orderId); } catch { /* order-email has its own claim/retry lease */ }
+  });
 
   return { success: true, free: true, checkout: { publicOrderToken: order.publicToken } };
 }

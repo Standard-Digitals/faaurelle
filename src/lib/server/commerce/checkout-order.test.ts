@@ -194,11 +194,12 @@ describe("free checkout orchestration (100%-off coupons)", () => {
     return { redemptions, orders, database };
   }
 
-  it("bypasses Razorpay for a 100% coupon and finalizes the order as paid", async () => {
+  it("bypasses Razorpay for a 100% coupon, responds immediately, and defers fulfilment/email", async () => {
     const fake = fakeOrders();
     const free = fakeFreeCheckoutDatabase();
     const fulfil = vi.fn().mockResolvedValue({ status: "created", waybill: "WB1", reused: false });
     const notify = vi.fn().mockResolvedValue(undefined);
+    const deferred: Array<Promise<void>> = [];
     const deps = {
       ...dependencies(fake.store),
       validateCoupon: vi.fn().mockResolvedValue({ success: true, coupon: { code: "FABZJSU4QK", discountPercent: 100, singleUse: true } }),
@@ -206,14 +207,18 @@ describe("free checkout orchestration (100%-off coupons)", () => {
       fulfil,
       notify,
       now: () => new Date("2026-01-01T00:00:00.000Z"),
+      scheduleAfterResponse: (task: () => Promise<void>) => { deferred.push(task()); },
     };
     const { createPayableCheckout } = await import("./checkout-order");
     const result = await createPayableCheckout({ checkoutKey, productCode: "hair-elixir", quantity: 1, details, couponCode: "FABZJSU4QK" }, deps as never);
     expect(result).toEqual({ success: true, free: true, checkout: { publicOrderToken: "opaque-public-token-generated-on-server" } });
+    // Fulfilment/email must not block the response: they're queued via scheduleAfterResponse, not awaited inline.
+    expect(fulfil).not.toHaveBeenCalled();
     expect(deps.createProviderOrder).not.toHaveBeenCalled();
     expect(fake.store.create).not.toHaveBeenCalled();
     expect(free.orders[0]).toMatchObject({ status: "PAID", paymentStatus: "CAPTURED", totalPaisa: 0, couponCode: "FABZJSU4QK" });
     expect(free.redemptions).toEqual([expect.objectContaining({ couponCode: "FABZJSU4QK", normalizedEmail: "__single_use__", normalizedPhone: "__single_use__" })]);
+    await Promise.all(deferred);
     expect(fulfil).toHaveBeenCalledWith("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(notify).toHaveBeenCalledWith("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
   });
@@ -222,6 +227,7 @@ describe("free checkout orchestration (100%-off coupons)", () => {
     const free = fakeFreeCheckoutDatabase();
     const coupon = { success: true as const, coupon: { code: "FAFTXBUPCC", discountPercent: 100, singleUse: true } };
     const { createPayableCheckout } = await import("./checkout-order");
+    const noopSchedule = (task: () => Promise<void>) => { void task(); };
 
     const firstOrders = fakeOrders();
     const firstResult = await createPayableCheckout(
@@ -230,6 +236,7 @@ describe("free checkout orchestration (100%-off coupons)", () => {
         ...dependencies(firstOrders.store), validateCoupon: vi.fn().mockResolvedValue(coupon), freeCheckoutDatabase: free.database,
         fulfil: vi.fn().mockResolvedValue({ status: "created", waybill: "WB1", reused: false }), notify: vi.fn(),
         randomId: () => "aaaaaaaa-aaaa-4aaa-8aaa-000000000001",
+        scheduleAfterResponse: noopSchedule,
       } as never,
     );
     expect(firstResult).toMatchObject({ success: true, free: true });
@@ -241,6 +248,7 @@ describe("free checkout orchestration (100%-off coupons)", () => {
         ...dependencies(secondOrders.store), validateCoupon: vi.fn().mockResolvedValue(coupon), freeCheckoutDatabase: free.database,
         fulfil: vi.fn(), notify: vi.fn(),
         randomId: () => "aaaaaaaa-aaaa-4aaa-8aaa-000000000002",
+        scheduleAfterResponse: noopSchedule,
       } as never,
     );
     expect(secondResult).toEqual({ success: false, kind: "coupon_used", message: "Invalid coupon code. This coupon has already been used." });
