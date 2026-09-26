@@ -22,6 +22,26 @@ function clientAddress(request: NextRequest) {
   return request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim() || request.headers.get("x-real-ip") || "unknown";
 }
 
+// The form also posts natively (no JS: page not hydrated yet, in-app browsers),
+// so form-encoded requests get a redirect back to the page instead of JSON.
+function isFormPost(request: NextRequest) {
+  const type = request.headers.get("content-type") ?? "";
+  return type.includes("application/x-www-form-urlencoded") || type.includes("multipart/form-data");
+}
+
+function respond(request: NextRequest, result: { success: true } | { error: string; status: number }) {
+  if (!isFormPost(request)) {
+    return "success" in result
+      ? NextResponse.json({ success: true })
+      : NextResponse.json({ error: result.error }, { status: result.status });
+  }
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const target = new URL(`${basePath}/contact/`, request.nextUrl.origin);
+  if ("success" in result) target.searchParams.set("sent", "1");
+  else target.searchParams.set("error", "1");
+  return NextResponse.redirect(target, 303);
+}
+
 function isRateLimited(address: string) {
   const now = Date.now();
   const current = requests.get(address);
@@ -35,20 +55,22 @@ function isRateLimited(address: string) {
 
 export async function POST(request: NextRequest) {
   if (Number(request.headers.get("content-length") ?? "0") > MAX_REQUEST_BYTES) {
-    return NextResponse.json({ error: "Request is too large." }, { status: 413 });
+    return respond(request, { error: "Request is too large.", status: 413 });
   }
   if (isRateLimited(clientAddress(request))) {
-    return NextResponse.json({ error: "Too many attempts. Please wait before trying again." }, { status: 429 });
+    return respond(request, { error: "Too many attempts. Please wait before trying again.", status: 429 });
   }
 
   let payload: Record<string, unknown>;
   try {
-    payload = (await request.json()) as Record<string, unknown>;
+    payload = isFormPost(request)
+      ? Object.fromEntries((await request.formData()).entries())
+      : (await request.json()) as Record<string, unknown>;
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return respond(request, { error: "Invalid request.", status: 400 });
   }
 
-  if (normalize(payload.website, 100)) return NextResponse.json({ success: true });
+  if (normalize(payload.website, 100)) return respond(request, { success: true });
 
   const name = normalize(payload.name, 100);
   const email = normalize(payload.email, 254).toLowerCase();
@@ -58,7 +80,7 @@ export async function POST(request: NextRequest) {
   const message = normalize(payload.message, 3000);
 
   if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^[6-9]\d{9}$/.test(contact) || !location || !topic || message.length < 10) {
-    return NextResponse.json({ error: "Please check your details and try again." }, { status: 400 });
+    return respond(request, { error: "Please check your details and try again. Your message needs at least 10 characters.", status: 400 });
   }
 
   // Trimmed like order-email's config: a stray newline pasted into a Vercel
@@ -72,7 +94,7 @@ export async function POST(request: NextRequest) {
 
   if (!host || !Number.isInteger(port) || !user || !pass || !from || !to) {
     console.error("[contact:smtp-not-configured]", { host: Boolean(host), port, user: Boolean(user), pass: Boolean(pass), from: Boolean(from) });
-    return NextResponse.json({ error: "Customer care is temporarily unavailable. Please email support@faaurelle.com." }, { status: 503 });
+    return respond(request, { error: "Customer care is temporarily unavailable. Please email support@faaurelle.com.", status: 503 });
   }
 
   try {
@@ -91,7 +113,7 @@ export async function POST(request: NextRequest) {
       text: [`Name: ${name}`, `Email: ${email}`, `Contact: +91 ${contact}`, `Location: ${location}`, `Topic: ${topic}`, "", message].join("\n"),
       html: `<h2>Customer care enquiry</h2><p><strong>Name:</strong> ${escapeHtml(name)}</p><p><strong>Email:</strong> ${escapeHtml(email)}</p><p><strong>Contact:</strong> +91 ${escapeHtml(contact)}</p><p><strong>Location:</strong> ${escapeHtml(location)}</p><p><strong>Topic:</strong> ${escapeHtml(topic)}</p><p>${escapeHtml(message)}</p>`,
     });
-    return NextResponse.json({ success: true });
+    return respond(request, { success: true });
   } catch (error) {
     const detail = error && typeof error === "object" ? error as { code?: unknown; responseCode?: unknown; command?: unknown; response?: unknown } : {};
     console.error("[contact:email-delivery-failed]", {
@@ -102,6 +124,6 @@ export async function POST(request: NextRequest) {
       smtpHost: host,
       smtpPort: port,
     });
-    return NextResponse.json({ error: "We could not send your message. Please email support@faaurelle.com." }, { status: 500 });
+    return respond(request, { error: "We could not send your message. Please email support@faaurelle.com.", status: 500 });
   }
 }

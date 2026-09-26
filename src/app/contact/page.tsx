@@ -19,7 +19,14 @@ export const metadata: Metadata = {
   description: "Contact FA ÀURELLE for product guidance, order support, and customer care.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Set by /api/contact when the form was posted without JavaScript.
+  const params = await searchParams;
+  const initialStatus = params.sent === "1" ? "success" : params.error ? "error" : undefined;
   return (
     <>
       <SiteHeader />
@@ -57,7 +64,7 @@ export default function ContactPage() {
               </li>
             </ul>
           </aside>
-          <ContactForm />
+          <ContactForm initialStatus={initialStatus} />
         </section>
       </main>
       <InnerCircleSection />

@@ -20,10 +20,15 @@ const indianCityOptions = Object.entries(indianCitiesByState)
   .flatMap(([state, cities]) => cities.map((city) => `${city}, ${state}`))
   .sort((first, second) => first.localeCompare(second));
 
-export function ContactForm() {
+const NO_SCRIPT_MESSAGES = {
+  success: "Thank you. Your message has been received.",
+  error: "We could not send your message. Please check your details, or email support@faaurelle.com.",
+} as const;
+
+export function ContactForm({ initialStatus }: { initialStatus?: "success" | "error" }) {
   const [locationQuery, setLocationQuery] = useState("");
-  const [submissionState, setSubmissionState] = useState<SubmissionState>("idle");
-  const [submissionMessage, setSubmissionMessage] = useState("");
+  const [submissionState, setSubmissionState] = useState<SubmissionState>(initialStatus ?? "idle");
+  const [submissionMessage, setSubmissionMessage] = useState<string>(initialStatus ? NO_SCRIPT_MESSAGES[initialStatus] : "");
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const normalizedLocationQuery = locationQuery.trim().toLocaleLowerCase();
   const locationSuggestions = indianCityOptions
@@ -39,7 +44,7 @@ export function ContactForm() {
     setSubmissionMessage("");
 
     try {
-      const response = await fetch(`${basePath}/api/contact`, {
+      const response = await fetch(`${basePath}/api/contact/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(Object.fromEntries(data.entries())),
@@ -53,7 +58,7 @@ export function ContactForm() {
       form.reset();
       setLocationQuery("");
       setSubmissionState("success");
-      setSubmissionMessage("Thank you. Your message has been received.");
+      setSubmissionMessage(NO_SCRIPT_MESSAGES.success);
     } catch (error) {
       setSubmissionState("error");
       setSubmissionMessage(
@@ -63,7 +68,9 @@ export function ContactForm() {
   };
 
   return (
-    <form className={styles.contactForm} onSubmit={handleSubmit}>
+    // method/action make the form work before hydration or without JS: the
+    // route answers native posts with a redirect back to /contact/?sent=1.
+    <form className={styles.contactForm} method="post" action={`${basePath}/api/contact/`} onSubmit={handleSubmit}>
       <div className={styles.honeypot} aria-hidden="true">
         <label htmlFor="contact-website">Website</label>
         <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
@@ -72,7 +79,7 @@ export function ContactForm() {
       <div className={styles.fieldRow}>
         <div className={styles.formField}>
           <label htmlFor="contact-name">Name <RequiredMark /></label>
-          <input id="contact-name" name="name" type="text" autoComplete="name" placeholder="Your full name" required />
+          <input id="contact-name" name="name" type="text" autoComplete="name" placeholder="Your full name" minLength={2} required />
         </div>
         <div className={styles.formField}>
           <label htmlFor="contact-email">Email address <RequiredMark /></label>
@@ -94,7 +101,8 @@ export function ContactForm() {
               autoComplete="tel-national"
               aria-label="Indian mobile number"
               placeholder="Enter 10-digit number"
-              pattern="[0-9]{10}"
+              pattern="[6-9][0-9]{9}"
+              title="Enter a 10-digit Indian mobile number"
               maxLength={10}
               required
             />
@@ -154,7 +162,7 @@ export function ContactForm() {
 
       <div className={`${styles.formField} ${styles.messageField}`}>
         <label htmlFor="contact-message">Message <RequiredMark /></label>
-        <textarea id="contact-message" name="message" rows={6} placeholder="Tell us how we can help" required />
+        <textarea id="contact-message" name="message" rows={6} placeholder="Tell us how we can help (at least 10 characters)" minLength={10} required />
       </div>
 
       <div className={styles.formFooter}>
