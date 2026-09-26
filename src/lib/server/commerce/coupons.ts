@@ -5,6 +5,16 @@ import { prisma } from "@/lib/server/db/prisma";
 export const COUPON_EXPIRY_EXCLUSIVE = new Date("2026-11-30T18:30:00.000Z");
 export const COUPON_DISCOUNT_PERCENT = 20 as const;
 export const INFLUENCER_DISCOUNT_PERCENT = 100 as const;
+// SAHIL20 ends earlier than the rest: valid through 30 Sep 2026 (IST).
+const SAHIL20_EXPIRY_EXCLUSIVE = new Date("2026-09-30T18:30:00.000Z");
+
+type CouponDefinition = Readonly<{
+  code: string;
+  discountPercent: number;
+  singleUse: boolean;
+  // Overrides COUPON_EXPIRY_EXCLUSIVE for this coupon only.
+  expiresBefore?: Date;
+}>;
 
 // Sentinel redemption identity for singleUse coupons: recording every redemption
 // under this fixed value (instead of the buyer's real email/phone) lets the
@@ -18,8 +28,9 @@ function influencerCoupon(code: string) {
 
 const coupons = Object.freeze({
   SIMRAN20: { code: "SIMRAN20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
-  SAHIL20: { code: "SAHIL20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
+  SAHIL20: { code: "SAHIL20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: SAHIL20_EXPIRY_EXCLUSIVE },
   NEW20: { code: "NEW20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
+  SAHILALI10: { code: "SAHILALI10", discountPercent: 10, singleUse: true as const },
   // Random 10-char codes (not sequential) so one leaked/guessed code can't be
   // used to enumerate the rest — each is only ever handed to one influencer.
   FABZJSU4QK: influencerCoupon("FABZJSU4QK"),
@@ -47,7 +58,7 @@ const coupons = Object.freeze({
   FAAMD7GRBA: influencerCoupon("FAAMD7GRBA"),
   FAHM9Y9CSR: influencerCoupon("FAHM9Y9CSR"),
   FA4YZCGY2X: influencerCoupon("FA4YZCGY2X"),
-} as const);
+} as const satisfies Record<string, CouponDefinition>);
 
 export type CouponCode = keyof typeof coupons;
 
@@ -57,8 +68,9 @@ export function normalizeCouponCode(value: unknown): string {
 
 export function getCoupon(value: unknown, now = new Date()) {
   const code = normalizeCouponCode(value);
-  const coupon = coupons[code as CouponCode];
-  return coupon && now.getTime() < COUPON_EXPIRY_EXCLUSIVE.getTime() ? coupon : null;
+  const coupon: CouponDefinition | undefined = coupons[code as CouponCode];
+  const expiresBefore = coupon?.expiresBefore ?? COUPON_EXPIRY_EXCLUSIVE;
+  return coupon && now.getTime() < expiresBefore.getTime() ? coupon : null;
 }
 
 /** Looks up a coupon's static definition (e.g. its singleUse flag) without the expiry gate. */
