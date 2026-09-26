@@ -79,8 +79,16 @@ export async function POST(request: NextRequest) {
   const topic = normalize(payload.topic, 80);
   const message = normalize(payload.message, 3000);
 
-  if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^[6-9]\d{9}$/.test(contact) || !location || !topic || message.length < 10) {
-    return respond(request, { error: "Please check your details and try again. Your message needs at least 10 characters.", status: 400 });
+  const invalidField =
+    name.length < 2 ? "Please enter your full name."
+    : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Please enter a valid email address, like name@example.com."
+    : !/^[6-9]\d{9}$/.test(contact) ? "Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8 or 9."
+    : !location ? "Please enter your city."
+    : !topic ? "Please choose how we can help."
+    : message.length < 10 ? "Please write a message of at least 10 characters."
+    : null;
+  if (invalidField) {
+    return respond(request, { error: invalidField, status: 400 });
   }
 
   // Trimmed like order-email's config: a stray newline pasted into a Vercel

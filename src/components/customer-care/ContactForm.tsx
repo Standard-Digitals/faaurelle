@@ -83,7 +83,16 @@ export function ContactForm({ initialStatus }: { initialStatus?: "success" | "er
         </div>
         <div className={styles.formField}>
           <label htmlFor="contact-email">Email address <RequiredMark /></label>
-          <input id="contact-email" name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
+          <input
+            id="contact-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+            title="Enter a valid email address, like name@example.com"
+            required
+          />
         </div>
       </div>
 
