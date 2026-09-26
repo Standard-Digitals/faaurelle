@@ -6,6 +6,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 15;
 
 const MAX_REQUEST_BYTES = 16_384;
+// The address published on the contact page; enquiries land here.
+const CONTACT_INBOX = "support@faaurelle.com";
 const requests = new Map<string, { count: number; expiresAt: number }>();
 
 function normalize(value: unknown, maxLength: number) {
@@ -59,14 +61,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Please check your details and try again." }, { status: 400 });
   }
 
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT ?? "587");
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const from = process.env.SMTP_FROM ?? user;
-  const to = process.env.CONTACT_TO_EMAIL ?? process.env.SUBSCRIPTION_TO_EMAIL ?? from;
+  // Trimmed like order-email's config: a stray newline pasted into a Vercel
+  // env var otherwise breaks SMTP auth here while order emails keep working.
+  const host = process.env.SMTP_HOST?.trim();
+  const port = Number(process.env.SMTP_PORT?.trim() || "587");
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS?.trim();
+  const from = (process.env.SMTP_FROM ?? user)?.trim();
+  const to = process.env.CONTACT_TO_EMAIL?.trim() || CONTACT_INBOX;
 
   if (!host || !Number.isInteger(port) || !user || !pass || !from || !to) {
+    console.error("[contact:smtp-not-configured]", { host: Boolean(host), port, user: Boolean(user), pass: Boolean(pass), from: Boolean(from) });
     return NextResponse.json({ error: "Customer care is temporarily unavailable. Please email support@faaurelle.com." }, { status: 503 });
   }
 
@@ -88,7 +93,15 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Contact email delivery failed", error);
+    const detail = error && typeof error === "object" ? error as { code?: unknown; responseCode?: unknown; command?: unknown; response?: unknown } : {};
+    console.error("[contact:email-delivery-failed]", {
+      code: detail.code,
+      responseCode: detail.responseCode,
+      command: detail.command,
+      response: typeof detail.response === "string" ? detail.response.slice(0, 300) : undefined,
+      smtpHost: host,
+      smtpPort: port,
+    });
     return NextResponse.json({ error: "We could not send your message. Please email support@faaurelle.com." }, { status: 500 });
   }
 }
