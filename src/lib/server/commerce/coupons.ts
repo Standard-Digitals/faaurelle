@@ -58,6 +58,16 @@ const coupons = Object.freeze({
   FAAMD7GRBA: influencerCoupon("FAAMD7GRBA"),
   FAHM9Y9CSR: influencerCoupon("FAHM9Y9CSR"),
   FA4YZCGY2X: influencerCoupon("FA4YZCGY2X"),
+  FAQBQNAVV5: influencerCoupon("FAQBQNAVV5"),
+  FA3NKYEQGL: influencerCoupon("FA3NKYEQGL"),
+  FA37UACVGP: influencerCoupon("FA37UACVGP"),
+  FA5RG55PKP: influencerCoupon("FA5RG55PKP"),
+  FAW77ML6SR: influencerCoupon("FAW77ML6SR"),
+  FABLV58WBK: influencerCoupon("FABLV58WBK"),
+  FAC4ZWS5XD: influencerCoupon("FAC4ZWS5XD"),
+  FALPQCJF6J: influencerCoupon("FALPQCJF6J"),
+  FAS73QCDFL: influencerCoupon("FAS73QCDFL"),
+  FA24Q9C89K: influencerCoupon("FA24Q9C89K"),
 } as const satisfies Record<string, CouponDefinition>);
 
 export type CouponCode = keyof typeof coupons;
