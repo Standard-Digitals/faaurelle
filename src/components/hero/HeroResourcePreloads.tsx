@@ -1,7 +1,7 @@
 "use client";
 
 import { preload } from "react-dom";
-import { heroEnvironmentPath, heroModelPath } from "@/lib/hero/hero-presets";
+import { heroDracoDecoderPath, heroEnvironmentPath, heroModelPath } from "@/lib/hero/hero-presets";
 
 export function HeroResourcePreloads() {
   preload(heroModelPath, {
@@ -15,6 +15,15 @@ export function HeroResourcePreloads() {
     crossOrigin: "anonymous",
     fetchPriority: "high",
     type: "application/octet-stream",
+  });
+  preload(`${heroDracoDecoderPath}draco_wasm_wrapper.js`, {
+    as: "fetch",
+    crossOrigin: "anonymous",
+  });
+  preload(`${heroDracoDecoderPath}draco_decoder.wasm`, {
+    as: "fetch",
+    crossOrigin: "anonymous",
+    type: "application/wasm",
   });
 
   return null;

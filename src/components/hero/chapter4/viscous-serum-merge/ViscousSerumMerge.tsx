@@ -6,6 +6,7 @@ import {
   externalMoleculeAssetPaths,
   internalMoleculeAssetPaths,
   viscousSerumAssetPath,
+  viscousSerumMaskPath,
 } from "./viscousSerumMergeAssets";
 import styles from "./ViscousSerumMerge.module.css";
 
@@ -62,7 +63,7 @@ export function ViscousSerumMerge({ progress }: { progress: number }) {
 
   const stageStyle: VisualStyle = {
     "--progress": normalizedProgress.toFixed(4),
-    "--serum-mask": `url("${viscousSerumAssetPath}")`,
+    "--serum-mask": `url("${viscousSerumMaskPath}")`,
   };
   const ambientActive = isComplete && isVisible;
 

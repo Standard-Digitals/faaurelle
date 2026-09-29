@@ -19,6 +19,15 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: "/draco/:file*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
         source: "/environments/hero/fa-aurelle-serum-studio-v1.hdr",
         headers: [
           {
@@ -28,9 +37,6 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-  },
-  images: {
-    unoptimized: true,
   },
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,

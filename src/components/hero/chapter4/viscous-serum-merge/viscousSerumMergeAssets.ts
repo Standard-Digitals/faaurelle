@@ -2,6 +2,8 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const assetRoot = `${basePath}/images/sections/viscous-serum-merge`;
 
 export const viscousSerumAssetPath = `${assetRoot}/serum-blob.png`;
+// CSS masks bypass next/image, so they read a pre-compressed copy of the same shape.
+export const viscousSerumMaskPath = `${assetRoot}/serum-blob-mask.webp`;
 
 export const externalMoleculeAssetPaths = [
   `${assetRoot}/molecule-01.png`,

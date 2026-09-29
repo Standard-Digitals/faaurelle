@@ -3,7 +3,7 @@
 import { useGLTF } from "@react-three/drei";
 import { forwardRef, useEffect, useMemo } from "react";
 import * as THREE from "three";
-import { heroModelPath } from "@/lib/hero/hero-presets";
+import { heroDracoDecoderPath, heroModelPath } from "@/lib/hero/hero-presets";
 
 // Product-space contract exposed to the timeline:
 // - four scene units tall
@@ -89,7 +89,7 @@ export const CanonicalProductModel = forwardRef<
   { position, rotation, scale = 1, visible = true, shadows = true, onPrepared },
   forwardedRef,
 ) {
-  const gltf = useGLTF(heroModelPath);
+  const gltf = useGLTF(heroModelPath, heroDracoDecoderPath);
   const prepared = useMemo(() => {
     const model = gltf.scene.clone(true);
     const exportArtifact = model.getObjectByName("Cube");
@@ -205,4 +205,4 @@ export const CanonicalProductModel = forwardRef<
   );
 });
 
-useGLTF.preload(heroModelPath);
+useGLTF.preload(heroModelPath, heroDracoDecoderPath);
