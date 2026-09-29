@@ -7,8 +7,9 @@ export const brand = {
   description,
   accessibilityLabel: displayName,
   seo: {
-    title: displayName,
-    description,
+    title: `${displayName} Hair Elixir Oil-in-Serum | Frizz-Free Shine`,
+    description:
+      "FA ÀURELLE Hair Elixir Oil-in-Serum with Silk Botanique Fusion™ for mirror-like shine, silk-touch softness & weightless frizz control. Free shipping in India.",
   },
   colors: {
     background: "#f7f3ec",
