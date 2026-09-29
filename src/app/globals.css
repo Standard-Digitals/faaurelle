@@ -1643,36 +1643,6 @@ h6 {
   }
 }
 
-@keyframes hero-copy-arrive {
-  from { opacity: 0; translate: -3rem 0; }
-  to { opacity: 1; translate: 0 0; }
-}
-
-@keyframes hero-benefits-arrive {
-  from { opacity: 0; translate: 3rem 0; }
-  to { opacity: 1; translate: 0 0; }
-}
-
-.hero-copy h1,
-.hero-copy .hero-description,
-.hero-copy .hero-shop-link,
-.hero-opening-benefits-heading,
-.hero-opening-benefit {
-  animation: hero-copy-arrive 3s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.hero-opening-benefits-heading,
-.hero-opening-benefit {
-  animation-name: hero-benefits-arrive;
-}
-
-.hero-copy .hero-description { animation-delay: 180ms; }
-.hero-copy .hero-shop-link { animation-delay: 320ms; }
-.hero-opening-benefits-heading { animation-delay: 480ms; }
-.hero-opening-benefit:nth-child(1) { animation-delay: 620ms; }
-.hero-opening-benefit:nth-child(2) { animation-delay: 760ms; }
-.hero-opening-benefit:nth-child(3) { animation-delay: 900ms; }
-
 @media (max-width: 767px) and (orientation: portrait) {
   [data-hero-loading="true"] .hero-viewport[data-opening-stack="true"] .hero-opening-benefits {
     top: auto;
@@ -1686,14 +1656,6 @@ h6 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-copy h1,
-  .hero-copy .hero-description,
-  .hero-copy .hero-shop-link,
-  .hero-opening-benefits-heading,
-  .hero-opening-benefit {
-    animation: none;
-  }
-
   [data-hero-renderer="webgl"] .hero-viewport[data-opening-stack="true"] {
     overflow-y: auto;
     scrollbar-width: none;
