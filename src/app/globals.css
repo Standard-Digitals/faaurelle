@@ -1717,6 +1717,33 @@ h6 {
   text-align: center;
 }
 
+/* Opening-frame still of the 3D bottle, placed by placeHeroPoster. */
+.hero-poster {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--color-background-bright);
+}
+
+.hero-poster img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--hero-poster-width);
+  max-width: none;
+  height: auto;
+  transform: translate(var(--hero-poster-x), var(--hero-poster-y));
+  visibility: hidden;
+}
+
+.hero-poster[data-hero-poster-placed="true"] img {
+  visibility: visible;
+}
+
+.hero-poster[data-hero-poster-placed="true"] ~ .hero-loading-indicator {
+  display: none;
+}
+
 .hero-loading-spinner {
   width: 2rem;
   height: 2rem;

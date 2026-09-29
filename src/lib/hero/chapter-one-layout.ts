@@ -24,7 +24,7 @@ type ChapterOneFitConfig = {
   maximumVerticalCorrection: number;
 };
 
-const fitConfig: Record<Exclude<HeroResponsivePresetName, "desktopLandscape">, ChapterOneFitConfig> = {
+export const chapterOneFitConfig: Record<Exclude<HeroResponsivePresetName, "desktopLandscape">, ChapterOneFitConfig> = {
   tablet: {
     referencePortrait: [768, 1024],
     referenceLandscape: [1024, 768],
@@ -73,7 +73,7 @@ export function resolveChapterOneLayout(
 ): ChapterOneLayout {
   const width = Math.max(1, viewportWidth);
   const height = Math.max(1, viewportHeight);
-  const config = fitConfig[presetName];
+  const config = chapterOneFitConfig[presetName];
   const reference =
     height >= width ? config.referencePortrait : config.referenceLandscape;
   const widthFit = width / reference[0];

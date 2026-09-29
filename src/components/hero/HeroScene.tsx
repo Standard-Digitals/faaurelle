@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { Component, type ErrorInfo, type ReactNode, useCallback, useState } from "react";
+import { Component, type ErrorInfo, type ReactNode, useCallback, useEffect, useState } from "react";
 import * as THREE from "three";
 import { HeroDebugControls } from "@/components/hero/HeroDebugControls";
 import { HeroLoader } from "@/components/hero/HeroLoader";
@@ -55,6 +55,17 @@ export function HeroScene({
 }) {
   const [modelReady, setModelReady] = useState(false);
   const [debugState, setDebugState] = useState("Initializing scene");
+  // Keep the poster over the canvas until the canvas has faded in underneath it.
+  const [posterHeld, setPosterHeld] = useState(true);
+
+  useEffect(() => {
+    if (!modelReady) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setPosterHeld(false), 400);
+    return () => window.clearTimeout(timeout);
+  }, [modelReady]);
 
   const handleReady = useCallback(() => {
     setModelReady(true);
@@ -73,7 +84,7 @@ export function HeroScene({
         activeChapterIndex === 1 ? "hero-scene--ingredients-focus" : "",
       ].join(" ")}
     >
-      {!modelReady ? (
+      {!modelReady || posterHeld ? (
         <div className="pointer-events-none absolute inset-0 z-[1]">
           <HeroLoader />
         </div>
