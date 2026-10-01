@@ -64,10 +64,13 @@ describe("checkout attempts", () => {
     expect(describeCheckoutOutcome(attempt({ order: order("FAILED") }), true)).toBe("ordered");
   });
 
-  it("matches purchases by email or phone", () => {
-    expect(hasPurchased(attempt(), new Set(["phone:+919876543210"]))).toBe(true);
-    expect(hasPurchased(attempt(), new Set(["email:asha@example.com"]))).toBe(true);
-    expect(hasPurchased(attempt(), new Set(["email:other@example.com"]))).toBe(false);
+  it("counts only purchases made after the attempt, by email or phone", () => {
+    const after = new Date("2026-10-01T05:20:00Z").getTime();
+    const before = new Date("2026-09-20T05:00:00Z").getTime();
+    expect(hasPurchased(attempt(), new Map([["phone:+919876543210", [after]]]))).toBe(true);
+    expect(hasPurchased(attempt(), new Map([["email:asha@example.com", [after]]]))).toBe(true);
+    expect(hasPurchased(attempt(), new Map([["email:other@example.com", [after]]]))).toBe(false);
+    expect(hasPurchased(attempt(), new Map([["email:asha@example.com", [before]]]))).toBe(false);
   });
 
   it("builds an Excel-safe CSV", () => {

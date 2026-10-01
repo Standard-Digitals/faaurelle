@@ -5,6 +5,7 @@ import { prisma } from "@/lib/server/db/prisma";
 
 const IST = "Asia/Kolkata";
 const ORDER_LINK_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
+const PURCHASE_CLOCK_SLACK_MS = 60 * 1000;
 
 export type CheckoutDeliveryCheck = "SERVICEABLE" | "NOT_SERVICEABLE" | "CHECK_FAILED";
 
@@ -147,11 +148,12 @@ export async function linkCheckoutAttemptToOrder(publicOrderToken: string) {
   await prisma.checkoutAttempt.update({ where: { id: attempt.id }, data: { orderId: order.id } });
 }
 
-// Customers (by email or phone) with a captured order placed on or after the
-// earliest of the given attempts.
+// When each customer (by email or by phone) placed captured orders, for
+// orders placed on or after the earliest of the given attempts.
 export async function findPurchasingCustomers(attempts: readonly CheckoutAttemptRecord[]) {
-  if (!attempts.length) return new Set<string>();
-  const since = new Date(Math.min(...attempts.map((attempt) => attempt.firstSeenAt.getTime())));
+  const purchases = new Map<string, number[]>();
+  if (!attempts.length) return purchases;
+  const since = new Date(Math.min(...attempts.map((attempt) => attempt.firstSeenAt.getTime())) - PURCHASE_CLOCK_SLACK_MS);
   const paid = await prisma.order.findMany({
     where: {
       paymentStatus: "CAPTURED",
@@ -161,13 +163,22 @@ export async function findPurchasingCustomers(attempts: readonly CheckoutAttempt
         { customerPhone: { in: [...new Set(attempts.map((attempt) => attempt.customerPhone))] } },
       ],
     },
-    select: { customerEmail: true, customerPhone: true },
+    select: { customerEmail: true, customerPhone: true, createdAt: true },
   });
-  return new Set(paid.flatMap((order) => [`email:${order.customerEmail.toLowerCase()}`, `phone:${order.customerPhone}`]));
+  for (const order of paid) {
+    for (const key of [`email:${order.customerEmail.toLowerCase()}`, `phone:${order.customerPhone}`]) {
+      purchases.set(key, [...(purchases.get(key) ?? []), order.createdAt.getTime()]);
+    }
+  }
+  return purchases;
 }
 
-export function hasPurchased(attempt: CheckoutAttemptRecord, purchasers: ReadonlySet<string>) {
-  return purchasers.has(`email:${attempt.customerEmail.toLowerCase()}`) || purchasers.has(`phone:${attempt.customerPhone}`);
+// True when the customer paid for an order placed after this attempt began,
+// so an earlier purchase does not hide a later abandoned checkout.
+export function hasPurchased(attempt: CheckoutAttemptRecord, purchases: ReadonlyMap<string, readonly number[]>) {
+  const startedAt = attempt.firstSeenAt.getTime() - PURCHASE_CLOCK_SLACK_MS;
+  return [`email:${attempt.customerEmail.toLowerCase()}`, `phone:${attempt.customerPhone}`]
+    .some((key) => (purchases.get(key) ?? []).some((paidAt) => paidAt >= startedAt));
 }
 
 export async function listCheckoutAttempts(where: { from?: Date; to?: Date; undigestedBefore?: Date }) {
