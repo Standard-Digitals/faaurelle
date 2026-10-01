@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./ProductShowcaseSection.module.css";
 import { productShowcase, productShowcaseImages } from "./product-showcase.data";
 import { product } from "@/config/product";
+import { featuredCoupon, featuredCouponPricePaisa, isFeaturedCouponActive } from "@/config/promotions";
+import { formatInr } from "@/lib/commerce/money";
 import { trackAddToCart } from "@/lib/analytics/meta-pixel";
 
 function Checkmark() {
@@ -162,6 +164,16 @@ export function ProductShowcaseSection() {
             </div>
             <span className={styles.purchaseRule} aria-hidden="true" />
           </div>
+
+          {isFeaturedCouponActive() ? (
+            <p className={styles.offer} data-showcase-entrance>
+              <span className={styles.offerCode}>{featuredCoupon.code}</span>
+              <span>
+                {featuredCoupon.discountPercent}% off · pay {formatInr(featuredCouponPricePaisa(product.unitAmountPaisa))}.
+                Applied automatically at checkout.
+              </span>
+            </p>
+          ) : null}
 
           <div className={styles.actions} data-showcase-entrance>
             <a

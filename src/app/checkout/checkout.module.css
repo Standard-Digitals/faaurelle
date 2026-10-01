@@ -686,3 +686,38 @@
     animation: none;
   }
 }
+
+.offerBanner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 2rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgb(189 140 53 / 0.45);
+  background: #fbf6ec;
+  color: #3a2c1c;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.offerBanner[data-state="applied"] {
+  border-color: rgb(53 96 64 / 0.4);
+  background: #f1f7f2;
+  color: #24452c;
+}
+
+.offerCode {
+  flex: none;
+  padding: 0.35rem 0.75rem;
+  border: 1px dashed currentColor;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+@media (max-width: 40rem) {
+  .offerBanner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+}

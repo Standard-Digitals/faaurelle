@@ -9,9 +9,11 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { indiaStatesAndUnionTerritories } from "@/config/india";
+import { featuredCoupon, isFeaturedCouponActive } from "@/config/promotions";
 import indianCitiesByState from "@/data/indian-cities-by-state.json";
 import {
   checkoutFieldNames,
+  normalizeCheckoutIdentity,
   validateCheckoutPayload,
   type CheckoutFieldErrors,
   type CheckoutFieldName,
@@ -78,6 +80,11 @@ function errorProps(field: CheckoutFieldName, errors: CheckoutFieldErrors) {
 
 export type AppliedCoupon = Readonly<{ code: string; discountPaisa: number; totalPaisa: number }>;
 
+// "pending": the featured coupon is pre-filled and will be applied once the
+// customer's email and mobile are valid. "manual": they removed it or typed
+// another code, so it is never re-applied behind their back.
+type AutoCouponState = "pending" | "applied" | "manual";
+
 export function CheckoutForm({
   productCode,
   onCouponChange,
@@ -96,10 +103,17 @@ export function CheckoutForm({
   const [locationQuery, setLocationQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState<CityOption | null>(null);
   const [selectedState, setSelectedState] = useState("");
-  const [couponInput, setCouponInput] = useState("");
+  const [autoCouponCode] = useState(() => (isFeaturedCouponActive() ? featuredCoupon.code : null));
+  const autoCouponRef = useRef<AutoCouponState>(autoCouponCode ? "pending" : "manual");
+  const autoCouponTimerRef = useRef<number | undefined>(undefined);
+  const [couponInput, setCouponInput] = useState(autoCouponCode ?? "");
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [couponState, setCouponState] = useState<"idle" | "loading" | "accepted" | "rejected">("idle");
-  const [couponMessage, setCouponMessage] = useState("Optional. Enter a coupon code after adding your email and mobile number.");
+  const [couponMessage, setCouponMessage] = useState(
+    autoCouponCode
+      ? `${autoCouponCode} will be applied automatically once you add your email and mobile number.`
+      : "Optional. Enter a coupon code after adding your email and mobile number.",
+  );
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [takingLonger, setTakingLonger] = useState(false);
   const normalizedLocationQuery = locationQuery.trim().toLocaleLowerCase();
@@ -210,11 +224,24 @@ export function CheckoutForm({
     const fieldName = target.name;
     if (!checkoutFieldNames.includes(fieldName as CheckoutFieldName)) return;
 
-    if ((fieldName === "email" || fieldName === "mobileNumber") && appliedCoupon) {
-      setAppliedCoupon(null);
-      onCouponChange(null);
-      setCouponState("idle");
-      setCouponMessage("Contact details changed. Apply the coupon again to recheck eligibility.");
+    if (fieldName === "email" || fieldName === "mobileNumber") {
+      if (autoCouponRef.current !== "manual") {
+        // Eligibility is per email and mobile, so recheck the featured coupon
+        // whenever either changes.
+        autoCouponRef.current = "pending";
+        if (appliedCoupon) {
+          setAppliedCoupon(null);
+          onCouponChange(null);
+          setCouponState("idle");
+        }
+        window.clearTimeout(autoCouponTimerRef.current);
+        autoCouponTimerRef.current = window.setTimeout(() => void applyAutoCoupon(), 700);
+      } else if (appliedCoupon) {
+        setAppliedCoupon(null);
+        onCouponChange(null);
+        setCouponState("idle");
+        setCouponMessage("Contact details changed. Apply the coupon again to recheck eligibility.");
+      }
     }
 
     setErrors((current) => {
@@ -234,33 +261,51 @@ export function CheckoutForm({
     }
   };
 
-  const applyCoupon = async () => {
-    if (!formRef.current || couponState === "loading") return;
+  const applyCoupon = async (code = couponInput): Promise<AppliedCoupon | null> => {
+    if (!formRef.current || couponState === "loading") return null;
     setCouponState("loading");
     setCouponMessage("Checking coupon eligibility…");
     const fields = Object.fromEntries(new FormData(formRef.current).entries());
     try {
-      const result = await validateCheckoutCoupon(productCode, couponInput, fields);
+      const result = await validateCheckoutCoupon(productCode, code, fields);
       if (!result.success) {
         setAppliedCoupon(null);
         onCouponChange(null);
         setCouponState("rejected");
         setCouponMessage(result.message);
-        return;
+        return null;
       }
       const next = { code: result.code, discountPaisa: result.discountPaisa, totalPaisa: result.totalPaisa };
       setCouponInput(result.code);
       setAppliedCoupon(next);
       onCouponChange(next);
       setCouponState("accepted");
-      setCouponMessage(`${result.code} applied. Your discount is ready for final server verification.`);
+      setCouponMessage(
+        result.code === autoCouponCode
+          ? `${result.code} applied automatically. You save ${featuredCoupon.discountPercent}%.`
+          : `${result.code} applied. Your discount is ready for final server verification.`,
+      );
+      return next;
     } catch {
       setCouponState("rejected");
       setCouponMessage("This coupon code is invalid or has already been used.");
+      return null;
     }
   };
 
+  // Applies the featured coupon once the email and mobile are valid. Returns
+  // the applied coupon, or null when it is not pending or was not accepted.
+  const applyAutoCoupon = async (): Promise<AppliedCoupon | null> => {
+    window.clearTimeout(autoCouponTimerRef.current);
+    if (!autoCouponCode || autoCouponRef.current !== "pending" || !formRef.current) return null;
+    const identity = normalizeCheckoutIdentity(Object.fromEntries(new FormData(formRef.current).entries()));
+    if (!identity.success) return null;
+    autoCouponRef.current = "applied";
+    return applyCoupon(autoCouponCode);
+  };
+
   const removeCoupon = () => {
+    autoCouponRef.current = "manual";
     setCouponInput("");
     setAppliedCoupon(null);
     onCouponChange(null);
@@ -283,6 +328,11 @@ export function CheckoutForm({
 
     setErrors({});
 
+    // Covers browsers that fill the email and mobile without the usual change
+    // events, so the featured coupon is never silently missed.
+    const autoApplied = await applyAutoCoupon();
+    const couponForOrder = autoApplied ?? appliedCoupon;
+
     if (pendingVerification && (submissionState === "verification-pending" || submissionState === "payment-processing")) {
       await verifyPayment(pendingVerification);
       return;
@@ -299,7 +349,7 @@ export function CheckoutForm({
           productCode,
           quantity: 1,
           details: payload,
-          couponCode: appliedCoupon?.code ?? null,
+          couponCode: couponForOrder?.code ?? null,
         });
         if (!orderResult.success) {
           if (orderResult.kind === "validation") {
@@ -432,6 +482,16 @@ export function CheckoutForm({
   return (
     <>
       <form ref={formRef} className={styles.form} onSubmit={handleSubmit} onChange={handleFieldChange} noValidate>
+      {autoCouponCode ? (
+        <p className={styles.offerBanner} data-state={appliedCoupon?.code === autoCouponCode ? "applied" : "pending"}>
+          <span className={styles.offerCode}>{autoCouponCode}</span>
+          <span>
+            {appliedCoupon?.code === autoCouponCode
+              ? `Applied. You save ${featuredCoupon.discountPercent}% on this order.`
+              : `${featuredCoupon.discountPercent}% off your order. Applied automatically once you add your email and mobile number.`}
+          </span>
+        </p>
+      ) : null}
       <fieldset disabled={busy || submissionState === "payment-captured"}>
         <legend>Contact details</legend>
         <p className={styles.sectionIntro}>We’ll use these details for delivery updates when ordering becomes available.</p>
@@ -577,6 +637,7 @@ export function CheckoutForm({
               aria-invalid={couponState === "rejected"}
               aria-describedby="coupon-message"
               onChange={(event) => {
+                autoCouponRef.current = "manual";
                 setCouponInput(event.target.value.toUpperCase());
                 if (appliedCoupon) {
                   setAppliedCoupon(null);
@@ -590,7 +651,10 @@ export function CheckoutForm({
           {appliedCoupon ? (
             <button className={styles.couponSecondary} type="button" onClick={removeCoupon}>Remove</button>
           ) : (
-            <button className={styles.couponApply} type="button" disabled={!couponInput.trim() || couponState === "loading"} onClick={() => void applyCoupon()}>
+            <button className={styles.couponApply} type="button" disabled={!couponInput.trim() || couponState === "loading"} onClick={() => {
+              autoCouponRef.current = "manual";
+              void applyCoupon();
+            }}>
               {couponState === "loading" ? "Checking…" : "Apply"}
             </button>
           )}
