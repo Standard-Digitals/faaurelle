@@ -592,7 +592,7 @@ export function useHeroTimeline({
       ? null
       : new Lenis({
           duration: 0.72,
-          lerp: 0.26,
+          lerp: 0.36,
           smoothWheel: true,
         });
     const updateLenis = (time: number) => {

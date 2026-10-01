@@ -291,8 +291,8 @@ export function enterExitOpacity(
 }
 
 export const heroChapterTiming = {
-  productTurn: [0, 0.22],
-  frontFacingSettle: [0.02, 0.24],
+  productTurn: [0, 0.1],
+  frontFacingSettle: [0, 0.12],
   chapterTwoSettle: [0.46, 1],
   scrollCueExit: [0.04, 0.12],
 } as const satisfies Record<string, ProgressRange | number>;
