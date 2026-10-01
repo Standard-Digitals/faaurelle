@@ -1,6 +1,6 @@
 "use client";
 
-import { META_PIXEL_ID, type MetaRelayedEventName } from "@/config/meta";
+import { META_PIXEL_ID, toMetaContentId, type MetaRelayedEventName } from "@/config/meta";
 
 declare global {
   interface Window {
@@ -41,11 +41,13 @@ function roundCurrency(value: number) {
 function withPriceData(params: StandardEventParams) {
   const quantity = params.num_items ?? 1;
   const value = roundCurrency(params.value);
+  const contentIds = params.content_ids.map(toMetaContentId);
   return {
     ...params,
+    content_ids: contentIds,
     value,
     num_items: quantity,
-    contents: params.content_ids.map((id) => ({
+    contents: contentIds.map((id) => ({
       id,
       quantity,
       item_price: roundCurrency(value / quantity),

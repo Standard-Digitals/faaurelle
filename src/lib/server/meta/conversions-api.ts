@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { META_PIXEL_ID } from "@/config/meta";
+import { META_PIXEL_ID, toMetaContentId } from "@/config/meta";
 import { prisma } from "@/lib/server/db/prisma";
 
 const GRAPH_API_VERSION = "v23.0";
@@ -139,6 +139,7 @@ export async function sendMetaPurchase(
     const siteUrl = process.env.SITE_URL?.replace(/\/$/, "");
     const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
     const value = order.totalPaisa / 100;
+    const contentId = toMetaContentId(order.productCode);
     await sendMetaServerEvent({
       eventName: "Purchase",
       eventId: order.customerReference,
@@ -158,10 +159,10 @@ export async function sendMetaPurchase(
         currency: order.currency,
         value,
         content_type: "product",
-        content_ids: [order.productCode],
+        content_ids: [contentId],
         content_name: order.productName,
         num_items: order.quantity,
-        contents: [{ id: order.productCode, quantity: order.quantity, item_price: order.unitAmountPaisa / 100 }],
+        contents: [{ id: contentId, quantity: order.quantity, item_price: order.unitAmountPaisa / 100 }],
         order_id: order.customerReference,
       },
     });
