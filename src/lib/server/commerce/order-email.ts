@@ -70,7 +70,7 @@ export type OrderEmailResult =
   | Readonly<{ status: "already-sent" | "in-progress" | "ineligible" }>
   | Readonly<{ status: "failed" }>;
 
-function escapeHtml(value: string) {
+export function escapeHtml(value: string) {
   return value.replace(
     /[&<>'"]/g,
     (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character] ?? character,
@@ -104,6 +104,11 @@ function configuration(environment: OrderEmailEnvironment) {
       requireTLS: port !== 465,
     },
   };
+}
+
+// Shared with the checkout attempt emails, which go to the same owner inbox.
+export function loadMailConfiguration() {
+  return configuration(runtimeEnvironment());
 }
 
 function runtimeEnvironment(): OrderEmailEnvironment {

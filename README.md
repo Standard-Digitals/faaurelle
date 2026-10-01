@@ -79,6 +79,26 @@ SUBSCRIPTION_TO_EMAIL=<subscription-recipient>
 CONTACT_TO_EMAIL=<contact-recipient>
 
 META_CAPI_ACCESS_TOKEN=<events-manager-conversions-api-token>
+
+CRON_SECRET=<random-24+-characters>
+ADMIN_EXPORT_KEY=<random-24+-characters>
+```
+
+### Checkout attempts
+
+Every customer who fills in checkout details and runs the delivery check is
+saved in `CheckoutAttempt` (one row per customer per IST day), whether or not
+they pay. The owner inbox (`SUBSCRIPTION_TO_EMAIL`) gets:
+
+- a "Checkout started" email the first time each customer checks out that day;
+- a daily summary around 09:00 IST (Vercel Cron, `vercel.json`) listing who did
+  not complete their order, with the list attached as a CSV;
+- the existing "New order received" email for paid orders.
+
+Download every saved attempt as a spreadsheet (dates are IST, both optional):
+
+```text
+https://www.faaurelle.com/api/admin/checkout-attempts/?key=<ADMIN_EXPORT_KEY>&from=2026-10-01&to=2026-10-31
 ```
 
 Captured orders send two separate branded messages: an order confirmation to

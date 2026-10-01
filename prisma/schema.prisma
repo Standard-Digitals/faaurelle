@@ -103,9 +103,50 @@ model Order {
   payments          Payment[]
   shipment          Shipment?
   couponRedemption  CouponRedemption?
+  checkoutAttempts  CheckoutAttempt[]
 
   @@index([customerEmail])
   @@index([createdAt])
+}
+
+enum CheckoutDeliveryCheck {
+  SERVICEABLE
+  NOT_SERVICEABLE
+  CHECK_FAILED
+}
+
+// One row per customer per day (IST) who filled in checkout details and ran
+// the delivery check, whether or not they went on to pay. orderId points at
+// the latest order they started, so outcomes come from the Order itself.
+model CheckoutAttempt {
+  id                String                @id @default(uuid()) @db.Uuid
+  dedupeKey         String                @unique
+  productCode       String
+  customerName      String
+  customerEmail     String
+  customerPhone     String
+  addressLine1      String
+  addressLine2      String?
+  city              String
+  state             String
+  postalCode        String
+  countryCode       String                @default("IN")
+  deliveryCheck     CheckoutDeliveryCheck
+  detailsCheckCount Int                   @default(1)
+  orderId           String?               @db.Uuid
+  firstSeenAt       DateTime              @default(now())
+  lastSeenAt        DateTime              @default(now())
+  ownerAlertSentAt  DateTime?
+  digestSentAt      DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  order             Order?                @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([firstSeenAt])
+  @@index([digestSentAt])
+  @@index([customerEmail])
+  @@index([customerPhone])
+  @@index([orderId])
 }
 
 model CouponRedemption {
