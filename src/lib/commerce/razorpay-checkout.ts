@@ -4,6 +4,10 @@ export type RazorpaySuccessResponse = Readonly<{
   razorpay_signature: string;
 }>;
 
+export type RazorpayFailureResponse = Readonly<{
+  error?: Readonly<{ description?: string; reason?: string; source?: string; step?: string }>;
+}>;
+
 export type RazorpayCheckoutOptions = Readonly<{
   key: string;
   amount: number;
@@ -18,7 +22,7 @@ export type RazorpayCheckoutOptions = Readonly<{
 
 type RazorpayInstance = {
   open(): void;
-  on(event: "payment.failed", handler: () => void): void;
+  on(event: "payment.failed", handler: (response: RazorpayFailureResponse) => void): void;
 };
 
 declare global {

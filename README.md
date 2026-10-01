@@ -77,6 +77,8 @@ SMTP_PASS=<smtp-password>
 SMTP_FROM=<authenticated-from-address>
 SUBSCRIPTION_TO_EMAIL=<subscription-recipient>
 CONTACT_TO_EMAIL=<contact-recipient>
+
+META_CAPI_ACCESS_TOKEN=<events-manager-conversions-api-token>
 ```
 
 Captured orders send two separate branded messages: an order confirmation to

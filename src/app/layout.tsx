@@ -3,10 +3,10 @@ import { Suspense } from "react";
 import { Raleway, Roboto } from "next/font/google";
 import Script from "next/script";
 import { brand } from "@/config/brand";
+import { META_PIXEL_ID } from "@/config/meta";
 import { PixelRouteTracker } from "@/lib/analytics/PixelRouteTracker";
 import "./globals.css";
 
-const META_PIXEL_ID = "2169167907337885";
 const GOOGLE_TAG_ID = "G-2PWGFQG1SB";
 
 const roboto = Roboto({

@@ -21,7 +21,7 @@ import {
   type CheckoutServiceabilityState,
 } from "@/lib/commerce/serviceability-ui";
 import { loadRazorpayCheckout } from "@/lib/commerce/razorpay-checkout";
-import { trackAddPaymentInfo } from "@/lib/analytics/meta-pixel";
+import { setAdvancedMatching, trackAddPaymentInfo } from "@/lib/analytics/meta-pixel";
 import type { RazorpaySuccessResponse } from "@/lib/commerce/razorpay-checkout";
 import {
   CONFIRMATION_RECOVERY_KEY,
@@ -327,6 +327,14 @@ export function CheckoutForm({
 
         setSubmissionState("opening-payment");
         setFormMessage("Opening secure Razorpay Checkout…");
+        setAdvancedMatching({
+          email: clientResult.data.email,
+          phone: clientResult.data.mobileNumber,
+          fullName: clientResult.data.fullName,
+          city: clientResult.data.city,
+          state: clientResult.data.state,
+          pincode: clientResult.data.pincode,
+        });
         trackAddPaymentInfo({
           content_ids: [productCode],
           content_name: orderResult.checkout.description,
@@ -370,9 +378,12 @@ export function CheckoutForm({
             },
           },
         });
-        checkout.on("payment.failed", () => {
+        checkout.on("payment.failed", (response) => {
+          const reason = response?.error?.description?.trim();
           setSubmissionState("payment-failed");
-          setFormMessage("The payment attempt failed. No payment has been confirmed; you can try again.");
+          setFormMessage(
+            `${reason ? `${reason.replace(/\.?$/, ".")} ` : "The payment attempt failed. "}No payment has been confirmed. Please try again with a different UPI app or a card.`,
+          );
         });
         setProgressDialogOpen(false);
         checkout.open();

@@ -6,6 +6,7 @@ import { RazorpayOrderError } from "@/lib/server/razorpay/types";
 import { PaymentIntegrityError, reconcileRazorpayPayment } from "./payment-service";
 import { fulfilPaidOrder, type FulfilmentResult } from "./fulfilment-service";
 import { sendOrderCompletionEmail } from "./order-email";
+import { sendMetaPurchase } from "@/lib/server/meta/conversions-api";
 
 const SUPPORTED_EVENTS = new Set(["payment.captured", "payment.failed", "order.paid"]);
 const FULFILMENT_EVENT = "payment.captured";
@@ -38,6 +39,7 @@ type Dependencies = Readonly<{
   reconcile?: typeof reconcileRazorpayPayment;
   fulfil?: typeof fulfilPaidOrder;
   notify?: typeof sendOrderCompletionEmail;
+  trackPurchase?: typeof sendMetaPurchase;
   now?: () => Date;
 }>;
 
@@ -206,6 +208,9 @@ export async function processRazorpayWebhook(
             ...safeCause(error),
           });
         }
+        // Covers customers whose browser closed before verification (common
+        // with UPI app hand-offs); Meta deduplicates on the order reference.
+        await (dependencies.trackPurchase ?? sendMetaPurchase)({ id: order.id });
       }
       if (fulfilment.status === "pending") {
         logWebhook(diagnosticId, processingStage, eventId, signal, {

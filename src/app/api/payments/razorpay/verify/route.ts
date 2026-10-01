@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import {
   verifyCheckoutPayment,
   type PaymentVerificationInput,
 } from "@/lib/server/commerce/payment-verification";
+import { readMetaBrowserContext, sendMetaPurchase } from "@/lib/server/meta/conversions-api";
 
 const MAX_BODY_BYTES = 4_096;
 
@@ -25,7 +26,14 @@ export async function POST(request: Request) {
 
   try {
     const result = await verifyCheckoutPayment(input);
-    if (result.success) return NextResponse.json(result);
+    if (result.success) {
+      if (result.payment.status === "captured") {
+        const publicToken = input.publicOrderToken;
+        const browser = readMetaBrowserContext(request);
+        after(() => sendMetaPurchase({ publicToken }, browser));
+      }
+      return NextResponse.json(result);
+    }
     const status = result.kind === "not_found" ? 404 : result.retryable ? 503 : 409;
     return NextResponse.json(result, { status });
   } catch {
