@@ -266,6 +266,11 @@ export function smoothStep(progress: number) {
   return value * value * (3 - 2 * value);
 }
 
+export function easeOutStepBetween(progress: number, range: ProgressRange) {
+  const value = progressBetween(progress, range[0], range[1]);
+  return 1 - (1 - value) ** 3;
+}
+
 export function smoothStepBetween(progress: number, range: ProgressRange) {
   return smoothStep(progressBetween(progress, range[0], range[1]));
 }
@@ -286,9 +291,8 @@ export function enterExitOpacity(
 }
 
 export const heroChapterTiming = {
-  openingHold: [0, 0.025],
-  rearFacingTurn: [0.025, 0.12],
-  frontFacingSettle: [0.12, 0.26],
+  productTurn: [0, 0.22],
+  frontFacingSettle: [0.02, 0.24],
   chapterTwoSettle: [0.46, 1],
   scrollCueExit: [0.04, 0.12],
 } as const satisfies Record<string, ProgressRange | number>;

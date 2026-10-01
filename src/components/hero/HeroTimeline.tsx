@@ -16,6 +16,7 @@ import {
 } from "@/lib/hero/chapter-two-layout";
 import {
   botanicalEssenceTiming,
+  easeOutStepBetween,
   editorialProductChapterTiming,
   getHeroActiveChapterIndex,
   getHeroChapterProgress,
@@ -50,7 +51,6 @@ export type HeroTimelineObjects = {
 };
 
 const productFadeColor = new THREE.Color("#ffffff");
-const rearFacingProductRotationY = Math.PI;
 const completedFrontProductRotationY = Math.PI * 2;
 const editorialReferenceViewports: Record<
   HeroResponsivePresetName,
@@ -90,19 +90,13 @@ function resolveChapterThreeEditorialPosition(
 function applyOpeningRotation(
   object: THREE.Object3D,
   openingRotation: readonly [number, number, number],
-  rearFacingProgress: number,
-  frontFacingProgress: number,
+  turnProgress: number,
 ) {
-  const rearFacingY = THREE.MathUtils.lerp(
-    openingRotation[1],
-    rearFacingProductRotationY,
-    rearFacingProgress,
-  );
   setHeroProductRoll(
     object,
-    THREE.MathUtils.lerp(openingRotation[0], 0, frontFacingProgress),
-    THREE.MathUtils.lerp(rearFacingY, completedFrontProductRotationY, frontFacingProgress),
-    THREE.MathUtils.lerp(openingRotation[2], 0, frontFacingProgress),
+    THREE.MathUtils.lerp(openingRotation[0], 0, turnProgress),
+    THREE.MathUtils.lerp(openingRotation[1], completedFrontProductRotationY, turnProgress),
+    THREE.MathUtils.lerp(openingRotation[2], 0, turnProgress),
   );
 }
 
@@ -171,7 +165,7 @@ export function useHeroTimeline({
       preset,
     );
     const heroProgress = getHeroChapterProgress(progressRef.current, "hero", experienceMode);
-    const rearFacing = smoothStepBetween(heroProgress, heroChapterTiming.rearFacingTurn);
+    const productTurn = easeOutStepBetween(heroProgress, heroChapterTiming.productTurn);
     const frontFacing = smoothStepBetween(heroProgress, heroChapterTiming.frontFacingSettle);
     const chapterTwoSettle = smoothStepBetween(heroProgress, heroChapterTiming.chapterTwoSettle);
     const openingPosition = responsiveChapterOneLayout?.openingPosition ?? preset.openingPosition;
@@ -197,7 +191,7 @@ export function useHeroTimeline({
           chapterTwoSettle,
         ),
       );
-      applyOpeningRotation(objects.product, preset.openingRotation, rearFacing, frontFacing);
+      applyOpeningRotation(objects.product, preset.openingRotation, productTurn);
       objects.product.scale.setScalar(
         THREE.MathUtils.lerp(
           THREE.MathUtils.lerp(openingScale, settledScale, frontFacing),
@@ -330,7 +324,7 @@ export function useHeroTimeline({
               presetName,
               preset,
             );
-      const rearFacing = smoothStepBetween(heroProgress, heroChapterTiming.rearFacingTurn);
+      const productTurn = easeOutStepBetween(heroProgress, heroChapterTiming.productTurn);
       const frontFacing = smoothStepBetween(heroProgress, heroChapterTiming.frontFacingSettle);
       const chapterTwoSettle = smoothStepBetween(heroProgress, heroChapterTiming.chapterTwoSettle);
       const openingPosition = responsiveChapterOneLayout?.openingPosition ?? preset.openingPosition;
@@ -368,7 +362,7 @@ export function useHeroTimeline({
 
       objects.product?.position.set(...productPosition);
       if (objects.product) {
-        applyOpeningRotation(objects.product, preset.openingRotation, rearFacing, frontFacing);
+        applyOpeningRotation(objects.product, preset.openingRotation, productTurn);
       }
       objects.product?.scale.setScalar(productScale);
       setProductOpacity(1);
@@ -598,7 +592,7 @@ export function useHeroTimeline({
       ? null
       : new Lenis({
           duration: 0.72,
-          lerp: 0.18,
+          lerp: 0.26,
           smoothWheel: true,
         });
     const updateLenis = (time: number) => {
