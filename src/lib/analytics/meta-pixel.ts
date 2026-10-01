@@ -26,7 +26,7 @@ export type MetaAdvancedMatching = Readonly<{
   pincode: string;
 }>;
 
-const RELAY_PATH = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/meta/events`;
+const RELAY_PATH = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/meta/events/`;
 
 function hasPixel() {
   return typeof window !== "undefined" && typeof window.fbq === "function";
