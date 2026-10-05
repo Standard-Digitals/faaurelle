@@ -11,15 +11,16 @@ function processEmbeds() {
   instagram?.Embeds?.process();
 }
 
-export function InstagramSection() {
+export function InstagramSection({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2" }) {
   if (!ugcReels.length) return null;
+  const Heading = headingLevel;
 
   return (
     <section className={styles.section} aria-labelledby="instagram-title">
       <div className={styles.inner}>
         <header className={styles.header}>
           <p className={styles.eyebrow}>The Àurelle Community</p>
-          <h2 id="instagram-title">Seen on Instagram</h2>
+          <Heading id="instagram-title">Seen on Instagram</Heading>
         </header>
         <ul className={styles.grid} data-count={ugcReels.length} aria-label="FA ÀURELLE Reel collection">
           {ugcReels.map((reel, index) => (

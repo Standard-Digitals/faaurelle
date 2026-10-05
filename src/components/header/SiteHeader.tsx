@@ -16,6 +16,7 @@ import {
   trackOrderLink,
   navigationAccessibility,
   primaryNavigationLinks,
+  testimonialsLink,
 } from "@/config/navigation";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -169,6 +170,7 @@ export function SiteHeader() {
 
           <div className={styles.rightCluster}>
             <nav className={styles.secondaryNavigation} aria-label={navigationAccessibility.secondary}>
+              <a href={homeAnchor(testimonialsLink.href)}>{testimonialsLink.label}</a>
               <a href={homeAnchor(trackOrderLink.href)}>{trackOrderLink.label}</a>
               <a href={`${basePath}/contact`}>{customerCareLabels.contact}</a>
               <a href={`${basePath}/faq`}>{customerCareLabels.faq}</a>
@@ -214,18 +216,18 @@ export function SiteHeader() {
           </div>
 
           <nav className={styles.panelNavigation} aria-label={navigationAccessibility.mobile}>
-            {[...primaryNavigationLinks, trackOrderLink].map((link, index) => (
+            {[...primaryNavigationLinks, testimonialsLink, trackOrderLink].map((link, index) => (
               <a key={link.href} href={homeAnchor(link.href)} onClick={closeMenu}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 {link.label}
               </a>
             ))}
             <a href={`${basePath}/contact`} onClick={closeMenu}>
-              <span>05</span>
+              <span>{String(primaryNavigationLinks.length + 3).padStart(2, "0")}</span>
               {customerCareLabels.contact}
             </a>
             <a href={`${basePath}/faq`} onClick={closeMenu}>
-              <span>06</span>
+              <span>{String(primaryNavigationLinks.length + 4).padStart(2, "0")}</span>
               {customerCareLabels.faq}
             </a>
           </nav>

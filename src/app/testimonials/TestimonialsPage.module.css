@@ -1,0 +1,7 @@
+.page {
+  padding-top: calc(var(--site-header-total-height) + clamp(2rem, 5vw, 4rem));
+  overflow: hidden;
+  background: #fff;
+  color: #17130f;
+  font-family: var(--font-roboto-family);
+}

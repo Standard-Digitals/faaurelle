@@ -25,7 +25,7 @@
   text-transform: uppercase;
 }
 
-.header h2 {
+.header :is(h1, h2) {
   margin: 0;
   font-family: var(--font-raleway-family);
   font-size: clamp(2.45rem, 3.8vw, 4.3rem);
@@ -91,5 +91,5 @@
 }
 
 @media (max-width: 540px) {
-  .header h2 { font-size: clamp(2rem, 9vw, 3rem); }
+  .header :is(h1, h2) { font-size: clamp(2rem, 9vw, 3rem); }
 }

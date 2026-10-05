@@ -4,12 +4,19 @@ export const primaryNavigationLinks = [
   { label: "The Product", href: "product" },
 ] as const;
 
+// Sits with the right-hand links on desktop (the left side has no room for a
+// fourth link beside the logo) and after The Product in the mobile menu.
+export const testimonialsLink = {
+  label: "Testimonials",
+  href: "testimonials",
+} as const;
+
 export const trackOrderLink = {
   label: "Track Order",
   href: "track-order",
 } as const;
 
-export const sharedNavigationLinks = [...primaryNavigationLinks, trackOrderLink] as const;
+export const sharedNavigationLinks = [...primaryNavigationLinks, testimonialsLink, trackOrderLink] as const;
 
 export const customerCareLabels = {
   heading: "Customer care",
