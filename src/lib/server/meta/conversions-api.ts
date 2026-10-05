@@ -135,7 +135,8 @@ export async function sendMetaPurchase(
   if (!process.env.META_CAPI_ACCESS_TOKEN?.trim()) return;
   try {
     const order = await prisma.order.findUnique({ where });
-    if (!order || order.paymentStatus !== "CAPTURED") return;
+    // Free (100%-off coupon) orders are not sales, so Meta never sees them.
+    if (!order || order.paymentStatus !== "CAPTURED" || order.totalPaisa <= 0) return;
     const siteUrl = process.env.SITE_URL?.replace(/\/$/, "");
     const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
     const value = order.totalPaisa / 100;

@@ -13,6 +13,15 @@ export function CheckoutExperience({ productCode, summary }: { productCode: stri
     : summary;
 
   useEffect(() => {
+    // Once per browser session, so refreshing or returning to checkout does
+    // not count as a new checkout.
+    const trackedKey = `fa_aurelle_initiate_checkout_${productCode}`;
+    try {
+      if (window.sessionStorage.getItem(trackedKey)) return;
+      window.sessionStorage.setItem(trackedKey, "1");
+    } catch {
+      // Storage can be unavailable (private mode); track anyway.
+    }
     trackInitiateCheckout({
       content_ids: [productCode],
       content_name: summary.productName,

@@ -30,6 +30,9 @@ export function ConfirmationArrival({ token, purchase }: { token: string; purcha
   }, [token]);
 
   useEffect(() => {
+    // A 100%-off coupon order is a giveaway, not a sale; reporting it as a
+    // Purchase inflates ad results and trains Meta on non-buyers.
+    if (purchase.totalPaisa <= 0) return;
     const trackedKey = `${PURCHASE_TRACKED_KEY_PREFIX}${token}`;
     if (window.sessionStorage.getItem(trackedKey)) return;
     trackPurchase(
