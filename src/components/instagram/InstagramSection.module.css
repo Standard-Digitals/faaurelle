@@ -35,32 +35,78 @@
   text-wrap: balance;
 }
 
-.grid {
+/* One row of Reels that scrolls sideways: 3 per view on desktop, 2 on
+   tablet, 1 on phones. Fewer Reels than a view are centred instead. */
+.track {
   --reel-gap: clamp(1rem, 2vw, 1.5rem);
+  --reels-per-view: 3;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
   align-items: flex-start;
   gap: var(--reel-gap);
   max-width: 70rem;
   margin: 0 auto;
-  padding: 0;
+  padding: 0 0 0.25rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
   list-style: none;
 }
 
-.card { min-width: 0; flex: 0 0 calc((100% - 2 * var(--reel-gap)) / 3); }
+.track::-webkit-scrollbar { display: none; }
 
-/* Center the entire group explicitly when fewer than three Reels exist. */
-.grid[data-count="1"] {
-  max-width: calc((70rem - 2 * var(--reel-gap)) / 3);
+.track[data-count="1"],
+.track[data-count="2"] { justify-content: center; }
+
+.card {
+  min-width: 0;
+  flex: 0 0 calc((100% - (var(--reels-per-view) - 1) * var(--reel-gap)) / var(--reels-per-view));
+  scroll-snap-align: start;
 }
 
-.grid[data-count="2"] {
-  max-width: calc((70rem - 2 * var(--reel-gap)) / 3 * 2 + var(--reel-gap));
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  max-width: 70rem;
+  margin: 1rem auto 0;
 }
 
-.grid[data-count="1"] > .card { flex-basis: 100%; }
-.grid[data-count="2"] > .card { flex-basis: calc((100% - var(--reel-gap)) / 2); }
+.controls button {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid rgb(189 140 53 / 0.5);
+  border-radius: 50%;
+  background: #fff;
+  color: #8c611f;
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease, opacity 160ms ease;
+}
+
+.controls button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.controls button:focus-visible {
+  outline: 2px solid #8c611f;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .controls button:not(:disabled):hover {
+    background: #bd8c35;
+    color: #fff;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controls button { transition: none; }
+}
 
 /* Only size the outer embed; Instagram controls its content and calculated height. */
 .card :global(.instagram-media) {
@@ -80,14 +126,13 @@
 .embed a:focus-visible { outline: 2px solid #bd8c35; outline-offset: 4px; }
 
 @media (max-width: 1100px) {
-  .grid { max-width: 46rem; }
-  .card { flex-basis: calc((100% - var(--reel-gap)) / 2); }
+  .track { --reels-per-view: 2; max-width: 46rem; }
+  .controls { max-width: 46rem; }
 }
 
 @media (max-width: 640px) {
   .inner { padding-inline: 1.25rem; }
-  .card,
-  .grid[data-count="2"] > .card { flex-basis: 100%; }
+  .track { --reels-per-view: 1; }
 }
 
 @media (max-width: 540px) {
