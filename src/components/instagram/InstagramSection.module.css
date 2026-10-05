@@ -7,7 +7,7 @@
 .inner {
   max-width: var(--size-content-max);
   margin: auto;
-  padding: var(--product-section-padding) var(--space-layout-x);
+  padding: var(--product-section-padding, clamp(2.5rem, 4vw, 4rem)) var(--space-layout-x);
 }
 
 .header {
