@@ -58,6 +58,15 @@
 .track[data-count="1"],
 .track[data-count="2"] { justify-content: center; }
 
+/* Grid layout: the same card widths, wrapping into centred rows. */
+.grid {
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0;
+  overflow: visible;
+  scroll-snap-type: none;
+}
+
 .card {
   min-width: 0;
   flex: 0 0 calc((100% - (var(--reels-per-view) - 1) * var(--reel-gap)) / var(--reels-per-view));

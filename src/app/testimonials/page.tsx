@@ -18,7 +18,7 @@ export default function TestimonialsPage() {
     <>
       <SiteHeader />
       <main id="main-content" className={styles.page}>
-        <InstagramSection headingLevel="h1" />
+        <InstagramSection headingLevel="h1" layout="grid" />
       </main>
       <InnerCircleSection />
       <TrustDetailsSection />

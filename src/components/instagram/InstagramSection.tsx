@@ -12,7 +12,15 @@ function processEmbeds() {
   instagram?.Embeds?.process();
 }
 
-export function InstagramSection({ headingLevel = "h2" }: { headingLevel?: "h1" | "h2" }) {
+// "slider": one sideways row with previous/next buttons (product page).
+// "grid": every Reel in wrapping rows (testimonials page).
+export function InstagramSection({
+  headingLevel = "h2",
+  layout = "slider",
+}: {
+  headingLevel?: "h1" | "h2";
+  layout?: "slider" | "grid";
+}) {
   const trackRef = useRef<HTMLUListElement>(null);
   const [canScroll, setCanScroll] = useState({ back: false, forward: false });
 
@@ -49,7 +57,7 @@ export function InstagramSection({ headingLevel = "h2" }: { headingLevel?: "h1" 
 
   if (!ugcReels.length) return null;
   const Heading = headingLevel;
-  const showControls = canScroll.back || canScroll.forward;
+  const showControls = layout === "slider" && (canScroll.back || canScroll.forward);
 
   return (
     <section className={styles.section} aria-labelledby="instagram-title">
@@ -60,7 +68,7 @@ export function InstagramSection({ headingLevel = "h2" }: { headingLevel?: "h1" 
         </header>
         <ul
           ref={trackRef}
-          className={styles.track}
+          className={layout === "grid" ? `${styles.track} ${styles.grid}` : styles.track}
           data-count={ugcReels.length}
           aria-label="FA ÀURELLE Reel collection"
         >
