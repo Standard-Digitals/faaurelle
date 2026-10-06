@@ -6,7 +6,14 @@ import * as THREE from "three";
 import { HeroDebugControls } from "@/components/hero/HeroDebugControls";
 import { HeroLoader } from "@/components/hero/HeroLoader";
 import { HeroProductModel } from "@/components/hero/HeroProductModel";
-import type { HeroExperienceMode } from "@/lib/responsive";
+import { isPhoneHeroMode, type HeroExperienceMode } from "@/lib/responsive";
+
+// Touch devices (and in-app browsers such as Instagram's) get far less GPU memory
+// than desktop, and the transmissive glass renders the scene twice per frame.
+// Render them at a lighter budget so the browser does not kill the page.
+function shouldUseLiteRenderer(experienceMode: HeroExperienceMode) {
+  return isPhoneHeroMode(experienceMode) || window.matchMedia("(pointer: coarse)").matches;
+}
 
 class HeroSceneErrorBoundary extends Component<
   { children: ReactNode; onError: (error: Error) => void },
@@ -54,6 +61,7 @@ export function HeroScene({
   onActiveChapterChange: (index: number) => void;
 }) {
   const [modelReady, setModelReady] = useState(false);
+  const [liteRenderer] = useState(() => shouldUseLiteRenderer(experienceMode));
   const [debugState, setDebugState] = useState("Initializing scene");
   // Keep the poster over the canvas until the canvas has faded in underneath it.
   const [posterHeld, setPosterHeld] = useState(true);
@@ -96,9 +104,9 @@ export function HeroScene({
             "transition-opacity duration-300",
             modelReady ? "opacity-100" : "opacity-0",
           ].join(" ")}
-          shadows
+          shadows={!liteRenderer}
           frameloop="demand"
-          dpr={[1, 1.65]}
+          dpr={liteRenderer ? [1, 1.25] : [1, 1.65]}
           gl={{
             antialias: true,
             alpha: false,
@@ -107,6 +115,9 @@ export function HeroScene({
           onCreated={({ gl, scene }) => {
             gl.domElement.addEventListener("webglcontextlost", handleError, { once: true });
             gl.setClearColor("#ffffff", 1);
+            if (liteRenderer) {
+              gl.transmissionResolutionScale = 0.5;
+            }
             scene.background = new THREE.Color("#ffffff");
           }}
         >

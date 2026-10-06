@@ -40,7 +40,7 @@ export type HeroResponsivePreset = {
 
 const heroBasePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-export const heroModelPath = `${heroBasePath}/models/hero/fa-aurelle-new-bottle-runtime-v11.glb`;
+export const heroModelPath = `${heroBasePath}/models/hero/fa-aurelle-new-bottle-runtime-v12.glb`;
 // Self-hosted copy of three's Draco decoder, so decoding does not wait on a
 // second origin after the model arrives.
 export const heroDracoDecoderPath = `${heroBasePath}/draco/`;
