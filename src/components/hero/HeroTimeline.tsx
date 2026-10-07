@@ -7,6 +7,7 @@ import Lenis from "lenis";
 import * as THREE from "three";
 import {
   resolveChapterOneLayout,
+  resolveCopyClearanceShift,
   type ChapterOneLayout,
 } from "@/lib/hero/chapter-one-layout";
 import {
@@ -87,6 +88,19 @@ function resolveChapterThreeEditorialPosition(
   ];
 }
 
+// Bottom of the opening copy, measured from the top of the 3D canvas. Both share the
+// opening-stack translate on phones, so the difference is stable while scrolling.
+function measureHeroCopyBottom(scrollRootClassName: string) {
+  const root = document.querySelector(`.${scrollRootClassName}`);
+  const copy = root?.querySelector(".hero-copy-intro");
+  const sceneLayer = root?.querySelector(".hero-scene-layer");
+  if (!copy || !sceneLayer) {
+    return null;
+  }
+
+  return copy.getBoundingClientRect().bottom - sceneLayer.getBoundingClientRect().top;
+}
+
 function applyOpeningRotation(
   object: THREE.Object3D,
   openingRotation: readonly [number, number, number],
@@ -121,6 +135,7 @@ export function useHeroTimeline({
 }) {
   const progressRef = useRef(0);
   const presetRef = useRef<HeroResponsivePresetName>("desktopLandscape");
+  const copyBottomRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const fpsRef = useRef(0);
   const chapterThreeBoundsRef = useRef(new THREE.Box3());
@@ -148,6 +163,7 @@ export function useHeroTimeline({
   const applyResponsivePreset = useCallback(() => {
     const presetName = resolveHeroResponsivePreset();
     presetRef.current = presetName;
+    copyBottomRef.current = measureHeroCopyBottom(scrollRootClassName);
     const preset = heroResponsivePresets[presetName];
     const responsiveChapterOneLayout =
       presetName === "desktopLandscape"
@@ -157,6 +173,7 @@ export function useHeroTimeline({
             window.innerHeight,
             presetName,
             preset,
+            copyBottomRef.current,
           );
     const chapterTwoLayout = resolveChapterTwoLayout(
       window.innerWidth,
@@ -216,7 +233,7 @@ export function useHeroTimeline({
       fov: THREE.MathUtils.lerp(openingCamera.fov, introCamera.fov, frontFacing),
     };
     applyCamera(settledCamera);
-  }, [applyCamera, experienceMode, objects]);
+  }, [applyCamera, experienceMode, objects, scrollRootClassName]);
 
   useEffect(() => {
     objects.product?.traverse((object) => {
@@ -323,6 +340,7 @@ export function useHeroTimeline({
               window.innerHeight,
               presetName,
               preset,
+              copyBottomRef.current,
             );
       const productTurn = easeOutStepBetween(heroProgress, heroChapterTiming.productTurn);
       const frontFacing = smoothStepBetween(heroProgress, heroChapterTiming.frontFacingSettle);
@@ -382,22 +400,34 @@ export function useHeroTimeline({
         target: mixHeroVector(openingCamera.target, resolvedIntroCamera.target, frontFacing),
         fov: THREE.MathUtils.lerp(openingCamera.fov, resolvedIntroCamera.fov, frontFacing),
       };
-      return {
-        camera: {
-          label: chapterTwoSettle > 0 ? preset.chapterTwoCamera.label : introCamera.label,
-          position: mixHeroVector(
-            introCamera.position,
-            preset.chapterTwoCamera.position,
-            chapterTwoSettle,
-          ),
-          target: mixHeroVector(
-            introCamera.target,
-            preset.chapterTwoCamera.target,
-            chapterTwoSettle,
-          ),
-          fov: THREE.MathUtils.lerp(introCamera.fov, preset.chapterTwoCamera.fov, chapterTwoSettle),
-        },
+      const camera = {
+        label: chapterTwoSettle > 0 ? preset.chapterTwoCamera.label : introCamera.label,
+        position: mixHeroVector(
+          introCamera.position,
+          preset.chapterTwoCamera.position,
+          chapterTwoSettle,
+        ),
+        target: mixHeroVector(
+          introCamera.target,
+          preset.chapterTwoCamera.target,
+          chapterTwoSettle,
+        ),
+        fov: THREE.MathUtils.lerp(introCamera.fov, preset.chapterTwoCamera.fov, chapterTwoSettle),
       };
+
+      const copyBottom = copyBottomRef.current;
+      if (presetName === "mobilePortrait" && copyBottom != null && objects.product && chapterTwoSettle < 1) {
+        const shift = resolveCopyClearanceShift(
+          window.innerWidth,
+          window.innerHeight,
+          copyBottom,
+          camera,
+          objects.product,
+        );
+        objects.product.position.y += shift * (1 - chapterTwoSettle);
+      }
+
+      return { camera };
     };
 
     const updateBotanicalChapterHandoff = (
@@ -626,8 +656,16 @@ export function useHeroTimeline({
       ScrollTrigger.refresh();
     };
     window.addEventListener("resize", handleResize);
+    // The copy reflows once the web font arrives; refit the bottle to its final height.
+    let disposed = false;
+    void document.fonts?.ready.then(() => {
+      if (!disposed) {
+        handleResize();
+      }
+    });
 
     return () => {
+      disposed = true;
       window.removeEventListener("resize", handleResize);
       timeline.scrollTrigger?.kill();
       timeline.kill();
