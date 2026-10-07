@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/environments/hero/fa-aurelle-serum-studio-v1.hdr",
+        source: "/environments/hero/fa-aurelle-serum-studio-v2.hdr",
         headers: [
           {
             key: "Cache-Control",
