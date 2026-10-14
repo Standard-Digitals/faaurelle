@@ -34,6 +34,7 @@ const coupons = Object.freeze({
   PRIYANKA20: { code: "PRIYANKA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
   MALIKA20: { code: "MALIKA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
   SAMRIDHI20: { code: "SAMRIDHI20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
+  DIVA35: { code: "DIVA35", discountPercent: 35, singleUse: false as const },
   SAHILALI10: { code: "SAHILALI10", discountPercent: 10, singleUse: true as const },
   // Random 10-char codes (not sequential) so one leaked/guessed code can't be
   // used to enumerate the rest — each is only ever handed to one influencer.
