@@ -7,6 +7,8 @@ export const COUPON_DISCOUNT_PERCENT = 20 as const;
 export const INFLUENCER_DISCOUNT_PERCENT = 100 as const;
 // SAHIL20 ends earlier than the rest: valid through 30 Sep 2026 (IST).
 const SAHIL20_EXPIRY_EXCLUSIVE = new Date("2026-09-30T18:30:00.000Z");
+// REENA20 and NEERA20 give 35% off and are valid through 8 Nov 2026 (IST).
+const NOV8_EXPIRY_EXCLUSIVE = new Date("2026-11-08T18:30:00.000Z");
 
 type CouponDefinition = Readonly<{
   code: string;
@@ -35,6 +37,8 @@ const coupons = Object.freeze({
   MALIKA20: { code: "MALIKA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
   SAMRIDHI20: { code: "SAMRIDHI20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
   DIVA35: { code: "DIVA35", discountPercent: 35, singleUse: false as const },
+  REENA20: { code: "REENA20", discountPercent: 35, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
+  NEERA20: { code: "NEERA20", discountPercent: 35, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
   SAHILALI10: { code: "SAHILALI10", discountPercent: 10, singleUse: true as const },
   // Random 10-char codes (not sequential) so one leaked/guessed code can't be
   // used to enumerate the rest — each is only ever handed to one influencer.
