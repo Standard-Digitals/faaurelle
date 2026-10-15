@@ -23,6 +23,66 @@ import {
 import { setHeroProductRoll } from "@/lib/hero/hero-timeline";
 import type { HeroExperienceMode } from "@/lib/responsive";
 
+function collectMaterials(scene: THREE.Object3D) {
+  const materials = new Set<THREE.Material>();
+  scene.traverse((object) => {
+    if (object instanceof THREE.Mesh) {
+      (Array.isArray(object.material) ? object.material : [object.material]).forEach((material) =>
+        materials.add(material),
+      );
+    }
+  });
+  return [...materials];
+}
+
+// Compiles every shader variant the first frame uses without blocking the main thread:
+// the on-screen pass, then the glass transmission pass, which draws into an offscreen
+// linear target without tone mapping and renders double-sided glass back faces only.
+async function precompileHeroShaders(
+  renderer: THREE.WebGLRenderer,
+  scene: THREE.Scene,
+  camera: THREE.Camera,
+) {
+  await renderer.compileAsync(scene, camera);
+
+  const materials = collectMaterials(scene);
+  const doubleSidedGlass = materials.filter(
+    (material) =>
+      material instanceof THREE.MeshPhysicalMaterial &&
+      material.transmission > 0 &&
+      material.side === THREE.DoubleSide,
+  );
+  if (
+    !materials.some(
+      (material) => material instanceof THREE.MeshPhysicalMaterial && material.transmission > 0,
+    )
+  ) {
+    return;
+  }
+
+  const transmissionTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  const previousTarget = renderer.getRenderTarget();
+  doubleSidedGlass.forEach((material) => {
+    material.side = THREE.BackSide;
+  });
+  renderer.setRenderTarget(transmissionTarget);
+  const transmissionPass = renderer.compileAsync(scene, camera);
+  renderer.setRenderTarget(previousTarget);
+  doubleSidedGlass.forEach((material) => {
+    material.side = THREE.DoubleSide;
+  });
+  try {
+    await transmissionPass;
+  } finally {
+    transmissionTarget.dispose();
+    // Each material now points at its offscreen variant; make the next render look its
+    // on-screen program up again (it is cached, so nothing recompiles).
+    materials.forEach((material) => {
+      material.needsUpdate = true;
+    });
+  }
+}
+
 function HeroEnvironment({ onReady }: { onReady: () => void }) {
   // Resolve the HDR before mounting the environment capture portal.
   useEnvironment({ files: heroEnvironmentPath });
@@ -76,25 +136,53 @@ export function HeroProductModel({
   onActiveChapterChange: (index: number) => void;
   onDebug: (state: string) => void;
 }) {
-  const { camera, invalidate } = useThree();
+  const { camera, gl, invalidate, scene } = useThree();
   const initialResponsivePreset = heroResponsivePresets[resolveHeroResponsivePreset()];
   const [product, setProduct] = useState<THREE.Group | null>(null);
   const [productParts, setProductParts] = useState<NewBottleParts | null>(null);
   const [lightSweep, setLightSweep] = useState<THREE.DirectionalLight | null>(null);
   const [pointLight, setPointLight] = useState<THREE.PointLight | null>(null);
   const [environmentReady, setEnvironmentReady] = useState(false);
+  // A ref, not state: the frame requested below can run before React re-renders, and a
+  // stale "not ready" there would end the on-demand frame loop for good.
+  const shadersReadyRef = useRef(false);
 
   const readyFrames = useRef(0);
   const readyNotified = useRef(false);
 
   useEffect(() => {
-    if (productParts && environmentReady) {
-      invalidate();
+    if (!productParts || !environmentReady) {
+      return;
     }
-  }, [environmentReady, invalidate, productParts]);
+
+    // Linking the bottle's physical materials blocks the main thread for seconds on
+    // Windows/ANGLE when it happens inside the first render. Compile them in parallel
+    // while the poster is still showing, and hold rendering until they are linked.
+    let cancelled = false;
+    precompileHeroShaders(gl, scene, camera)
+      .catch(() => undefined)
+      .then(() => {
+        if (cancelled) {
+          return;
+        }
+        shadersReadyRef.current = true;
+        invalidate();
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [camera, environmentReady, gl, invalidate, productParts, scene]);
+
+  // A positive priority hands rendering to this callback, so nothing is drawn (and no
+  // shader is linked synchronously) until the parallel compile above has finished.
+  useFrame(({ gl: renderer, scene: frameScene, camera: frameCamera }) => {
+    if (shadersReadyRef.current) {
+      renderer.render(frameScene, frameCamera);
+    }
+  }, 1);
 
   useFrame(() => {
-    if (!productParts || !environmentReady || readyNotified.current) {
+    if (!productParts || !environmentReady || !shadersReadyRef.current || readyNotified.current) {
       return;
     }
 

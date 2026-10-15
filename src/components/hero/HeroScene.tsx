@@ -104,7 +104,9 @@ export function HeroScene({
             "transition-opacity duration-300",
             modelReady ? "opacity-100" : "opacity-0",
           ].join(" ")}
-          shadows={!liteRenderer}
+          // PCF directly: three.js swaps the deprecated PCFSoftShadowMap for it at render time,
+          // which made the precompiled shaders miss and relink on the first frame.
+          shadows={liteRenderer ? false : "percentage"}
           frameloop="demand"
           dpr={liteRenderer ? [1, 1.25] : [1, 1.65]}
           gl={{

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useHeroDeferredMediaReady } from "@/components/hero/HeroDeferredMedia";
 import {
   externalMoleculeAssetPaths,
   internalMoleculeAssetPaths,
@@ -41,9 +42,9 @@ function smoothStep(value: number) {
 export function ViscousSerumMerge({ progress }: { progress: number }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const mediaReady = useHeroDeferredMediaReady();
   const normalizedProgress = clamp(
-    (progress - sequenceStartProgress) /
-      (viscousSerumSequenceEndProgress - sequenceStartProgress),
+    (progress - sequenceStartProgress) / (viscousSerumSequenceEndProgress - sequenceStartProgress),
   );
   const isComplete = normalizedProgress >= 0.985;
 
@@ -63,7 +64,7 @@ export function ViscousSerumMerge({ progress }: { progress: number }) {
 
   const stageStyle: VisualStyle = {
     "--progress": normalizedProgress.toFixed(4),
-    "--serum-mask": `url("${viscousSerumMaskPath}")`,
+    ...(mediaReady ? { "--serum-mask": `url("${viscousSerumMaskPath}")` } : {}),
   };
   const ambientActive = isComplete && isVisible;
 
@@ -82,7 +83,7 @@ export function ViscousSerumMerge({ progress }: { progress: number }) {
           );
           const moleculeStyle: VisualStyle = { "--absorb": absorb.toFixed(4) };
 
-          return (
+          return mediaReady ? (
             <Image
               key={`${molecule.asset}-${index}`}
               src={externalMoleculeAssetPaths[molecule.asset]}
@@ -94,20 +95,22 @@ export function ViscousSerumMerge({ progress }: { progress: number }) {
               style={moleculeStyle}
               draggable={false}
             />
-          );
+          ) : null;
         })}
       </div>
 
       <div className={styles.serumUnit}>
-        <Image
-          src={viscousSerumAssetPath}
-          alt=""
-          width={1350}
-          height={1165}
-          sizes="(max-width: 767px) 92vw, (max-width: 1100px) 57vw, 46vw"
-          className={styles.serumAsset}
-          draggable={false}
-        />
+        {mediaReady ? (
+          <Image
+            src={viscousSerumAssetPath}
+            alt=""
+            width={1350}
+            height={1165}
+            sizes="(max-width: 767px) 92vw, (max-width: 1100px) 57vw, 46vw"
+            className={styles.serumAsset}
+            draggable={false}
+          />
+        ) : null}
 
         <div className={styles.internalLayer}>
           {internalMolecules.map((assetIndex, index) => {
@@ -117,7 +120,7 @@ export function ViscousSerumMerge({ progress }: { progress: number }) {
             );
             const moleculeStyle: VisualStyle = { "--reveal": reveal.toFixed(4) };
 
-            return (
+            return mediaReady ? (
               <Image
                 key={`${assetIndex}-${index}`}
                 src={internalMoleculeAssetPaths[assetIndex]}
@@ -129,7 +132,7 @@ export function ViscousSerumMerge({ progress }: { progress: number }) {
                 style={moleculeStyle}
                 draggable={false}
               />
-            );
+            ) : null;
           })}
         </div>
       </div>

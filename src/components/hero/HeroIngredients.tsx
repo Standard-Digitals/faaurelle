@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useHeroDeferredMediaReady } from "@/components/hero/HeroDeferredMedia";
 import { heroContent } from "@/config/hero-content";
 import {
   chapterTwoLayoutEventName,
@@ -11,10 +12,7 @@ import {
 } from "@/lib/hero/chapter-two-layout";
 import { botanicalEssenceTiming, smoothStepBetween } from "@/lib/hero/hero-chapters";
 import { quadraticBotanicalPoint } from "@/lib/hero/hero-botanical-paths";
-import {
-  heroResponsivePresets,
-  resolveHeroResponsivePreset,
-} from "@/lib/hero/hero-presets";
+import { heroResponsivePresets, resolveHeroResponsivePreset } from "@/lib/hero/hero-presets";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -77,13 +75,9 @@ function formatLabelOrientation(orientation: ChapterTwoLabelOrientation) {
 
 export function HeroIngredients({ progress }: { progress: number }) {
   const headingRef = useRef<HTMLElement>(null);
+  const mediaReady = useHeroDeferredMediaReady();
   const [layout, setLayout] = useState<ChapterTwoLayout>(() =>
-    resolveChapterTwoLayout(
-      1440,
-      880,
-      "desktopLandscape",
-      heroResponsivePresets.desktopLandscape,
-    ),
+    resolveChapterTwoLayout(1440, 880, "desktopLandscape", heroResponsivePresets.desktopLandscape),
   );
 
   useLayoutEffect(() => {
@@ -200,13 +194,15 @@ export function HeroIngredients({ progress }: { progress: number }) {
               style={style}
             >
               <div className="hero-botanical-ingredient__visual">
-                <Image
-                  src={ingredient.image}
-                  alt=""
-                  fill
-                  sizes="(max-width: 767px) 26vw, (max-width: 1100px) 28vw, 20vw"
-                  className="object-contain"
-                />
+                {mediaReady ? (
+                  <Image
+                    src={ingredient.image}
+                    alt=""
+                    fill
+                    sizes="(max-width: 767px) 26vw, (max-width: 1100px) 28vw, 20vw"
+                    className="object-contain"
+                  />
+                ) : null}
               </div>
               <figcaption>
                 <span>{ingredient.name}</span>

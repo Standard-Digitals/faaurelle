@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useRef, useState, type CSSProperties } from "react";
 import { HeroContent } from "@/components/hero/HeroContent";
+import { HeroDeferredMediaProvider } from "@/components/hero/HeroDeferredMedia";
 import { HeroLoader } from "@/components/hero/HeroLoader";
 import { chapterConfig, getHeroScrollHeightVh, phoneChapterConfig } from "@/lib/hero/hero-chapters";
 import { useHeroExperienceMode } from "@/lib/hero/use-hero-experience-mode";
@@ -38,8 +39,7 @@ export function CinematicHero({
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
   const progressBucketRef = useRef(-1);
   const checkedHeroCapabilities = checkedWebgl && checkedReducedMotion;
-  const showImageFallback =
-    checkedHeroCapabilities && (!webglReady || sceneFailed);
+  const showImageFallback = checkedHeroCapabilities && (!webglReady || sceneFailed);
   const handleProgress = useCallback(
     (nextProgress: number) => {
       const bucket = Math.round(nextProgress * (isPhoneHeroMode(experienceMode) ? 120 : 1000));
@@ -69,7 +69,12 @@ export function CinematicHero({
       data-hero-loading={!sceneReady && !showImageFallback ? "true" : "false"}
       data-hero-renderer={showImageFallback ? "static" : "webgl"}
       style={{
-        minHeight: showImageFallback || reducedMotion ? undefined : `${getHeroScrollHeightVh(experienceMode)}vh`,
+        // Assume motion until the preference is known, so the page below the hero starts
+        // far down and its lazy images are not fetched during the first paint.
+        minHeight:
+          showImageFallback || (checkedReducedMotion && reducedMotion)
+            ? undefined
+            : `${getHeroScrollHeightVh(experienceMode)}vh`,
       }}
     >
       <span
@@ -82,8 +87,16 @@ export function CinematicHero({
         aria-hidden="true"
       />
       <div
-        style={{ "--opening-stack-offset": `${Math.max(0, Math.min(1, (progress - 0.07) / 0.12)) * 65}svh` } as CSSProperties}
-        data-opening-stack={mode === "production" && (showImageFallback || activeChapterIndex === 0) ? "true" : "false"}
+        style={
+          {
+            "--opening-stack-offset": `${Math.max(0, Math.min(1, (progress - 0.07) / 0.12)) * 65}svh`,
+          } as CSSProperties
+        }
+        data-opening-stack={
+          mode === "production" && (showImageFallback || activeChapterIndex === 0)
+            ? "true"
+            : "false"
+        }
         className="hero-viewport viewport-screen sticky top-0 overflow-hidden bg-background-bright"
       >
         <div className="hero-scene-layer absolute inset-0">
@@ -103,14 +116,16 @@ export function CinematicHero({
             />
           )}
         </div>
-        <HeroContent
-          mode={mode}
-          progress={showImageFallback ? 0 : progress}
-          experienceMode={experienceMode}
-          activeChapterIndex={showImageFallback ? 0 : activeChapterIndex}
-          debugMode={debugMode}
-          onToggleDebug={() => setDebugMode((current) => !current)}
-        />
+        <HeroDeferredMediaProvider value={sceneReady || showImageFallback}>
+          <HeroContent
+            mode={mode}
+            progress={showImageFallback ? 0 : progress}
+            experienceMode={experienceMode}
+            activeChapterIndex={showImageFallback ? 0 : activeChapterIndex}
+            debugMode={debugMode}
+            onToggleDebug={() => setDebugMode((current) => !current)}
+          />
+        </HeroDeferredMediaProvider>
       </div>
     </section>
   );
