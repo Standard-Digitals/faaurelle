@@ -3,11 +3,10 @@ import "server-only";
 import { prisma } from "@/lib/server/db/prisma";
 
 export const COUPON_EXPIRY_EXCLUSIVE = new Date("2026-11-30T18:30:00.000Z");
-export const COUPON_DISCOUNT_PERCENT = 20 as const;
+export const COUPON_DISCOUNT_PERCENT = 35 as const;
 export const INFLUENCER_DISCOUNT_PERCENT = 100 as const;
-// SAHIL20 ends earlier than the rest: valid through 30 Sep 2026 (IST).
-const SAHIL20_EXPIRY_EXCLUSIVE = new Date("2026-09-30T18:30:00.000Z");
-// REENA20 and NEERA20 give 35% off and are valid through 8 Nov 2026 (IST).
+// The former 20% codes (and REENA20/NEERA20) give 35% off and are valid through
+// 8 Nov 2026 (IST); their names keep the original "20".
 const NOV8_EXPIRY_EXCLUSIVE = new Date("2026-11-08T18:30:00.000Z");
 
 type CouponDefinition = Readonly<{
@@ -29,13 +28,13 @@ function influencerCoupon(code: string) {
 }
 
 const coupons = Object.freeze({
-  SIMRAN20: { code: "SIMRAN20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
-  SAHIL20: { code: "SAHIL20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: SAHIL20_EXPIRY_EXCLUSIVE },
-  NEW20: { code: "NEW20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
-  SOUMYA20: { code: "SOUMYA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
-  PRIYANKA20: { code: "PRIYANKA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
-  MALIKA20: { code: "MALIKA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
-  SAMRIDHI20: { code: "SAMRIDHI20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const },
+  SIMRAN20: { code: "SIMRAN20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
+  SAHIL20: { code: "SAHIL20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
+  NEW20: { code: "NEW20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
+  SOUMYA20: { code: "SOUMYA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
+  PRIYANKA20: { code: "PRIYANKA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
+  MALIKA20: { code: "MALIKA20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
+  SAMRIDHI20: { code: "SAMRIDHI20", discountPercent: COUPON_DISCOUNT_PERCENT, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
   DIVA35: { code: "DIVA35", discountPercent: 35, singleUse: false as const },
   REENA20: { code: "REENA20", discountPercent: 35, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },
   NEERA20: { code: "NEERA20", discountPercent: 35, singleUse: false as const, expiresBefore: NOV8_EXPIRY_EXCLUSIVE },

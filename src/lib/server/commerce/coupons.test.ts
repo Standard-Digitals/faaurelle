@@ -2,29 +2,31 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 describe("authoritative coupons", () => {
-  it.each(["SIMRAN20", "NEW20"])("accepts %s before expiry", async (code) => {
-    const { getCoupon } = await import("./coupons");
-    expect(getCoupon(` ${code.toLowerCase()} `, new Date("2026-11-30T18:29:59.999Z")))
-      .toMatchObject({ code, discountPercent: 20 });
-  });
+  it.each(["SIMRAN20", "NEW20", "SOUMYA20", "PRIYANKA20", "MALIKA20", "SAMRIDHI20", "SAHIL20"])(
+    "gives 35%% off with %s through 8 Nov 2026 in India",
+    async (code) => {
+      const { getCoupon } = await import("./coupons");
+      expect(getCoupon(` ${code.toLowerCase()} `, new Date("2026-11-08T18:29:59.999Z")))
+        .toMatchObject({ code, discountPercent: 35 });
+      expect(getCoupon(code, new Date("2026-11-08T18:30:00.000Z"))).toBeNull();
+    },
+  );
 
   it("rejects unknown codes and the exact India expiry boundary", async () => {
     const { getCoupon } = await import("./coupons");
     expect(getCoupon("SIMRAN", new Date("2026-01-01T00:00:00Z"))).toBeNull();
-    expect(getCoupon("SIMRAN20", new Date("2026-11-30T18:30:00.000Z"))).toBeNull();
+    expect(getCoupon("DIVA35", new Date("2026-11-30T18:30:00.000Z"))).toBeNull();
   });
 
-  it("expires SAHIL20 after 30 Sep 2026 in India", async () => {
+  it("keeps DIVA35 running after the 8 Nov codes end", async () => {
     const { getCoupon } = await import("./coupons");
-    expect(getCoupon("SAHIL20", new Date("2026-09-30T18:29:59.999Z"))).toMatchObject({ code: "SAHIL20", discountPercent: 20 });
-    expect(getCoupon("SAHIL20", new Date("2026-09-30T18:30:00.000Z"))).toBeNull();
-    expect(getCoupon("SIMRAN20", new Date("2026-09-30T18:30:00.000Z"))).not.toBeNull();
+    expect(getCoupon("DIVA35", new Date("2026-11-08T18:30:00.000Z"))).toMatchObject({ code: "DIVA35", discountPercent: 35 });
   });
 
-  it("reports an expired SAHIL20 as expired, not invalid", async () => {
+  it("reports an expired 8 Nov code as expired, not invalid", async () => {
     const { validateCouponEligibility } = await import("./coupons");
     const redemptions = { findFirst: vi.fn() };
-    await expect(validateCouponEligibility("SAHIL20", { email: "a@example.com", phone: "+919876543210" }, { redemptions, now: new Date("2026-10-01T00:00:00Z") }))
+    await expect(validateCouponEligibility("SAHIL20", { email: "a@example.com", phone: "+919876543210" }, { redemptions, now: new Date("2026-11-09T00:00:00Z") }))
       .resolves.toEqual({ success: false, reason: "expired" });
     expect(redemptions.findFirst).not.toHaveBeenCalled();
   });
