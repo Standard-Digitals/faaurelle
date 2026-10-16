@@ -2,8 +2,8 @@
 // coupon list (src/lib/server/commerce/coupons.ts) stays the authority on
 // whether it is valid for a customer; keep the code and expiry in step.
 export const featuredCoupon = Object.freeze({
-  code: "NEW20",
-  discountPercent: 20,
+  code: "DIVA35",
+  discountPercent: 35,
   // Exclusive end: valid through 30 Nov 2026 (IST).
   endsBefore: new Date("2026-11-30T18:30:00.000Z"),
 });
