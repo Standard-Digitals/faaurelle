@@ -1643,18 +1643,6 @@ h6 {
   }
 }
 
-@media (max-width: 767px) and (orientation: portrait) {
-  [data-hero-loading="true"] .hero-viewport[data-opening-stack="true"] .hero-opening-benefits {
-    top: auto;
-    bottom: 1rem;
-    padding-block: 1rem;
-  }
-
-  [data-hero-loading="true"] .hero-opening-benefit:not(:first-child) {
-    display: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   [data-hero-renderer="webgl"] .hero-viewport[data-opening-stack="true"] {
     overflow-y: auto;
