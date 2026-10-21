@@ -45,4 +45,16 @@ export const ugcReels: readonly UgcReel[] = [
     id: "aurelle-reel-10",
     url: "https://www.instagram.com/p/DeQ4zgLBCX2/",
   },
+  {
+    id: "aurelle-reel-11",
+    url: "https://www.instagram.com/reel/DeTyfDtTSVU/",
+  },
+  {
+    id: "aurelle-reel-12",
+    url: "https://www.instagram.com/reel/DeY1cXKtS_E/",
+  },
+  {
+    id: "aurelle-reel-13",
+    url: "https://www.instagram.com/reel/DeZvnC1h6fC/",
+  },
 ];
