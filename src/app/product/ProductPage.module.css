@@ -67,13 +67,16 @@
 }
 
 .resultVisual {
-  aspect-ratio: 3 / 2;
+  /* Matches the before/after photo so it fills the frame without letterboxing. */
+  aspect-ratio: 916 / 964;
+  width: min(100%, 34rem);
+  justify-self: center;
   overflow: hidden;
   background: #fff;
 }
 
 .resultVisual img {
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .resultHighlights {

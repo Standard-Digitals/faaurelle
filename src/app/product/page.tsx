@@ -98,8 +98,8 @@ export default function ProductPage() {
         <section className={styles.result} aria-labelledby="product-result-title">
           <div className={styles.resultVisual}>
             <Image
-              src="/images/transformations/silky-radiant-effortlessly-you.png"
-              alt="Smooth, glossy hair displaying the FA ÀURELLE finish"
+              src="/images/transformations/before-after-result.jpeg"
+              alt="Hair before and after FA ÀURELLE Hair Elixir: frizzy waves on the left, smooth glossy lengths on the right"
               fill
               sizes="(max-width: 800px) 100vw, 52vw"
             />
