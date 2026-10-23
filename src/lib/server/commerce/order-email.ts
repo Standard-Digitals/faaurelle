@@ -55,6 +55,7 @@ type OrderEmailEnvironment = Readonly<{
   SMTP_PASS?: string;
   SMTP_FROM?: string;
   SUBSCRIPTION_TO_EMAIL?: string;
+  OWNER_COPY_EMAIL?: string;
   SITE_URL?: string;
 }>;
 
@@ -84,6 +85,8 @@ function configuration(environment: OrderEmailEnvironment) {
   const pass = environment.SMTP_PASS?.trim();
   const from = (environment.SMTP_FROM ?? user)?.trim();
   const owner = environment.SUBSCRIPTION_TO_EMAIL?.trim() || from;
+  // Hidden copy of every owner email, so Standard Digitals can confirm delivery.
+  const ownerCopy = environment.OWNER_COPY_EMAIL?.trim() || undefined;
   const siteUrl = environment.SITE_URL?.trim().replace(/\/$/, "");
   if (!host || !Number.isInteger(port) || !user || !pass || !from || !owner || !siteUrl) {
     throw new Error("Order email configuration is incomplete.");
@@ -95,6 +98,7 @@ function configuration(environment: OrderEmailEnvironment) {
   return {
     from,
     owner,
+    ownerCopy,
     siteUrl: parsedSiteUrl.toString().replace(/\/$/, ""),
     transport: {
       host,
@@ -120,6 +124,7 @@ function runtimeEnvironment(): OrderEmailEnvironment {
     SMTP_PASS: process.env.SMTP_PASS,
     SMTP_FROM: process.env.SMTP_FROM,
     SUBSCRIPTION_TO_EMAIL: process.env.SUBSCRIPTION_TO_EMAIL,
+    OWNER_COPY_EMAIL: process.env.OWNER_COPY_EMAIL ?? "digitals.standard@gmail.com",
     SITE_URL: process.env.SITE_URL,
   };
 }
@@ -408,6 +413,7 @@ export async function sendOrderCompletionEmail(
       await transport.sendMail({
         from: `FA ÀURELLE <${config.from}>`,
         to: config.owner,
+        bcc: config.ownerCopy,
         subject: ownerMessage.subject,
         text: ownerMessage.text,
         html: ownerMessage.html,

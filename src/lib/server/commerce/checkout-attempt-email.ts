@@ -102,6 +102,7 @@ export async function sendCheckoutAttemptAlert(attempt: CheckoutAttemptRecord, n
     await nodemailer.createTransport(config.transport).sendMail({
       from: `FA ÀURELLE <${config.from}>`,
       to: config.owner,
+      bcc: config.ownerCopy,
       subject: message.subject,
       text: message.text,
       html: message.html,
@@ -181,6 +182,7 @@ export async function sendCheckoutDigest(now = new Date()) {
   await nodemailer.createTransport(config.transport).sendMail({
     from: `FA ÀURELLE <${config.from}>`,
     to: config.owner,
+    bcc: config.ownerCopy,
     subject: message.subject,
     text: message.text,
     html: message.html,
