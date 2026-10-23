@@ -60,7 +60,9 @@ function layout(eyebrow: string, title: string, body: string) {
 export function buildCheckoutAttemptAlert(attempt: CheckoutAttemptRecord) {
   const product = getAuthoritativeProduct(attempt.productCode);
   const productLine = product ? `${product.name} · ${formatInr(product.unitAmountPaisa)}` : attempt.productCode;
-  const subject = `Checkout started — ${[customerLabel(attempt), attempt.city].filter(Boolean).join(", ")}`;
+  const fromPopup = attempt.source === "PRODUCT_POPUP";
+  const heading = fromPopup ? "New lead from the 35% off popup" : "Checkout started";
+  const subject = `${heading} — ${[customerLabel(attempt), attempt.city].filter(Boolean).join(", ")}`;
   const details: [string, string][] = [
     ["Name", attempt.customerName || NOT_ENTERED],
     ["Mobile", attempt.customerPhone || NOT_ENTERED],
@@ -70,19 +72,21 @@ export function buildCheckoutAttemptAlert(attempt: CheckoutAttemptRecord) {
     ["Product", productLine],
     ["Time", formatIstDateTime(attempt.firstSeenAt)],
   ];
-  const note = attempt.deliveryCheck
+  const note = fromPopup
+    ? "They entered their details in the product page popup to get the discount code and have not checked out yet. A quick call or WhatsApp can help them complete the order. If they pay you will get a separate “New order received” email."
+    : attempt.deliveryCheck
     ? "They have not paid yet. If they complete the payment you will get a separate “New order received” email."
     : "They have started filling in the checkout form and have not finished it yet. Anything they add later appears in tomorrow’s checkout summary, and if they pay you will get a separate “New order received” email.";
   const text = [
-    "A customer started checkout",
+    fromPopup ? "A customer claimed the discount code from the product page popup" : "A customer started checkout",
     "",
     ...details.map(([label, value]) => `${label}: ${value}`),
     "",
     note,
   ].join("\n");
   const html = layout(
-    "Checkout started",
-    `${customerLabel(attempt)} is checking out.`,
+    heading,
+    fromPopup ? `${customerLabel(attempt)} claimed the discount code.` : `${customerLabel(attempt)} is checking out.`,
     `<tr><td style="padding:18px 32px 8px">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e4ddd3;border-bottom:1px solid #e4ddd3">
           ${details.map(([label, value]) => row(label, value)).join("")}

@@ -9,6 +9,7 @@ import { ProductShowcaseSection } from "@/components/product-showcase/ProductSho
 import styles from "./ProductPage.module.css";
 import { SignatureBenefitsCarousel } from "./SignatureBenefitsCarousel";
 import { InstagramSection } from "@/components/instagram/InstagramSection";
+import { ProductOfferPopup } from "./ProductOfferPopup";
 import { ViewContentTracker } from "./ViewContentTracker";
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default function ProductPage() {
     <>
       <SiteHeader />
       <ViewContentTracker />
+      <ProductOfferPopup />
       <main id="main-content" className={styles.page}>
         <ProductShowcaseSection />
         <SectionDivider />

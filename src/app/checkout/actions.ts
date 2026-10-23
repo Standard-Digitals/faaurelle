@@ -10,6 +10,7 @@ import {
   type CreateCheckoutInput,
   type CreateCheckoutResponse,
 } from "@/lib/server/commerce/checkout-order";
+import { featuredCoupon, isFeaturedCouponActive } from "@/config/promotions";
 import { normalizeCheckoutContact, normalizeCheckoutIdentity } from "@/lib/commerce/checkout-validation";
 import { getAuthoritativeProduct } from "@/lib/server/commerce/products";
 import { calculateV1Pricing } from "@/lib/server/commerce/pricing";
@@ -50,6 +51,47 @@ export async function saveCheckoutContact(
       });
     }
   });
+}
+
+export type ClaimProductOfferResponse =
+  | { success: true; code: string }
+  | { success: false; errors: Partial<Record<"fullName" | "email" | "mobileNumber", string>>; message?: string };
+
+// The product page popup: saves the customer's name, email and mobile as a
+// lead (emailed to the owner like a checkout attempt) and reveals the code.
+export async function claimProductOffer(
+  productCode: string,
+  leadKey: string,
+  payload: unknown,
+): Promise<ClaimProductOfferResponse> {
+  if (!isFeaturedCouponActive()) {
+    return { success: false, errors: {}, message: "This offer has ended." };
+  }
+  const key = validCheckoutKey(leadKey);
+  const contact = normalizeCheckoutContact(payload);
+  const errors: Partial<Record<"fullName" | "email" | "mobileNumber", string>> = {};
+  if (!contact?.fullName) errors.fullName = "Enter your name.";
+  if (!contact?.email) errors.email = "Enter a valid email address.";
+  if (!contact?.mobileNumber) errors.mobileNumber = "Enter a valid 10-digit Indian mobile number.";
+  if (Object.keys(errors).length || !contact || !key || !getAuthoritativeProduct(productCode)) {
+    return { success: false, errors };
+  }
+  // Bots fill the hidden field; show them the same success without saving.
+  const honeypot = payload && typeof payload === "object" ? (payload as Record<string, unknown>).website : "";
+  if (!honeypot) {
+    after(async () => {
+      try {
+        const attempt = await recordCheckoutContact(productCode, key, contact, "PRODUCT_POPUP");
+        await sendCheckoutAttemptAlert(attempt);
+      } catch (error) {
+        console.error("[commerce:checkout-attempt]", {
+          stage: "record_popup_lead",
+          causeName: error instanceof Error ? error.name : typeof error,
+        });
+      }
+    });
+  }
+  return { success: true, code: featuredCoupon.code };
 }
 
 export async function validateCheckoutDetails(

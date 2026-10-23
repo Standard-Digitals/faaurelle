@@ -20,6 +20,7 @@ function attempt(overrides: Partial<Attempt> = {}): Attempt {
   return {
     id: "a1",
     productCode: "hair-elixir",
+    source: "CHECKOUT",
     customerName: "Asha Sharma",
     customerEmail: "asha@example.com",
     customerPhone: "+919876543210",
@@ -77,7 +78,7 @@ describe("checkout attempts", () => {
     const csv = checkoutAttemptsCsv([
       { attempt: attempt({ customerName: "=HYPERLINK(\"x\")", addressLine2: "Flat 4, Tower B" }), outcome: "payment_failed" },
     ]);
-    const [header, line] = csv.replace(/^﻿/, "").trim().split("\r\n");
+    const [header, line] = csv.replace(/^\uFEFF/, "").trim().split("\r\n");
     expect(csv.startsWith("﻿")).toBe(true);
     expect(header).toContain("Mobile (+91)");
     expect(line).toContain(`"'=HYPERLINK(""x"")"`);
@@ -128,6 +129,29 @@ describe("checkout attempts", () => {
 
     const [, line] = checkoutAttemptsCsv([{ attempt: partial, outcome: "contact_only" }]).trim().split("\r\n");
     expect(line).toContain("Not checked,0,\"Entered contact details, did not finish the form\"");
+  });
+
+  it("labels leads from the product page popup", () => {
+    const lead = attempt({
+      source: "PRODUCT_POPUP",
+      addressLine1: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      deliveryCheck: null,
+      detailsCheckCount: 0,
+    });
+    expect(describeCheckoutOutcome(lead)).toBe("popup_only");
+    expect(describeCheckoutOutcome({ ...lead, deliveryCheck: "SERVICEABLE" })).toBe("details_only");
+    expect(describeCheckoutOutcome(lead, true)).toBe("ordered");
+
+    const alert = buildCheckoutAttemptAlert(lead);
+    expect(alert.subject).toBe("New lead from the 35% off popup — Asha Sharma");
+    expect(alert.text).toContain("claimed the discount code from the product page popup");
+
+    const [header, line] = checkoutAttemptsCsv([{ attempt: lead, outcome: "popup_only" }]).replace(/^﻿/, "").trim().split("\r\n");
+    expect(header.endsWith(",Source")).toBe(true);
+    expect(line.endsWith(",Product page popup")).toBe(true);
   });
 
   it("only accepts a configured, matching secret", () => {

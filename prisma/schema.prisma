@@ -109,6 +109,12 @@ model Order {
   @@index([createdAt])
 }
 
+// Where the customer first left their details.
+enum CheckoutAttemptSource {
+  CHECKOUT
+  PRODUCT_POPUP
+}
+
 enum CheckoutDeliveryCheck {
   SERVICEABLE
   NOT_SERVICEABLE
@@ -122,6 +128,7 @@ model CheckoutAttempt {
   id                String                @id @default(uuid()) @db.Uuid
   dedupeKey         String                @unique
   productCode       String
+  source            CheckoutAttemptSource @default(CHECKOUT)
   customerName      String
   customerEmail     String
   customerPhone     String

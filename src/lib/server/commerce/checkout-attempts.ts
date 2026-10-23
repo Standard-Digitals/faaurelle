@@ -8,6 +8,7 @@ const ORDER_LINK_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
 const PURCHASE_CLOCK_SLACK_MS = 60 * 1000;
 
 export type CheckoutDeliveryCheck = "SERVICEABLE" | "NOT_SERVICEABLE" | "CHECK_FAILED";
+export type CheckoutAttemptSource = "CHECKOUT" | "PRODUCT_POPUP";
 
 export type CheckoutAttemptOrder = Readonly<{
   customerReference: string;
@@ -19,6 +20,8 @@ export type CheckoutAttemptOrder = Readonly<{
 export type CheckoutAttemptRecord = Readonly<{
   id: string;
   productCode: string;
+  // Where the customer first left their details.
+  source: CheckoutAttemptSource;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -42,7 +45,8 @@ export type CheckoutOutcome =
   | "not_serviceable"
   | "delivery_check_failed"
   | "details_only"
-  | "contact_only";
+  | "contact_only"
+  | "popup_only";
 
 export const checkoutOutcomeLabels: Record<CheckoutOutcome, string> = {
   ordered: "Ordered",
@@ -52,6 +56,7 @@ export const checkoutOutcomeLabels: Record<CheckoutOutcome, string> = {
   delivery_check_failed: "Delivery check failed (courier unavailable)",
   details_only: "Filled details, did not continue to payment",
   contact_only: "Entered contact details, did not finish the form",
+  popup_only: "Claimed the popup offer, did not check out",
 };
 
 export function istDay(value: Date) {
@@ -78,12 +83,12 @@ export function describeCheckoutOutcome(attempt: CheckoutAttemptRecord, purchase
   if (attempt.order) return "payment_not_completed";
   if (attempt.deliveryCheck === "NOT_SERVICEABLE") return "not_serviceable";
   if (attempt.deliveryCheck === "CHECK_FAILED") return "delivery_check_failed";
-  if (!attempt.deliveryCheck) return "contact_only";
+  if (!attempt.deliveryCheck) return attempt.source === "PRODUCT_POPUP" ? "popup_only" : "contact_only";
   return "details_only";
 }
 
 const attemptSelect = {
-  id: true, productCode: true, customerName: true, customerEmail: true, customerPhone: true,
+  id: true, productCode: true, source: true, customerName: true, customerEmail: true, customerPhone: true,
   addressLine1: true, addressLine2: true, city: true, state: true, postalCode: true,
   deliveryCheck: true, detailsCheckCount: true, firstSeenAt: true, lastSeenAt: true,
   order: { select: { customerReference: true, status: true, paymentStatus: true, totalPaisa: true } },
@@ -155,11 +160,14 @@ export async function recordCheckoutAttempt(
 
 // Called while the customer is still typing, as soon as there is a valid
 // email or mobile number. Only fills in what they have typed so far and never
-// overwrites details saved by a full submission with blanks.
+// overwrites details saved by a full submission with blanks. Also saves the
+// product page popup, as a separate source; a later checkout by the same
+// customer that day updates the same row and keeps where they came from.
 export async function recordCheckoutContact(
   productCode: string,
   checkoutKey: string,
   contact: CheckoutContactDraft,
+  source: CheckoutAttemptSource = "CHECKOUT",
   now = new Date(),
 ) {
   const typed = Object.fromEntries(Object.entries({
@@ -183,6 +191,7 @@ export async function recordCheckoutContact(
   return prisma.checkoutAttempt.create({
     data: {
       productCode,
+      source,
       customerName: "",
       customerEmail: "",
       customerPhone: "",
@@ -301,7 +310,7 @@ export function checkoutAttemptsCsv(rows: readonly { attempt: CheckoutAttemptRec
   const header = [
     "First seen (IST)", "Last seen (IST)", "Name", "Email", "Mobile (+91)",
     "Address line 1", "Address line 2", "City", "State", "Pincode",
-    "Delivery available", "Times checked", "Outcome", "Order reference", "Order total",
+    "Delivery available", "Times checked", "Outcome", "Order reference", "Order total", "Source",
   ];
   const deliveryLabels: Record<CheckoutDeliveryCheck, string> = {
     SERVICEABLE: "Yes",
@@ -324,6 +333,7 @@ export function checkoutAttemptsCsv(rows: readonly { attempt: CheckoutAttemptRec
     checkoutOutcomeLabels[outcome],
     attempt.order?.customerReference ?? "",
     attempt.order ? formatInr(attempt.order.totalPaisa) : "",
+    attempt.source === "PRODUCT_POPUP" ? "Product page popup" : "Checkout",
   ].map(csvCell).join(","));
   // The byte-order mark makes Excel open the file as UTF-8 (₹, accents).
   return `﻿${[header.map(csvCell).join(","), ...lines].join("\r\n")}\r\n`;

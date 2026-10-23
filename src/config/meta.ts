@@ -15,6 +15,7 @@ export const metaRelayedEventNames = [
   "AddToCart",
   "InitiateCheckout",
   "AddPaymentInfo",
+  "Lead",
 ] as const;
 
 export type MetaRelayedEventName = (typeof metaRelayedEventNames)[number];

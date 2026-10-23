@@ -131,6 +131,11 @@ export function trackAddPaymentInfo(params: StandardEventParams) {
   track("AddPaymentInfo", params);
 }
 
+// The product page offer popup was submitted.
+export function trackLead(params: StandardEventParams) {
+  track("Lead", params);
+}
+
 // The server sends Purchase to the Conversions API itself once the payment is
 // verified, using the order reference as the shared event ID.
 export function trackPurchase(params: StandardEventParams, eventId: string) {
