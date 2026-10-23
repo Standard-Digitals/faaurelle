@@ -75,6 +75,43 @@ export function normalizeCheckoutIdentity(payload: unknown):
   return { success: true, data: { email, phone } };
 }
 
+export type CheckoutContactDraft = Readonly<{
+  fullName: string;
+  email: string;
+  mobileNumber: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  pincode: string;
+}>;
+
+// What a customer has typed so far, kept only when it is valid; missing or
+// invalid fields are "". Null until there is a valid email or mobile number,
+// so half-finished forms can still be followed up.
+export function normalizeCheckoutContact(payload: unknown): CheckoutContactDraft | null {
+  const text = (key: CheckoutFieldName) => {
+    const value = normalizeText(inputValue(payload, key));
+    return value.length <= limits[key] ? value : "";
+  };
+  const email = text("email").toLowerCase();
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
+  const mobileNumber = normalizeIndianMobile(inputValue(payload, "mobileNumber")) ?? "";
+  if (!validEmail && !mobileNumber) return null;
+  const state = text("state");
+  const pincode = inputValue(payload, "pincode").replace(/\s/g, "");
+  return {
+    fullName: text("fullName"),
+    email: validEmail,
+    mobileNumber,
+    addressLine1: text("addressLine1"),
+    addressLine2: text("addressLine2"),
+    city: text("city"),
+    state: indiaStatesAndUnionTerritories.includes(state as IndiaStateOrUnionTerritory) ? state : "",
+    pincode: /^\d{6}$/.test(pincode) ? pincode : "",
+  };
+}
+
 export function validateCheckoutPayload(payload: unknown): CheckoutValidationResult {
   const errors: CheckoutFieldErrors = {};
   const fullName = normalizeText(inputValue(payload, "fullName"));

@@ -26,10 +26,16 @@ const deliveryLabels = {
   CHECK_FAILED: "Could not be checked (courier unavailable)",
 } as const;
 
+const NOT_ENTERED = "Not entered yet";
+
+// Attempts saved while the customer was still typing can have blank fields.
 function address(attempt: CheckoutAttemptRecord) {
-  return [attempt.addressLine1, attempt.addressLine2, `${attempt.city}, ${attempt.state} ${attempt.postalCode}`]
-    .filter(Boolean)
-    .join(", ");
+  const place = [attempt.city, `${attempt.state} ${attempt.postalCode}`.trim()].filter(Boolean).join(", ");
+  return [attempt.addressLine1, attempt.addressLine2, place].filter(Boolean).join(", ") || NOT_ENTERED;
+}
+
+function customerLabel(attempt: CheckoutAttemptRecord) {
+  return attempt.customerName || attempt.customerPhone || attempt.customerEmail;
 }
 
 function row(label: string, value: string) {
@@ -54,17 +60,19 @@ function layout(eyebrow: string, title: string, body: string) {
 export function buildCheckoutAttemptAlert(attempt: CheckoutAttemptRecord) {
   const product = getAuthoritativeProduct(attempt.productCode);
   const productLine = product ? `${product.name} · ${formatInr(product.unitAmountPaisa)}` : attempt.productCode;
-  const subject = `Checkout started — ${attempt.customerName}, ${attempt.city}`;
+  const subject = `Checkout started — ${[customerLabel(attempt), attempt.city].filter(Boolean).join(", ")}`;
   const details: [string, string][] = [
-    ["Name", attempt.customerName],
-    ["Mobile", attempt.customerPhone],
-    ["Email", attempt.customerEmail],
+    ["Name", attempt.customerName || NOT_ENTERED],
+    ["Mobile", attempt.customerPhone || NOT_ENTERED],
+    ["Email", attempt.customerEmail || NOT_ENTERED],
     ["Address", address(attempt)],
-    ["Delivery", deliveryLabels[attempt.deliveryCheck]],
+    ["Delivery", attempt.deliveryCheck ? deliveryLabels[attempt.deliveryCheck] : "Not checked yet"],
     ["Product", productLine],
     ["Time", formatIstDateTime(attempt.firstSeenAt)],
   ];
-  const note = "They have not paid yet. If they complete the payment you will get a separate “New order received” email.";
+  const note = attempt.deliveryCheck
+    ? "They have not paid yet. If they complete the payment you will get a separate “New order received” email."
+    : "They have started filling in the checkout form and have not finished it yet. Anything they add later appears in tomorrow’s checkout summary, and if they pay you will get a separate “New order received” email.";
   const text = [
     "A customer started checkout",
     "",
@@ -74,7 +82,7 @@ export function buildCheckoutAttemptAlert(attempt: CheckoutAttemptRecord) {
   ].join("\n");
   const html = layout(
     "Checkout started",
-    `${attempt.customerName} is checking out.`,
+    `${customerLabel(attempt)} is checking out.`,
     `<tr><td style="padding:18px 32px 8px">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #e4ddd3;border-bottom:1px solid #e4ddd3">
           ${details.map(([label, value]) => row(label, value)).join("")}
@@ -89,7 +97,7 @@ export async function sendCheckoutAttemptAlert(attempt: CheckoutAttemptRecord, n
   if (!(await claimCheckoutAttemptAlert(attempt.id, now))) return { status: "already-sent" as const };
   try {
     const config = loadMailConfiguration();
-    if (config.owner.toLowerCase() === attempt.customerEmail.toLowerCase()) return { status: "skipped" as const };
+    if (attempt.customerEmail && config.owner.toLowerCase() === attempt.customerEmail.toLowerCase()) return { status: "skipped" as const };
     const message = buildCheckoutAttemptAlert(attempt);
     await nodemailer.createTransport(config.transport).sendMail({
       from: `FA ÀURELLE <${config.from}>`,
@@ -127,8 +135,8 @@ export function buildCheckoutDigest(entries: readonly DigestEntry[], periodLabel
     listIntro,
     "",
     ...unfinished.flatMap(({ attempt, outcome }) => [
-      `${attempt.customerName} — ${checkoutOutcomeLabels[outcome]}`,
-      `  Mobile: ${attempt.customerPhone} · Email: ${attempt.customerEmail}`,
+      `${customerLabel(attempt)} — ${checkoutOutcomeLabels[outcome]}`,
+      `  Mobile: ${attempt.customerPhone || NOT_ENTERED} · Email: ${attempt.customerEmail || NOT_ENTERED}`,
       `  ${address(attempt)}`,
       `  ${formatIstDateTime(attempt.firstSeenAt)}`,
       "",
@@ -137,9 +145,9 @@ export function buildCheckoutDigest(entries: readonly DigestEntry[], periodLabel
 
   const cards = unfinished.map(({ attempt, outcome }) => `
         <tr><td style="padding:14px 0;border-top:1px solid #e4ddd3;font-size:14px;line-height:1.6;color:#5e554c">
-          <strong style="color:#17130f;font-size:15px">${escapeHtml(attempt.customerName)}</strong>
+          <strong style="color:#17130f;font-size:15px">${escapeHtml(customerLabel(attempt))}</strong>
           <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#f7f3ec;color:#8d621f;font-size:12px">${escapeHtml(checkoutOutcomeLabels[outcome])}</span><br>
-          ${escapeHtml(attempt.customerPhone)} · ${escapeHtml(attempt.customerEmail)}<br>
+          ${escapeHtml(attempt.customerPhone || NOT_ENTERED)} · ${escapeHtml(attempt.customerEmail || NOT_ENTERED)}<br>
           ${escapeHtml(address(attempt))}<br>
           <span style="color:#8a8178">${escapeHtml(formatIstDateTime(attempt.firstSeenAt))}</span>
         </td></tr>`).join("");

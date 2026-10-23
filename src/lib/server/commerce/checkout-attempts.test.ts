@@ -105,6 +105,31 @@ describe("checkout attempts", () => {
     expect(digest.html).not.toContain("Ravi");
   });
 
+  it("handles attempts saved before the form was finished", () => {
+    const partial = attempt({
+      customerName: "",
+      customerEmail: "",
+      addressLine1: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      deliveryCheck: null,
+      detailsCheckCount: 0,
+    });
+    expect(describeCheckoutOutcome(partial)).toBe("contact_only");
+    expect(describeCheckoutOutcome(partial, true)).toBe("ordered");
+
+    const alert = buildCheckoutAttemptAlert(partial);
+    expect(alert.subject).toBe("Checkout started — +919876543210");
+    expect(alert.text).toContain("Email: Not entered yet");
+    expect(alert.text).toContain("Address: Not entered yet");
+    expect(alert.text).toContain("Delivery: Not checked yet");
+    expect(alert.text).toContain("have not finished it yet");
+
+    const [, line] = checkoutAttemptsCsv([{ attempt: partial, outcome: "contact_only" }]).trim().split("\r\n");
+    expect(line).toContain("Not checked,0,\"Entered contact details, did not finish the form\"");
+  });
+
   it("only accepts a configured, matching secret", () => {
     const secret = "a-long-shared-secret-value-123";
     expect(matchesSharedSecret(secret, secret)).toBe(true);

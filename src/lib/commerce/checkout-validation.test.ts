@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { normalizeCheckoutIdentity, validateCheckoutPayload } from "./checkout-validation";
+import { normalizeCheckoutContact, normalizeCheckoutIdentity, validateCheckoutPayload } from "./checkout-validation";
 
 vi.mock("server-only", () => ({}));
 
@@ -95,5 +95,35 @@ describe("coupon identity normalization", () => {
 
   it("rejects invalid identity before coupon validation", () => {
     expect(normalizeCheckoutIdentity({ email: "invalid", mobileNumber: "123" })).toMatchObject({ success: false });
+  });
+});
+
+describe("normalizeCheckoutContact", () => {
+  it("waits for a valid email or mobile number", () => {
+    expect(normalizeCheckoutContact({ fullName: "Asha", email: "asha@", mobileNumber: "98765" })).toBeNull();
+    expect(normalizeCheckoutContact({})).toBeNull();
+  });
+
+  it("keeps only the valid fields typed so far", () => {
+    expect(normalizeCheckoutContact({
+      fullName: "  Asha   Sharma ",
+      email: "asha@",
+      mobileNumber: "98765 43210",
+      addressLine1: "12 Rose Street",
+      city: "Pune",
+      state: "Not a state",
+      pincode: "4110",
+    })).toEqual({
+      fullName: "Asha Sharma",
+      email: "",
+      mobileNumber: "+919876543210",
+      addressLine1: "12 Rose Street",
+      addressLine2: "",
+      city: "Pune",
+      state: "",
+      pincode: "",
+    });
+    expect(normalizeCheckoutContact({ email: "Asha@Example.com", state: "Maharashtra", pincode: "411 001" }))
+      .toMatchObject({ email: "asha@example.com", mobileNumber: "", state: "Maharashtra", pincode: "411001" });
   });
 });

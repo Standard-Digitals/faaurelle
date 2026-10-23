@@ -10,21 +10,52 @@ import {
   type CreateCheckoutInput,
   type CreateCheckoutResponse,
 } from "@/lib/server/commerce/checkout-order";
-import { normalizeCheckoutIdentity } from "@/lib/commerce/checkout-validation";
+import { normalizeCheckoutContact, normalizeCheckoutIdentity } from "@/lib/commerce/checkout-validation";
 import { getAuthoritativeProduct } from "@/lib/server/commerce/products";
 import { calculateV1Pricing } from "@/lib/server/commerce/pricing";
 import { validateCouponEligibility } from "@/lib/server/commerce/coupons";
 import {
   linkCheckoutAttemptToOrder,
   recordCheckoutAttempt,
+  recordCheckoutContact,
 } from "@/lib/server/commerce/checkout-attempts";
 import { sendCheckoutAttemptAlert } from "@/lib/server/commerce/checkout-attempt-email";
 
 export type ValidateCheckoutResponse = CheckoutServiceabilityResponse;
 
+const CHECKOUT_KEY = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function validCheckoutKey(value: unknown) {
+  return typeof value === "string" && CHECKOUT_KEY.test(value) ? value : null;
+}
+
+// Saves what the customer has typed once there is a valid email or mobile
+// number, so the owner can follow up even if they never submit the form.
+export async function saveCheckoutContact(
+  productCode: string,
+  checkoutKey: string,
+  payload: unknown,
+): Promise<void> {
+  const key = validCheckoutKey(checkoutKey);
+  const contact = normalizeCheckoutContact(payload);
+  if (!key || !contact || !getAuthoritativeProduct(productCode)) return;
+  after(async () => {
+    try {
+      const attempt = await recordCheckoutContact(productCode, key, contact);
+      await sendCheckoutAttemptAlert(attempt);
+    } catch (error) {
+      console.error("[commerce:checkout-attempt]", {
+        stage: "record_contact",
+        causeName: error instanceof Error ? error.name : typeof error,
+      });
+    }
+  });
+}
+
 export async function validateCheckoutDetails(
   productCode: string,
   payload: unknown,
+  checkoutKey?: string,
 ): Promise<ValidateCheckoutResponse> {
   const result = await validateCheckoutAndCheckServiceability(productCode, payload);
   if (result.success) {
@@ -36,7 +67,7 @@ export async function validateCheckoutDetails(
     // response so the checkout never waits on it or fails because of it.
     after(async () => {
       try {
-        const attempt = await recordCheckoutAttempt(productCode, details, deliveryCheck);
+        const attempt = await recordCheckoutAttempt(productCode, details, deliveryCheck, validCheckoutKey(checkoutKey));
         await sendCheckoutAttemptAlert(attempt);
       } catch (error) {
         console.error("[commerce:checkout-attempt]", {

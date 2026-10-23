@@ -13,6 +13,7 @@ import { featuredCoupon, isFeaturedCouponActive } from "@/config/promotions";
 import indianCitiesByState from "@/data/indian-cities-by-state.json";
 import {
   checkoutFieldNames,
+  normalizeCheckoutContact,
   normalizeCheckoutIdentity,
   validateCheckoutPayload,
   type CheckoutFieldErrors,
@@ -32,7 +33,7 @@ import {
   serializeConfirmationRecovery,
   shouldAttemptConfirmationRecovery,
 } from "@/lib/commerce/confirmation-recovery";
-import { createCheckoutOrder, validateCheckoutDetails, validateCheckoutCoupon } from "./actions";
+import { createCheckoutOrder, saveCheckoutContact, validateCheckoutDetails, validateCheckoutCoupon } from "./actions";
 import {
   CheckoutProgressDialog,
   type CheckoutProgressOperation,
@@ -106,6 +107,8 @@ export function CheckoutForm({
   const [autoCouponCode] = useState(() => (isFeaturedCouponActive() ? featuredCoupon.code : null));
   const autoCouponRef = useRef<AutoCouponState>(autoCouponCode ? "pending" : "manual");
   const autoCouponTimerRef = useRef<number | undefined>(undefined);
+  const contactSaveTimerRef = useRef<number | undefined>(undefined);
+  const savedContactRef = useRef("");
   const [couponInput, setCouponInput] = useState(autoCouponCode ?? "");
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [couponState, setCouponState] = useState<"idle" | "loading" | "accepted" | "rejected">("idle");
@@ -218,11 +221,32 @@ export function CheckoutForm({
     });
   };
 
+  // Saves what the customer has typed once there is a valid email or mobile
+  // number, so they can be followed up even if they leave before submitting.
+  const saveContact = () => {
+    window.clearTimeout(contactSaveTimerRef.current);
+    if (!formRef.current) return;
+    const payload = Object.fromEntries(new FormData(formRef.current).entries());
+    const contact = normalizeCheckoutContact(payload);
+    if (!contact) return;
+    const snapshot = JSON.stringify(contact);
+    if (snapshot === savedContactRef.current) return;
+    savedContactRef.current = snapshot;
+    saveCheckoutContact(productCode, checkoutKey, payload).catch(() => {
+      savedContactRef.current = "";
+    });
+  };
+
+  useEffect(() => () => window.clearTimeout(contactSaveTimerRef.current), []);
+
   const handleFieldChange = (event: FormEvent<HTMLFormElement>) => {
     const target = event.target;
     if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
     const fieldName = target.name;
     if (!checkoutFieldNames.includes(fieldName as CheckoutFieldName)) return;
+
+    window.clearTimeout(contactSaveTimerRef.current);
+    contactSaveTimerRef.current = window.setTimeout(saveContact, 1500);
 
     if (fieldName === "email" || fieldName === "mobileNumber") {
       if (autoCouponRef.current !== "manual") {
@@ -451,7 +475,7 @@ export function CheckoutForm({
     setFormMessage("Checking prepaid delivery availability…");
 
     try {
-      const serverResult = await validateCheckoutDetails(productCode, payload);
+      const serverResult = await validateCheckoutDetails(productCode, payload, checkoutKey);
       if (!serverResult.success) {
         setErrors(serverResult.errors);
         setSubmissionState("error");

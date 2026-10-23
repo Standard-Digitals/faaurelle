@@ -131,7 +131,9 @@ model CheckoutAttempt {
   state             String
   postalCode        String
   countryCode       String                @default("IN")
-  deliveryCheck     CheckoutDeliveryCheck
+  // Null until the customer submits the form and delivery is checked; until
+  // then unknown name and address fields are "".
+  deliveryCheck     CheckoutDeliveryCheck?
   detailsCheckCount Int                   @default(1)
   orderId           String?               @db.Uuid
   firstSeenAt       DateTime              @default(now())

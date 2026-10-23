@@ -1,5 +1,5 @@
 import "server-only";
-import type { NormalizedCheckoutDetails } from "@/lib/commerce/checkout-validation";
+import type { CheckoutContactDraft, NormalizedCheckoutDetails } from "@/lib/commerce/checkout-validation";
 import { formatInr } from "@/lib/commerce/money";
 import { prisma } from "@/lib/server/db/prisma";
 
@@ -27,7 +27,8 @@ export type CheckoutAttemptRecord = Readonly<{
   city: string;
   state: string;
   postalCode: string;
-  deliveryCheck: CheckoutDeliveryCheck;
+  // Null while the customer has only typed contact details.
+  deliveryCheck: CheckoutDeliveryCheck | null;
   detailsCheckCount: number;
   firstSeenAt: Date;
   lastSeenAt: Date;
@@ -40,7 +41,8 @@ export type CheckoutOutcome =
   | "payment_not_completed"
   | "not_serviceable"
   | "delivery_check_failed"
-  | "details_only";
+  | "details_only"
+  | "contact_only";
 
 export const checkoutOutcomeLabels: Record<CheckoutOutcome, string> = {
   ordered: "Ordered",
@@ -49,6 +51,7 @@ export const checkoutOutcomeLabels: Record<CheckoutOutcome, string> = {
   not_serviceable: "Pincode not serviceable",
   delivery_check_failed: "Delivery check failed (courier unavailable)",
   details_only: "Filled details, did not continue to payment",
+  contact_only: "Entered contact details, did not finish the form",
 };
 
 export function istDay(value: Date) {
@@ -75,6 +78,7 @@ export function describeCheckoutOutcome(attempt: CheckoutAttemptRecord, purchase
   if (attempt.order) return "payment_not_completed";
   if (attempt.deliveryCheck === "NOT_SERVICEABLE") return "not_serviceable";
   if (attempt.deliveryCheck === "CHECK_FAILED") return "delivery_check_failed";
+  if (!attempt.deliveryCheck) return "contact_only";
   return "details_only";
 }
 
@@ -85,10 +89,36 @@ const attemptSelect = {
   order: { select: { customerReference: true, status: true, paymentStatus: true, totalPaisa: true } },
 } as const;
 
+function sessionDedupeKey(checkoutKey: string) {
+  return `session|${checkoutKey}`;
+}
+
+// The attempt this checkout session already saved, or else today's attempt
+// by the same customer (by email or by mobile), so one customer is one row
+// per IST day however they fill the form.
+async function findOpenAttempt(checkoutKey: string | null, email: string, phone: string, now: Date) {
+  const sameCustomer = [
+    ...(email ? [{ customerEmail: email }] : []),
+    ...(phone ? [{ customerPhone: phone }] : []),
+  ];
+  return prisma.checkoutAttempt.findFirst({
+    where: {
+      OR: [
+        ...(checkoutKey ? [{ dedupeKey: sessionDedupeKey(checkoutKey) }] : []),
+        ...(sameCustomer.length ? [{ firstSeenAt: { gte: startOfIstDay(now) }, OR: sameCustomer }] : []),
+      ],
+    },
+    orderBy: { lastSeenAt: "desc" },
+    select: { id: true },
+  });
+}
+
+// Called once the customer submits the form and delivery has been checked.
 export async function recordCheckoutAttempt(
   productCode: string,
   details: NormalizedCheckoutDetails,
   deliveryCheck: CheckoutDeliveryCheck,
+  checkoutKey: string | null = null,
   now = new Date(),
 ) {
   const contact = {
@@ -104,10 +134,68 @@ export async function recordCheckoutAttempt(
     countryCode: details.countryCode,
     deliveryCheck,
   };
-  return prisma.checkoutAttempt.upsert({
-    where: { dedupeKey: checkoutAttemptDedupeKey(details, now) },
-    create: { ...contact, dedupeKey: checkoutAttemptDedupeKey(details, now), firstSeenAt: now, lastSeenAt: now },
-    update: { ...contact, lastSeenAt: now, detailsCheckCount: { increment: 1 } },
+  const existing = await findOpenAttempt(checkoutKey, contact.customerEmail, contact.customerPhone, now);
+  if (existing) {
+    return prisma.checkoutAttempt.update({
+      where: { id: existing.id },
+      data: { ...contact, lastSeenAt: now, detailsCheckCount: { increment: 1 } },
+      select: attemptSelect,
+    });
+  }
+  return prisma.checkoutAttempt.create({
+    data: {
+      ...contact,
+      dedupeKey: checkoutKey ? sessionDedupeKey(checkoutKey) : checkoutAttemptDedupeKey(details, now),
+      firstSeenAt: now,
+      lastSeenAt: now,
+    },
+    select: attemptSelect,
+  });
+}
+
+// Called while the customer is still typing, as soon as there is a valid
+// email or mobile number. Only fills in what they have typed so far and never
+// overwrites details saved by a full submission with blanks.
+export async function recordCheckoutContact(
+  productCode: string,
+  checkoutKey: string,
+  contact: CheckoutContactDraft,
+  now = new Date(),
+) {
+  const typed = Object.fromEntries(Object.entries({
+    customerName: contact.fullName,
+    customerEmail: contact.email,
+    customerPhone: contact.mobileNumber,
+    addressLine1: contact.addressLine1,
+    addressLine2: contact.addressLine2,
+    city: contact.city,
+    state: contact.state,
+    postalCode: contact.pincode,
+  }).filter(([, value]) => value));
+  const existing = await findOpenAttempt(checkoutKey, contact.email, contact.mobileNumber, now);
+  if (existing) {
+    return prisma.checkoutAttempt.update({
+      where: { id: existing.id },
+      data: { ...typed, lastSeenAt: now },
+      select: attemptSelect,
+    });
+  }
+  return prisma.checkoutAttempt.create({
+    data: {
+      productCode,
+      customerName: "",
+      customerEmail: "",
+      customerPhone: "",
+      addressLine1: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      ...typed,
+      dedupeKey: sessionDedupeKey(checkoutKey),
+      detailsCheckCount: 0,
+      firstSeenAt: now,
+      lastSeenAt: now,
+    },
     select: attemptSelect,
   });
 }
@@ -159,8 +247,8 @@ export async function findPurchasingCustomers(attempts: readonly CheckoutAttempt
       paymentStatus: "CAPTURED",
       createdAt: { gte: since },
       OR: [
-        { customerEmail: { in: [...new Set(attempts.map((attempt) => attempt.customerEmail))], mode: "insensitive" } },
-        { customerPhone: { in: [...new Set(attempts.map((attempt) => attempt.customerPhone))] } },
+        { customerEmail: { in: [...new Set(attempts.map((attempt) => attempt.customerEmail).filter(Boolean))], mode: "insensitive" } },
+        { customerPhone: { in: [...new Set(attempts.map((attempt) => attempt.customerPhone).filter(Boolean))] } },
       ],
     },
     select: { customerEmail: true, customerPhone: true, createdAt: true },
@@ -177,7 +265,7 @@ export async function findPurchasingCustomers(attempts: readonly CheckoutAttempt
 // so an earlier purchase does not hide a later abandoned checkout.
 export function hasPurchased(attempt: CheckoutAttemptRecord, purchases: ReadonlyMap<string, readonly number[]>) {
   const startedAt = attempt.firstSeenAt.getTime() - PURCHASE_CLOCK_SLACK_MS;
-  return [`email:${attempt.customerEmail.toLowerCase()}`, `phone:${attempt.customerPhone}`]
+  return [attempt.customerEmail && `email:${attempt.customerEmail.toLowerCase()}`, attempt.customerPhone && `phone:${attempt.customerPhone}`]
     .some((key) => (purchases.get(key) ?? []).some((paidAt) => paidAt >= startedAt));
 }
 
@@ -231,7 +319,7 @@ export function checkoutAttemptsCsv(rows: readonly { attempt: CheckoutAttemptRec
     attempt.city,
     attempt.state,
     attempt.postalCode,
-    deliveryLabels[attempt.deliveryCheck],
+    attempt.deliveryCheck ? deliveryLabels[attempt.deliveryCheck] : "Not checked",
     attempt.detailsCheckCount,
     checkoutOutcomeLabels[outcome],
     attempt.order?.customerReference ?? "",
