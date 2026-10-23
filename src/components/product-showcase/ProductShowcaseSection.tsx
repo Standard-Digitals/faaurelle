@@ -7,7 +7,6 @@ import { productShowcase, productShowcaseImages } from "./product-showcase.data"
 import { product } from "@/config/product";
 import { featuredCoupon, featuredCouponPricePaisa, isFeaturedCouponActive } from "@/config/promotions";
 import { formatInr } from "@/lib/commerce/money";
-import { trackAddToCart } from "@/lib/analytics/meta-pixel";
 
 function Checkmark() {
   return (
@@ -179,15 +178,6 @@ export function ProductShowcaseSection() {
             <a
               className={`${styles.buyNowButton} type-cta`}
               href={`${basePath}/checkout?product=${encodeURIComponent(product.code)}`}
-              onClick={() =>
-                trackAddToCart({
-                  content_ids: [product.code],
-                  content_name: product.formalName,
-                  content_type: "product",
-                  currency: product.currency,
-                  value: product.unitAmountPaisa / 100,
-                })
-              }
             >
               {productShowcase.actions.buyNow}
             </a>

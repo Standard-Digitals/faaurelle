@@ -89,9 +89,12 @@ type AutoCouponState = "pending" | "applied" | "manual";
 export function CheckoutForm({
   productCode,
   onCouponChange,
+  onContactStarted,
 }: {
   productCode: string;
   onCouponChange: (coupon: AppliedCoupon | null) => void;
+  // Called whenever the form has new valid contact details to save.
+  onContactStarted: () => void;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -232,6 +235,15 @@ export function CheckoutForm({
     const snapshot = JSON.stringify(contact);
     if (snapshot === savedContactRef.current) return;
     savedContactRef.current = snapshot;
+    setAdvancedMatching({
+      email: contact.email,
+      phone: contact.mobileNumber,
+      fullName: contact.fullName,
+      city: contact.city,
+      state: contact.state,
+      pincode: contact.pincode,
+    });
+    onContactStarted();
     saveCheckoutContact(productCode, checkoutKey, payload).catch(() => {
       savedContactRef.current = "";
     });

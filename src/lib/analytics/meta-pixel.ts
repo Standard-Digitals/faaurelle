@@ -96,17 +96,21 @@ export function trackPageView() {
 
 // Manual advanced matching: re-initialising the pixel with customer details
 // attaches them (hashed by the pixel) to every later event on this page load.
+// Blank fields are left out, so it also works on a half-filled form.
 export function setAdvancedMatching(customer: MetaAdvancedMatching) {
   if (!hasPixel()) return;
   const [firstName, ...rest] = customer.fullName.trim().toLowerCase().split(/\s+/);
-  window.fbq!("init", META_PIXEL_ID, {
+  const fields = {
     em: customer.email.trim().toLowerCase(),
     ph: customer.phone.replace(/\D/g, ""),
     fn: firstName,
-    ...(rest.length ? { ln: rest[rest.length - 1] } : {}),
+    ln: rest.length ? rest[rest.length - 1] : "",
     ct: customer.city.toLowerCase().replace(/[^a-z]/g, ""),
     st: customer.state.toLowerCase().replace(/[^a-z]/g, ""),
     zp: customer.pincode.replace(/\s/g, ""),
+  };
+  window.fbq!("init", META_PIXEL_ID, {
+    ...Object.fromEntries(Object.entries(fields).filter(([, value]) => value)),
     country: "in",
   });
 }
